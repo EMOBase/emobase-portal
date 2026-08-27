@@ -4,7 +4,7 @@ import {
   InputGroupInput,
   InputGroupButton,
 } from "@/components/ui/input-group";
-import { Search, ArrowRight } from "lucide-react";
+import { Search, ArrowRight, ExternalLink } from "lucide-react";
 
 import triboliumImage from "@/assets/species/500px-Tribolium_castaneum.jpg?url";
 import spiderImage from "@/assets/species/Common_House_Spider.jpg?url";
@@ -20,6 +20,7 @@ const speciesCards = [
     genomeSize: "241.8 Mb",
     gcContent: "31.5%",
     assemblyLevel: "Chromosome (92%)",
+    siteUrl: "https://ibeetle-base.uni-goettingen.de/",
   },
   {
     image: spiderImage,
@@ -30,6 +31,7 @@ const speciesCards = [
     genomeSize: "1.1 Gb",
     gcContent: "29.5%",
     assemblyLevel: "Scaffold",
+    siteUrl: "https://ptep.emobase.uni-goettingen.de/",
   },
   {
     image: lymnaeaImage,
@@ -40,6 +42,7 @@ const speciesCards = [
     genomeSize: "943.0 Mb",
     gcContent: "37.55%",
     assemblyLevel: "Scaffold",
+    siteUrl: "https://ibb-test.vm19002.virt.gwdg.de/",
   },
 ];
 
@@ -49,8 +52,8 @@ export default function HomePage() {
       <main className="flex-grow">
         {/* Hero Section */}
         <div className="max-w-4xl mx-auto px-4 pt-20 pb-16 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-5">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500/80 font-display">
+          <h1 className="text-4xl md:text-6xl font-display font-bold tracking-tight mb-5">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500/80">
               Emerging Model Organism
             </span>
             <br />
@@ -125,9 +128,17 @@ export default function HomePage() {
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-black/10 to-transparent" />
                 </div>
                 <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">
-                    {card.name}
-                  </h3>
+                  <a
+                    href={card.siteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group/title inline-flex items-center gap-1.5 w-fit hover:text-blue-600 transition-colors"
+                  >
+                    <h3 className="text-xl font-bold text-gray-900 group-hover/title:text-blue-600 transition-colors">
+                      {card.name}
+                    </h3>
+                    <ExternalLink className="w-4 h-4 opacity-0 group-hover/title:opacity-100 text-blue-600 transition-opacity" />
+                  </a>
                   <p className="text-slate-500 italic mb-8">{card.common}</p>
 
                   <div className="space-y-4 text-sm mt-auto">
