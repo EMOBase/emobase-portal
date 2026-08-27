@@ -12,8 +12,8 @@ export default function Topbar() {
         {/* Logo */}
         <div className="flex items-end gap-2">
           <Logo className="w-8 h-8 text-blue-500" />
-          <span className="font-extrabold text-xl tracking-tight text-slate-900">
-            EMO<span className="font-medium">Base</span>
+          <span className="font-display font-bold text-xl tracking-tight text-slate-900">
+            EMOBase
           </span>
         </div>
 
