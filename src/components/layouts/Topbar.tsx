@@ -13,12 +13,15 @@ export default function Topbar() {
           href="/"
           className="font-display font-bold text-xl tracking-tight text-slate-700"
         >
-          <span className="text-primary">EMO</span>Base
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500/80">
+            EMO
+          </span>
+          Base
         </a>
 
         {/* Header Search */}
         <div className="flex-1 max-w-2xl px-8">
-          <InputGroup className="h-10 rounded-lg bg-slate-100 border-slate-200 shadow-inner px-2">
+          <InputGroup className="h-10 rounded-md bg-slate-100 border-slate-200 shadow-inner px-2">
             <InputGroupAddon align="inline-start">
               <Search className="h-5 w-5 text-slate-400" />
             </InputGroupAddon>

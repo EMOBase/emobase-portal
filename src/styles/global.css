@@ -5,7 +5,8 @@
 
 @theme inline {
   --font-display: "Space Grotesk", sans-serif;
-  --font-body: "Noto Sans", sans-serif;
+  --font-body: "Hanken Grotesk", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

@@ -49,8 +49,8 @@ export default function HomePage() {
       <main className="flex-grow">
         {/* Hero Section */}
         <div className="max-w-4xl mx-auto px-4 pt-20 pb-16 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-5 font-display">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-400">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-5">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500/80 font-display">
               Emerging Model Organism
             </span>
             <br />
@@ -64,7 +64,7 @@ export default function HomePage() {
 
           {/* Large Search Bar */}
           <div className="max-w-3xl mx-auto">
-            <InputGroup className="h-16 rounded-xl bg-white shadow-md hover:shadow-lg transition-shadow px-3">
+            <InputGroup className="h-16 rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow px-3">
               <InputGroupAddon align="inline-start">
                 <Search className="h-6 w-6 ml-2 text-slate-500" />
               </InputGroupAddon>
@@ -111,7 +111,7 @@ export default function HomePage() {
             {speciesCards.map((card) => (
               <div
                 key={card.name}
-                className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col"
+                className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col"
               >
                 <div className="relative h-52 overflow-hidden bg-slate-100 border-b border-slate-200">
                   <img
@@ -128,9 +128,7 @@ export default function HomePage() {
                   <h3 className="text-xl font-bold text-gray-900 mb-1">
                     {card.name}
                   </h3>
-                  <p className="text-slate-500 italic mb-8 font-serif">
-                    {card.common}
-                  </p>
+                  <p className="text-slate-500 italic mb-8">{card.common}</p>
 
                   <div className="space-y-4 text-sm mt-auto">
                     <div className="flex justify-between border-t border-slate-100 pt-4">
@@ -167,7 +165,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="bg-slate-200 py-10 text-center mt-auto">
-        <p className="text-slate-600 text-sm font-medium">
+        <p className="text-slate-600 text-sm">
           &copy; 2026 Universitätsmedizin Göttingen. All rights reserved.
         </p>
       </footer>
