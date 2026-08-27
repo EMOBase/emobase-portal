@@ -1,0 +1,24 @@
+---
+import Layout from "./default.astro";
+import BlankLayout from "./blank.astro";
+import AdminLogin from "../components/layouts/AdminLogin/index.tsx";
+
+interface Props {
+  title?: string;
+}
+
+const { title = "Admin - EMOBase" } = Astro.props;
+const { user } = Astro.locals;
+---
+
+{
+  user ? (
+    <Layout title={title}>
+      <slot />
+    </Layout>
+  ) : (
+    <BlankLayout>
+      <AdminLogin client:load />
+    </BlankLayout>
+  )
+}
