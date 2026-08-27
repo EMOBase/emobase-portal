@@ -54,7 +54,7 @@ export default function HomePage() {
               Emerging Model Organism
             </span>
             <br />
-            <span className="text-slate-900">Genomic Database</span>
+            <span className="text-slate-700">Genomic Database</span>
           </h1>
           <p className="max-w-3xl text-slate-500 mx-auto mb-10 leading-relaxed">
             A centralized repository for specific model organism genome

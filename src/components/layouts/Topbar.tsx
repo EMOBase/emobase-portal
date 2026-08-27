@@ -3,20 +3,18 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import Logo from "@/components/layouts/Logo";
 import { Search, CircleHelp } from "lucide-react";
 
 export default function Topbar() {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-end gap-2">
-          <Logo className="w-8 h-8 text-blue-500" />
-          <span className="font-display font-bold text-xl tracking-tight text-slate-900">
-            EMOBase
-          </span>
-        </div>
+        <a
+          href="/"
+          className="font-display font-bold text-xl tracking-tight text-slate-700"
+        >
+          <span className="text-primary">EMO</span>Base
+        </a>
 
         {/* Header Search */}
         <div className="flex-1 max-w-2xl px-8">
