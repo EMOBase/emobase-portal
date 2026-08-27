@@ -177,7 +177,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="bg-slate-200 py-10 text-center mt-auto">
         <p className="text-slate-600 text-sm font-medium">
-          &copy; 2026 Genomic Research Institute. All rights reserved.
+          &copy; 2026 Universitätsmedizin Göttingen. All rights reserved.
         </p>
       </footer>
     </>
