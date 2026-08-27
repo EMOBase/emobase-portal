@@ -1,3 +1,9 @@
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+
 export default function Topbar() {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
@@ -29,26 +35,22 @@ export default function Topbar() {
 
         {/* Header Search */}
         <div className="flex-1 max-w-2xl px-8">
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg
-                className="h-5 w-5 text-slate-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
+          <InputGroup className="h-10 rounded-lg bg-slate-100 border-slate-200 shadow-inner px-2">
+            <InputGroupAddon align="inline-start">
+              <svg className="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"
                   d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
                   clipRule="evenodd"
                 />
               </svg>
-            </div>
-            <input
+            </InputGroupAddon>
+            <InputGroupInput
               type="text"
-              className="block w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg leading-5 bg-slate-100 text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors shadow-inner"
+              className="text-sm font-medium"
               placeholder="Search genomic sequences, species, or accession numbers..."
             />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <InputGroupAddon align="inline-end">
               <svg
                 className="h-5 w-5 text-slate-400"
                 fill="none"
@@ -63,8 +65,8 @@ export default function Topbar() {
                   d="M12 16v-4m0-4h.01"
                 />
               </svg>
-            </div>
-          </div>
+            </InputGroupAddon>
+          </InputGroup>
         </div>
 
         {/* Avatar */}

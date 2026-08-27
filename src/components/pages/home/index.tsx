@@ -1,7 +1,13 @@
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupButton,
+} from "@/components/ui/input-group";
+
 const speciesCards = [
   {
-    image:
-      "https://images.unsplash.com/photo-1605092676920-8ac5ae27368e?auto=format&fit=crop&w=600&q=80",
+    image: "https://picsum.photos/seed/beetle123/600/400",
     alt: "Beetle",
     tag: "Insecta",
     name: "Coleoptera",
@@ -13,8 +19,7 @@ const speciesCards = [
     gcContent: "32.4%",
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1518014532250-71708f516a57?auto=format&fit=crop&w=600&q=80",
+    image: "https://picsum.photos/seed/spider456/600/400",
     alt: "Spider",
     tag: "Arachnida",
     name: "Araneae",
@@ -26,8 +31,7 @@ const speciesCards = [
     gcContent: "28.1%",
   },
   {
-    image:
-      "https://images.unsplash.com/photo-1533036440810-53e34b15b130?auto=format&fit=crop&w=600&q=80",
+    image: "https://picsum.photos/seed/snail789/600/400",
     alt: "Snail",
     tag: "Mollusca",
     name: "Gastropoda",
@@ -56,30 +60,38 @@ export default function HomePage() {
           </p>
 
           {/* Large Search Bar */}
-          <div className="bg-white p-2.5 rounded-2xl shadow-md border border-slate-200 flex items-center max-w-3xl mx-auto transition-shadow hover:shadow-lg">
-            <div className="pl-4 pr-3 text-slate-500">
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                />
-              </svg>
-            </div>
-            <input
-              type="text"
-              className="flex-1 py-3 px-2 text-slate-900 placeholder-slate-600 focus:outline-none text-base bg-transparent font-medium"
-              placeholder="e.g., GCA_000001405.15, Homo sapiens, BRCA1..."
-            />
-            <button className="bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-colors whitespace-nowrap ml-2">
-              Search Database
-            </button>
+          <div className="max-w-3xl mx-auto">
+            <InputGroup className="h-16 rounded-xl bg-white shadow-md hover:shadow-lg transition-shadow px-3">
+              <InputGroupAddon align="inline-start">
+                <svg
+                  className="h-6 w-6 ml-2 text-slate-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                  />
+                </svg>
+              </InputGroupAddon>
+              <InputGroupInput
+                type="text"
+                className="text-lg font-medium pl-2 h-full placeholder:text-slate-500"
+                placeholder="e.g., GCA_000001405.15, Homo sapiens, BRCA1..."
+              />
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton
+                  type="submit"
+                  variant="default"
+                  className="h-12 px-8 font-semibold rounded-lg shadow-sm text-base"
+                >
+                  Search Database
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
         </div>
 
