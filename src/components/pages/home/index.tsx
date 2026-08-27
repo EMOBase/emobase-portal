@@ -4,6 +4,7 @@ import {
   InputGroupInput,
   InputGroupButton,
 } from "@/components/ui/input-group";
+import { Search, ArrowRight } from "lucide-react";
 
 import triboliumImage from "@/assets/species/500px-Tribolium_castaneum.jpg?url";
 import spiderImage from "@/assets/species/Common_House_Spider.jpg?url";
@@ -65,24 +66,12 @@ export default function HomePage() {
           <div className="max-w-3xl mx-auto">
             <InputGroup className="h-16 rounded-xl bg-white shadow-md hover:shadow-lg transition-shadow px-3">
               <InputGroupAddon align="inline-start">
-                <svg
-                  className="h-6 w-6 ml-2 text-slate-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                  />
-                </svg>
+                <Search className="h-6 w-6 ml-2 text-slate-500" />
               </InputGroupAddon>
               <InputGroupInput
                 type="text"
                 className="text-lg font-medium pl-2 h-full placeholder:text-slate-500 mx-2"
-                placeholder="e.g., GCA_000001405.15, Homo sapiens, BRCA1..."
+                placeholder="e.g., GCA_000003055.4, Tribolium castaneum, Tc-Abda..."
               />
               <InputGroupAddon align="inline-end">
                 <InputGroupButton
@@ -113,18 +102,7 @@ export default function HomePage() {
               className="text-blue-700 font-bold flex items-center gap-1 hover:text-blue-800 transition-colors mb-1 text-sm"
             >
               View All
-              <svg
-                className="w-4 h-4 stroke-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5 12h14M12 5l7 7-7 7"
-                />
-              </svg>
+              <ArrowRight className="w-4 h-4" />
             </a>
           </div>
 

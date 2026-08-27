@@ -4,6 +4,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import Logo from "@/components/layouts/Logo";
+import { Search, CircleHelp } from "lucide-react";
 
 export default function Topbar() {
   return (
@@ -21,38 +22,15 @@ export default function Topbar() {
         <div className="flex-1 max-w-2xl px-8">
           <InputGroup className="h-10 rounded-lg bg-slate-100 border-slate-200 shadow-inner px-2">
             <InputGroupAddon align="inline-start">
-              <svg
-                className="h-5 w-5 text-slate-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Search className="h-5 w-5 text-slate-400" />
             </InputGroupAddon>
             <InputGroupInput
               type="text"
               className="text-sm font-medium mx-1"
-              placeholder="Search genomic sequences, species, or accession numbers..."
+              placeholder="Search by species name, NCBI accession (GCA_/GCF_), or gene identifier..."
             />
             <InputGroupAddon align="inline-end">
-              <svg
-                className="h-5 w-5 text-slate-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 16v-4m0-4h.01"
-                />
-              </svg>
+              <CircleHelp className="h-5 w-5 text-slate-400" />
             </InputGroupAddon>
           </InputGroup>
         </div>
