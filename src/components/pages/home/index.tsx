@@ -5,42 +5,40 @@ import {
   InputGroupButton,
 } from "@/components/ui/input-group";
 
+import triboliumImage from "@/assets/species/500px-Tribolium_castaneum.jpg?url";
+import spiderImage from "@/assets/species/Common_House_Spider.jpg?url";
+import lymnaeaImage from "@/assets/species/Lymnaea-stagnalis.jpg?url";
+
 const speciesCards = [
   {
-    image: "https://picsum.photos/seed/beetle123/600/400",
+    image: triboliumImage,
     alt: "Beetle",
-    tag: "Insecta",
-    name: "Coleoptera",
-    common: "Beetles",
-    assemblyClass: "bg-blue-50 text-blue-700",
-    assemblyDot: "bg-blue-700",
-    assembly: "Assmbly: Chromosome",
-    genomeSize: "152 Mb - 1.2 Gb",
-    gcContent: "32.4%",
+    tag: "Beetles",
+    name: "Tcas",
+    common: "Tribolium castaneum",
+    genomeSize: "241.8 Mb",
+    gcContent: "31.5%",
+    assemblyLevel: "Chromosome (92%)",
   },
   {
-    image: "https://picsum.photos/seed/spider456/600/400",
+    image: spiderImage,
     alt: "Spider",
-    tag: "Arachnida",
-    name: "Araneae",
-    common: "Spiders",
-    assemblyClass: "bg-slate-100 text-slate-600",
-    assemblyDot: "bg-slate-400",
-    assembly: "Assmbly: Scaffold",
-    genomeSize: "800 Mb - 3.2 Gb",
-    gcContent: "28.1%",
+    tag: "Spiders",
+    name: "Ptep",
+    common: "Parasteatoda tepidariorum",
+    genomeSize: "1.1 Gb",
+    gcContent: "29.5%",
+    assemblyLevel: "Scaffold",
   },
   {
-    image: "https://picsum.photos/seed/snail789/600/400",
+    image: lymnaeaImage,
     alt: "Snail",
-    tag: "Mollusca",
-    name: "Gastropoda",
-    common: "Snails & Slugs",
-    assemblyClass: "bg-blue-50 text-blue-700",
-    assemblyDot: "bg-blue-700",
-    assembly: "Assmbly: Chromosome",
-    genomeSize: "450 Mb - 1.8 Gb",
-    gcContent: "35.6%",
+    tag: "Snails",
+    name: "Lyst",
+    common: "Lymnaea stagnalis",
+    genomeSize: "943.0 Mb",
+    gcContent: "37.55%",
+    assemblyLevel: "Scaffold",
   },
 ];
 
@@ -50,13 +48,17 @@ export default function HomePage() {
       <main className="flex-grow">
         {/* Hero Section */}
         <div className="max-w-4xl mx-auto px-4 pt-20 pb-16 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-5">
-            Discover the Blueprint of Life
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-5">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-400">
+              Emerging Model Organism
+            </span>
+            <br />
+            <span className="text-slate-900">Genomic Database</span>
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-            Access our comprehensive global genomic database. Search across
-            verified taxonomies, analyze gene sequences, and visualize complex
-            variant maps.
+          <p className="max-w-3xl text-lg text-slate-500 mx-auto mb-10 leading-relaxed">
+            A centralized repository for specific model organism genome
+            assemblies. Search by species or accessions, browse chromosomal
+            structures, and download high-quality genomic data.
           </p>
 
           {/* Large Search Bar */}
@@ -79,7 +81,7 @@ export default function HomePage() {
               </InputGroupAddon>
               <InputGroupInput
                 type="text"
-                className="text-lg font-medium pl-2 h-full placeholder:text-slate-500"
+                className="text-lg font-medium pl-2 h-full placeholder:text-slate-500 mx-2"
                 placeholder="e.g., GCA_000001405.15, Homo sapiens, BRCA1..."
               />
               <InputGroupAddon align="inline-end">
@@ -88,7 +90,7 @@ export default function HomePage() {
                   variant="default"
                   className="h-12 px-8 font-semibold rounded-lg shadow-sm text-base"
                 >
-                  Search Database
+                  Search
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>
@@ -133,7 +135,7 @@ export default function HomePage() {
                 key={card.name}
                 className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col"
               >
-                <div className="relative h-52 overflow-hidden bg-slate-100 p-3">
+                <div className="relative h-52 overflow-hidden bg-slate-100 border-b border-slate-200">
                   <img
                     src={card.image}
                     alt={card.alt}
@@ -142,21 +144,12 @@ export default function HomePage() {
                   <div className="absolute top-3 right-3 bg-white px-2.5 py-1 rounded text-xs font-bold text-slate-800 shadow-sm tracking-wide">
                     {card.tag}
                   </div>
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-black/10 to-transparent" />
                 </div>
                 <div className="p-6 flex flex-col flex-grow">
-                  <div className="flex justify-between items-center mb-1">
-                    <h3 className="text-xl font-bold text-gray-900">
-                      {card.name}
-                    </h3>
-                    <div
-                      className={`${card.assemblyClass} px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 whitespace-nowrap`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${card.assemblyDot}`}
-                      ></span>
-                      {card.assembly}
-                    </div>
-                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">
+                    {card.name}
+                  </h3>
                   <p className="text-slate-500 italic mb-8 font-serif">
                     {card.common}
                   </p>
@@ -176,6 +169,14 @@ export default function HomePage() {
                       </span>
                       <span className="font-bold text-gray-900">
                         {card.gcContent}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 font-medium">
+                        Assembly Level:
+                      </span>
+                      <span className="font-bold text-gray-900">
+                        {card.assemblyLevel}
                       </span>
                     </div>
                   </div>
