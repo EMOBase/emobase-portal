@@ -1,0 +1,16 @@
+---
+import AdminLayout from "@/layouts/admin.astro";
+import VersionDetail from "@/components/pages/admin/version-detail/index.tsx";
+
+const { name } = Astro.params;
+
+if (!name) {
+  return Astro.redirect("/admin/versions");
+}
+---
+
+<AdminLayout title={`Version ${name} - Admin - EMOBase`}>
+  <main class="flex-grow p-8">
+    <VersionDetail versionName={name} client:load />
+  </main>
+</AdminLayout>
