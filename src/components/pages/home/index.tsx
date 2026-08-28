@@ -132,12 +132,12 @@ export default function HomePage() {
                     href={card.siteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group/title inline-flex items-center gap-1.5 w-fit hover:text-blue-600 transition-colors"
+                    className="group/title inline-flex items-center gap-1.5 w-fit"
                   >
-                    <h3 className="text-xl font-bold text-gray-900 group-hover/title:text-blue-600 transition-colors">
+                    <h3 className="text-xl font-bold text-gray-900 group-hover/title:text-blue-700 transition-colors">
                       {card.name}
                     </h3>
-                    <ExternalLink className="w-4 h-4 opacity-0 group-hover/title:opacity-100 text-blue-600 transition-opacity" />
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover/title:text-blue-600 transition-colors" />
                   </a>
                   <p className="text-slate-500 italic mb-8">{card.common}</p>
 
