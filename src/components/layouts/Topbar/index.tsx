@@ -14,7 +14,7 @@ export default function Topbar({ user }: { user: SessionUser | null }) {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <a
           href="/"
-          className="font-display font-bold text-xl tracking-tight text-slate-700"
+          className="font-display font-bold text-[1.35rem] tracking-tight text-slate-700"
         >
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500/80">
             EMO

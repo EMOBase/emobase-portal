@@ -52,14 +52,14 @@ export default function HomePage() {
       <main className="flex-grow">
         {/* Hero Section */}
         <div className="max-w-4xl mx-auto px-4 pt-20 pb-16 text-center">
-          <h1 className="text-4xl md:text-6xl font-display font-bold tracking-tight mb-5">
+          <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight mb-5">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500/80">
               Emerging Model Organism
             </span>
             <br />
             <span className="text-slate-700">Genomic Database</span>
           </h1>
-          <p className="max-w-3xl text-slate-500 mx-auto mb-10 leading-relaxed">
+          <p className="max-w-2xl text-slate-500 mx-auto mb-10 leading-relaxed">
             A centralized repository for specific model organism genome
             assemblies. Search by species or accessions, browse chromosomal
             structures, and download high-quality genomic data.

@@ -6,9 +6,12 @@ export default function AdminLogin() {
       <div className="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-sm">
         <div className="h-1.5 bg-gradient-to-r from-blue-700 to-blue-500 rounded-t-2xl" />
         <div className="p-10 text-center">
-          <span className="inline-flex font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500/80 text-2xl mb-6">
-            EMOBase
-          </span>
+          <div className="font-display font-bold text-2xl mb-6">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500/80">
+              EMO
+            </span>
+            Base
+          </div>
           <h1 className="text-xl font-display font-bold text-slate-800 tracking-tight mb-1">
             Sign in
           </h1>
