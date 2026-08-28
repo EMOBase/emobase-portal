@@ -29,5 +29,10 @@ const { user } = Astro.locals;
   <body class="bg-slate-50 font-body text-slate-900 min-h-screen flex flex-col">
     <Topbar user={user} client:load />
     <slot />
+    <footer class="bg-slate-200 py-10 text-center mt-auto">
+      <p class="text-slate-600 text-sm">
+        &copy; 2026 Universitätsmedizin Göttingen. All rights reserved.
+      </p>
+    </footer>
   </body>
 </html>
