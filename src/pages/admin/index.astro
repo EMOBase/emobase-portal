@@ -1,0 +1,14 @@
+---
+import BlankLayout from "@/layouts/blank.astro";
+import AdminLogin from "@/components/layouts/AdminLogin/index.tsx";
+
+const { user } = Astro.locals;
+
+if (user) {
+  return Astro.redirect("/admin/versions");
+}
+---
+
+<BlankLayout>
+  <AdminLogin client:load />
+</BlankLayout>

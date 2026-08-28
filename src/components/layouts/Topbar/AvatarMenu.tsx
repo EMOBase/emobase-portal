@@ -1,5 +1,5 @@
 import { Menu } from "@base-ui/react/menu";
-import { LogOut } from "lucide-react";
+import { Database, LogOut } from "lucide-react";
 import { actions } from "astro:actions";
 
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,13 @@ export default function AvatarMenu({
               <p className="text-xs text-slate-500">{email}</p>
             </div>
             <div className="my-1 h-px bg-slate-100" />
+            <Menu.LinkItem
+              href="/admin/versions"
+              className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-slate-700 outline-none hover:bg-muted focus-visible:bg-muted data-[highlighted]:bg-muted"
+            >
+              <Database className="h-4 w-4" />
+              Data Management
+            </Menu.LinkItem>
             <Menu.Item className="rounded-md outline-none data-[highlighted]:bg-muted">
               <Button
                 type="button"
