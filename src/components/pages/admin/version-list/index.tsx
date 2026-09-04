@@ -28,7 +28,7 @@ function StatusBadge({
     status === "READY" && isDefault ? "LIVE" : status.replaceAll("_", " ");
   return (
     <span
-      className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusStyles[status]}`}
+      className={`inline-block rounded border px-2 py-0.5 text-xs font-bold uppercase tracking-wider ${statusStyles[status]}`}
     >
       {label}
     </span>
@@ -55,100 +55,100 @@ export default function VersionsManager() {
   }
 
   return (
-    <div className="max-w-6xl space-y-8 mx-auto">
+    <div className="mx-auto max-w-6xl space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 font-display tracking-tight">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900">
             Data Management
           </h1>
-          <p className="text-slate-500 mt-1 font-medium">
+          <p className="mt-1 text-sm text-slate-500">
             Upload and publish genomic data
           </p>
         </div>
         <CreateVersionButton onCreate={handleCreate} />
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-8 flex items-center gap-4 border-b border-slate-50">
-          <History className="text-primary h-6 w-6" />
-          <h2 className="text-xl font-bold text-slate-800">Version History</h2>
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+          <History className="size-5 text-blue-700" />
+          <h2 className="text-lg font-bold text-slate-800">Version History</h2>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-50">
-                <th className="px-8 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">
+              <tr className="border-b border-slate-100 bg-slate-50">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-slate-400">
                   Version Name
                 </th>
-                <th className="px-8 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-slate-400">
                   Status
                 </th>
-                <th className="px-8 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-slate-400">
                   Created Date
                 </th>
-                <th className="px-8 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">
+                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-slate-400">
                   Total Size
                 </th>
-                <th className="px-8 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em] text-right">
+                <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-widest text-slate-400">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50/50">
+            <tbody className="divide-y divide-slate-100">
               {versions.length > 0 ? (
                 versions.map((version) => (
                   <tr
                     key={version.id}
-                    className="group hover:bg-slate-50/50 transition-colors"
+                    className="group transition-colors hover:bg-slate-50"
                   >
-                    <td className="px-8 py-6 relative">
-                      <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="flex items-center gap-3">
+                    <td className="relative px-6 py-4">
+                      <div className="absolute bottom-1/4 left-0 top-1/4 w-0.5 rounded-r-full bg-blue-700 opacity-0 transition-opacity group-hover:opacity-100" />
+                      <div className="flex items-center gap-2">
                         <a
                           href={`/admin/versions/${version.name}`}
-                          className="font-bold text-slate-700 tracking-tight hover:text-blue-700 transition-colors cursor-pointer"
+                          className="font-semibold tracking-tight text-slate-700 transition-colors hover:text-blue-700"
                         >
                           {version.name}
                         </a>
                         {version.isDefault && (
-                          <span className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700">
+                          <span className="rounded bg-blue-50 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-blue-700">
                             CURRENT
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-8 py-6">
+                    <td className="px-6 py-4">
                       <StatusBadge
                         status={version.status}
                         isDefault={version.isDefault}
                       />
                     </td>
-                    <td className="px-8 py-6 text-slate-500 font-medium text-sm">
+                    <td className="px-6 py-4 text-sm text-slate-500">
                       {formatDate(version.createdAt)}
                     </td>
-                    <td className="px-8 py-6 text-slate-500 font-bold text-sm">
+                    <td className="px-6 py-4 text-sm font-semibold text-slate-500">
                       {formatBytes(version.totalFileSize)}
                     </td>
-                    <td className="px-8 py-6 text-right">
+                    <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {version.status === "DRAFT" ? (
                           <button
                             onClick={() => handleDelete(version.id)}
-                            className="p-2 text-slate-300 hover:text-rose-500 rounded-lg transition-colors cursor-pointer"
+                            className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500"
                             aria-label="Delete version"
                           >
-                            <Trash2 className="h-5 w-5" />
+                            <Trash2 className="size-4" />
                           </button>
                         ) : (
                           <>
                             {version.status === "MISSING_REQUIRED_FILE" ? (
                               <button
                                 onClick={() => handleDelete(version.id)}
-                                className="p-2 text-slate-300 hover:text-rose-500 rounded-lg transition-colors cursor-pointer"
+                                className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500"
                                 aria-label="Delete version"
                               >
-                                <Trash2 className="h-5 w-5" />
+                                <Trash2 className="size-4" />
                               </button>
                             ) : (
                               <>
@@ -163,29 +163,28 @@ export default function VersionsManager() {
                                         })),
                                       )
                                     }
-                                    className="p-2 text-slate-300 hover:text-blue-500 rounded-lg transition-colors cursor-pointer"
+                                    className="rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-500"
                                     aria-label="Set as default"
                                   >
-                                    <CheckCircle2 className="h-5 w-5" />
+                                    <CheckCircle2 className="size-4" />
                                   </button>
                                 ) : null}
                                 <button
-                                  className="p-2 text-slate-300 hover:text-blue-700 rounded-lg transition-colors cursor-pointer"
+                                  className="rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-700"
                                   aria-label="Download files"
                                 >
-                                  <Download className="h-5 w-5" />
+                                  <Download className="size-4" />
                                 </button>
-                                {version.status === "ERROR" ||
-                                version.status === "READY" ? (
-                                  !version.isDefault ? (
-                                    <button
-                                      onClick={() => handleDelete(version.id)}
-                                      className="p-2 text-slate-300 hover:text-rose-500 rounded-lg transition-colors cursor-pointer"
-                                      aria-label="Delete version"
-                                    >
-                                      <Trash2 className="h-5 w-5" />
-                                    </button>
-                                  ) : null
+                                {(version.status === "ERROR" ||
+                                  version.status === "READY") &&
+                                !version.isDefault ? (
+                                  <button
+                                    onClick={() => handleDelete(version.id)}
+                                    className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500"
+                                    aria-label="Delete version"
+                                  >
+                                    <Trash2 className="size-4" />
+                                  </button>
                                 ) : null}
                               </>
                             )}
@@ -199,7 +198,7 @@ export default function VersionsManager() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-8 py-12 text-center text-slate-400 text-sm"
+                    className="px-6 py-12 text-center text-sm text-slate-400"
                   >
                     No version found
                   </td>
