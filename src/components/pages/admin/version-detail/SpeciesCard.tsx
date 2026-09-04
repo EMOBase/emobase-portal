@@ -35,10 +35,10 @@ export default function SpeciesCard({ species }: { species: SpeciesItem }) {
       <div className="relative">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="font-bold leading-tight text-slate-900">
+            <h3 className="text-base font-bold leading-tight text-slate-900">
               {species.shorthand}
             </h3>
-            <p className="mt-0.5 text-xs italic leading-tight text-slate-500">
+            <p className="mt-0.5 text-sm italic leading-tight text-slate-500">
               {species.scientificName}
             </p>
           </div>
@@ -51,7 +51,7 @@ export default function SpeciesCard({ species }: { species: SpeciesItem }) {
         </div>
 
         <div className="mt-5">
-          <div className="mb-1.5 flex items-center justify-between text-xs">
+          <div className="mb-1.5 flex items-center justify-between text-sm">
             <span className="text-slate-500">Genomic Assembly</span>
             <span className="font-semibold text-slate-700">
               {species.progress}%

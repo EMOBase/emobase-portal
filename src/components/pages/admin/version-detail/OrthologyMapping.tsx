@@ -23,7 +23,7 @@ export default function OrthologyMapping({
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <div className="flex items-center gap-2 bg-slate-50 px-4 py-3">
           <Share2 className="size-4 text-slate-500" />
-          <span className="text-xs font-semibold text-slate-600">
+          <span className="text-sm font-semibold text-slate-600">
             Relationship Files
           </span>
         </div>
@@ -33,12 +33,12 @@ export default function OrthologyMapping({
             <li key={file.id} className="border-t border-slate-100 px-4 py-3.5">
               <p className="text-sm font-bold text-slate-800">{file.name}</p>
               {file.status === "failed" ? (
-                <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-red-700/90">
+                <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-red-700/90">
                   <span className="size-1.5 rounded-full bg-red-700/90" />
                   {file.updatedAt}
                 </p>
               ) : (
-                <p className="mt-1 text-xs text-slate-500">{file.updatedAt}</p>
+                <p className="mt-1 text-sm text-slate-500">{file.updatedAt}</p>
               )}
             </li>
           ))}
@@ -47,7 +47,7 @@ export default function OrthologyMapping({
         <div className="border-t border-slate-100 py-3 text-center">
           <a
             href="#"
-            className="text-xs font-semibold text-blue-700 hover:underline"
+            className="text-sm font-semibold text-blue-700 hover:underline"
           >
             View All Mappings
           </a>

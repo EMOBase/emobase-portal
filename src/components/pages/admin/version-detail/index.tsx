@@ -11,7 +11,7 @@ type VersionDetailProps = {
 export default function VersionDetail({ versionName }: VersionDetailProps) {
   return (
     <div className="mx-auto max-w-6xl">
-      <nav className="mb-5 flex items-center text-xs text-slate-400">
+      <nav className="mb-5 flex items-center text-sm text-slate-400">
         <a href="/admin/versions" className="hover:text-slate-600">
           Data Management
         </a>
@@ -35,14 +35,14 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
         <div className="flex shrink-0 items-center gap-2.5">
           <button
             type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-800 hover:bg-slate-50"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 hover:bg-slate-50"
           >
             <Download className="size-4" />
             Export Data
           </button>
           <button
             type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-700 px-4 text-xs font-semibold text-white hover:bg-blue-800"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800"
           >
             <Play className="size-4 fill-current" />
             Run Pipeline
