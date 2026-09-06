@@ -2,6 +2,7 @@ import * as React from "react";
 import { Download, History, Trash2, CheckCircle2 } from "lucide-react";
 
 import CreateVersionButton from "./CreateVersionButton";
+import { cn } from "@/utils/classname";
 import {
   formatBytes,
   formatDate,
@@ -28,7 +29,10 @@ function StatusBadge({
     status === "READY" && isDefault ? "LIVE" : status.replaceAll("_", " ");
   return (
     <span
-      className={`inline-block rounded border px-2 py-0.5 text-xs font-bold uppercase tracking-wider ${statusStyles[status]}`}
+      className={cn(
+        "inline-block rounded border px-2 py-0.5 text-xs font-bold uppercase tracking-wider",
+        statusStyles[status]
+      )}
     >
       {label}
     </span>

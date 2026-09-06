@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 
+import { cn } from "@/utils/classname";
 import type { SpeciesItem } from "./mockData";
 
 const statusConfig = {
@@ -34,9 +35,10 @@ export default function SpeciesCard({
 
   return (
     <article
-      className={`relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 ${
-        href ? "transition-shadow hover:shadow-md" : ""
-      }`}
+      className={cn(
+        "relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5",
+        href && "transition-shadow hover:shadow-md"
+      )}
     >
       {/* Decorative background shape — rotated rounded square peeking from top-right */}
       <div className="pointer-events-none absolute -right-20 -top-20 size-40 rounded-full bg-indigo-50/60" />
@@ -60,9 +62,12 @@ export default function SpeciesCard({
             </p>
           </div>
           <span
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full pl-2 pr-2.5 py-0.5 text-xs font-semibold border ${config.pill}`}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1.5 rounded-full pl-2 pr-2.5 py-0.5 text-xs font-semibold border",
+              config.pill
+            )}
           >
-            <span className={`size-1.5 rounded-full ${config.dot}`} />
+            <span className={cn("size-1.5 rounded-full", config.dot)} />
             {config.label}
           </span>
         </div>
@@ -76,7 +81,7 @@ export default function SpeciesCard({
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
             <div
-              className={`h-full rounded-full ${config.bar}`}
+              className={cn("h-full rounded-full", config.bar)}
               style={{ width: `${species.progress}%` }}
             />
           </div>
