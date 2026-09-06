@@ -1,0 +1,16 @@
+---
+import AdminLayout from "@/layouts/admin.astro";
+import VersionUpload from "@/components/pages/admin/version-upload/index.tsx";
+
+const { version, species } = Astro.params;
+
+if (!version || !species) {
+  return Astro.redirect("/admin/versions");
+}
+---
+
+<AdminLayout title={`Version ${version} - Upload - Admin - EMOBase`}>
+  <main class="flex-grow p-8">
+    <VersionUpload versionName={version} speciesName={species} client:load />
+  </main>
+</AdminLayout>

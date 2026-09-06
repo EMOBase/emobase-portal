@@ -63,7 +63,11 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
 
           <div className="grid grid-cols-2 gap-4">
             {mockSpecies.map((species) => (
-              <SpeciesCard key={species.id} species={species} />
+              <SpeciesCard
+                key={species.id}
+                species={species}
+                href={`/admin/versions/${encodeURIComponent(versionName)}/species/${encodeURIComponent(species.shorthand)}/upload`}
+              />
             ))}
           </div>
         </section>

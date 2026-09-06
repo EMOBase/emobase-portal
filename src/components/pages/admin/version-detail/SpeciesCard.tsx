@@ -23,16 +23,33 @@ const statusConfig = {
   },
 } as const;
 
-export default function SpeciesCard({ species }: { species: SpeciesItem }) {
+export default function SpeciesCard({
+  species,
+  href,
+}: {
+  species: SpeciesItem;
+  href?: string;
+}) {
   const config = statusConfig[species.status];
 
   return (
-    <article className="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5">
+    <article
+      className={`relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 ${
+        href ? "transition-shadow hover:shadow-md" : ""
+      }`}
+    >
       {/* Decorative background shape — rotated rounded square peeking from top-right */}
       <div className="pointer-events-none absolute -right-20 -top-20 size-40 rounded-full bg-indigo-50/60" />
 
       {/* Content sits above the decoration via DOM order (both z-index: auto) */}
       <div className="relative">
+        {href ? (
+          <a
+            href={href}
+            className="absolute inset-0 rounded-xl"
+            aria-label={`Manage files for ${species.shorthand}`}
+          />
+        ) : null}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="text-base font-bold leading-tight text-slate-900">

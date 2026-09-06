@@ -2,15 +2,15 @@
 import AdminLayout from "@/layouts/admin.astro";
 import VersionDetail from "@/components/pages/admin/version-detail/index.tsx";
 
-const { name } = Astro.params;
+const { version } = Astro.params;
 
-if (!name) {
+if (!version) {
   return Astro.redirect("/admin/versions");
 }
 ---
 
-<AdminLayout title={`Version ${name} - Admin - EMOBase`}>
+<AdminLayout title={`Version ${version} - Admin - EMOBase`}>
   <main class="flex-grow p-8">
-    <VersionDetail versionName={name} client:load />
+    <VersionDetail versionName={version} client:load />
   </main>
 </AdminLayout>
