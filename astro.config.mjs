@@ -5,6 +5,8 @@ import tailwindcss from "@tailwindcss/vite";
 
 import react from "@astrojs/react";
 
+import authAstro from "@zitadel/astro-auth";
+
 import node from "@astrojs/node";
 
 // https://astro.build/config
@@ -15,12 +17,15 @@ export default defineConfig({
     mode: "standalone",
   }),
 
-  // TODO: Revisit when adopting real auth (Keycloak). The demo disables the
-  // origin check via DISABLE_ORIGIN_CHECK because Astro's CSRF check misfires
-  // behind Render's TLS-terminating proxy (browser Origin https vs internal
-  // http). Prod/Keycloak deploys get protection by default unless the env var
-  // is explicitly set — with real auth the action endpoints become stateful,
-  // so rely on the OIDC state/PKCE protection rather than disabling this.
+  // Auth.js is driven from ./auth.config.mjs; its own endpoints are disabled in
+  // favour of src/pages/api/auth/[...auth].ts, which adds the TLS-proxy rewrite
+  // and the Keycloak RP-initiated logout.
+  integrations: [react(), authAstro({ configFile: "./auth.config.mjs", injectEndpoints: false })],
+
+  // The demo comment about real auth no longer applies — Keycloak handles
+  // redirects via OIDC state/PKCE. Origin check stays on unless explicitly
+  // opted out for a TLS-terminating proxy, where Astro's check misfires
+  // (browser Origin https vs internal http).
   security: {
     checkOrigin: process.env.DISABLE_ORIGIN_CHECK !== "true",
   },
@@ -28,6 +33,4 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-
-  integrations: [react()],
 });

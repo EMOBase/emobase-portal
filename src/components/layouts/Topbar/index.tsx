@@ -5,10 +5,9 @@ import {
 } from "@/components/ui/input-group";
 import { Search, CircleHelp } from "lucide-react";
 
-import type { SessionUser } from "@/auth/session";
 import AvatarMenu from "@/components/layouts/Topbar/AvatarMenu";
 
-export default function Topbar({ user }: { user: SessionUser | null }) {
+export default function Topbar({ user }: { user: { email: string; name: string } | null }) {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">

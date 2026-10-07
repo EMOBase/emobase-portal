@@ -1,4 +1,4 @@
-import { actions } from "astro:actions";
+import { signIn } from "@zitadel/astro-auth/client";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -6,12 +6,11 @@ import { Button } from "@/components/ui/button";
 export default function LoginForm() {
   const [loading, setLoading] = useState(false);
 
-  async function onLogin() {
+  function onLogin() {
     setLoading(true);
-    // TODO: Replace with the real Keycloak login flow when adopted.
-    // See src/actions/index.ts — currently no real credential check.
-    await actions.login();
-    window.location.href = "/admin";
+    // Auth.js navigates away to Keycloak; this state is only visible in the
+    // gap before the redirect lands.
+    void signIn("keycloak", { callbackUrl: "/admin/versions" });
   }
 
   return (
@@ -22,7 +21,7 @@ export default function LoginForm() {
       disabled={loading}
       onClick={onLogin}
     >
-      {loading ? "Signing in..." : "Login"}
+      {loading ? "Redirecting to Keycloak..." : "Login with Keycloak"}
     </Button>
   );
 }

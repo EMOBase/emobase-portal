@@ -1,6 +1,6 @@
 import { Menu } from "@base-ui/react/menu";
 import { Database, LogOut } from "lucide-react";
-import { actions } from "astro:actions";
+import { signOut } from "@zitadel/astro-auth/client";
 
 import { Button } from "@/components/ui/button";
 
@@ -14,10 +14,8 @@ export default function AvatarMenu({
   email: string;
   name: string;
 }) {
-  async function onLogout() {
-    // TODO: Replace with the real Keycloak logout flow when adopted.
-    await actions.logout();
-    window.location.href = "/";
+  function onLogout() {
+    void signOut({ callbackUrl: "/" });
   }
 
   return (

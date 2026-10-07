@@ -3,12 +3,10 @@ import { Download, History, Trash2, CheckCircle2 } from "lucide-react";
 
 import CreateVersionButton from "./CreateVersionButton";
 import { cn } from "@/utils/classname";
-import {
-  formatBytes,
-  formatDate,
-  mockVersions,
-  type VersionItem,
-} from "./mockData";
+import { formatBytes, formatDate } from "./utils";
+import genomicsService, { type VersionItem } from "@/utils/services/genomics";
+import useService from "@/hooks/useService";
+import useAsyncData from "@/hooks/useAsyncData";
 
 const statusStyles: Record<VersionItem["status"], string> = {
   PROCESSING: "bg-amber-50 text-amber-600 border-amber-200/50",
@@ -17,6 +15,8 @@ const statusStyles: Record<VersionItem["status"], string> = {
   ERROR: "bg-red-50 text-red-600 border-red-200/50",
   MISSING_REQUIRED_FILE: "bg-slate-100 text-slate-500 border-slate-200/50",
 };
+
+const PAGE_SIZE = 100;
 
 function StatusBadge({
   status,
@@ -40,22 +40,43 @@ function StatusBadge({
 }
 
 export default function VersionsManager() {
-  const [versions, setVersions] = React.useState<VersionItem[]>(mockVersions);
+  const { fetchVersions, createVersion, deleteVersion, releaseVersion } =
+    useService(genomicsService);
 
-  function handleCreate(name: string) {
-    const newVersion: VersionItem = {
-      id: String(Date.now()),
-      name,
-      createdAt: new Date().toISOString(),
-      isDefault: false,
-      status: "DRAFT",
-      totalFileSize: 0,
-    };
-    setVersions((prev) => [newVersion, ...prev]);
-  }
+  const [refreshKey, setRefreshKey] = React.useState(0);
+  const [pendingName, setPendingName] = React.useState<string | null>(null);
+  const [actionError, setActionError] = React.useState<string | null>(null);
 
-  function handleDelete(id: string) {
-    setVersions((prev) => prev.filter((v) => v.id !== id));
+  const { data, loading, error } = useAsyncData(
+    () => fetchVersions({ page: 1, pageSize: PAGE_SIZE }),
+    [refreshKey, fetchVersions]
+  );
+
+  const versions = data?.data.versions ?? [];
+  const total = data?.data.total ?? 0;
+  const errorMessage =
+    actionError ??
+    (error
+      ? error instanceof Error
+        ? error.message
+        : String(error)
+      : null);
+
+  const refresh = () => setRefreshKey((prev) => prev + 1);
+
+  async function run(action: () => Promise<unknown>, name: string) {
+    setPendingName(name);
+    setActionError(null);
+    try {
+      await action();
+      refresh();
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : `Version ${name} failed`
+      );
+    } finally {
+      setPendingName(null);
+    }
   }
 
   return (
@@ -69,14 +90,29 @@ export default function VersionsManager() {
             Upload and publish genomic data
           </p>
         </div>
-        <CreateVersionButton onCreate={handleCreate} />
+        <CreateVersionButton
+          onCreate={(name) => void run(() => createVersion({ name }), name)}
+        />
       </div>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
-          <History className="size-5 text-blue-700" />
-          <h2 className="text-lg font-bold text-slate-800">Version History</h2>
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <History className="size-5 text-blue-700" />
+            <h2 className="text-lg font-bold text-slate-800">Version History</h2>
+          </div>
+          {!loading && !error && (
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Showing {versions.length} of {total}
+            </span>
+          )}
         </div>
+
+        {errorMessage ? (
+          <div className="border-b border-rose-100 bg-rose-50 px-6 py-3 text-sm font-medium text-rose-600">
+            {errorMessage}
+          </div>
+        ) : null}
 
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -100,7 +136,16 @@ export default function VersionsManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {versions.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-12 text-center text-sm text-slate-400"
+                  >
+                    Loading versions...
+                  </td>
+                </tr>
+              ) : versions.length > 0 ? (
                 versions.map((version) => (
                   <tr
                     key={version.id}
@@ -110,7 +155,7 @@ export default function VersionsManager() {
                       <div className="absolute bottom-1/4 left-0 top-1/4 w-0.5 rounded-r-full bg-blue-700 opacity-0 transition-opacity group-hover:opacity-100" />
                       <div className="flex items-center gap-2">
                         <a
-                          href={`/admin/versions/${version.name}`}
+                          href={`/admin/versions/${encodeURIComponent(version.name)}`}
                           className="font-semibold tracking-tight text-slate-700 transition-colors hover:text-blue-700"
                         >
                           {version.name}
@@ -136,61 +181,57 @@ export default function VersionsManager() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        {version.status === "DRAFT" ? (
+                        {version.status === "DRAFT" ||
+                        version.status === "MISSING_REQUIRED_FILE" ? (
                           <button
-                            onClick={() => handleDelete(version.id)}
-                            className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500"
+                            onClick={() =>
+                              void run(() => deleteVersion(version.name), version.name)
+                            }
+                            disabled={pendingName === version.name}
+                            className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500 disabled:opacity-50"
                             aria-label="Delete version"
                           >
                             <Trash2 className="size-4" />
                           </button>
                         ) : (
                           <>
-                            {version.status === "MISSING_REQUIRED_FILE" ? (
+                            {version.status === "READY" &&
+                              !version.isDefault && (
+                                <button
+                                  onClick={() =>
+                                    void run(
+                                      () => releaseVersion(version.name),
+                                      version.name
+                                    )
+                                  }
+                                  disabled={pendingName === version.name}
+                                  className="rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-500 disabled:opacity-50"
+                                  aria-label="Set as default"
+                                >
+                                  <CheckCircle2 className="size-4" />
+                                </button>
+                              )}
+                            <a
+                              className="rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-700"
+                              aria-label="Download files"
+                              href={`download/emobase-genomics/${encodeURIComponent(version.name)}/`}
+                            >
+                              <Download className="size-4" />
+                            </a>
+                            {!version.isDefault && (
                               <button
-                                onClick={() => handleDelete(version.id)}
-                                className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500"
+                                onClick={() =>
+                                  void run(
+                                    () => deleteVersion(version.name),
+                                    version.name
+                                  )
+                                }
+                                disabled={pendingName === version.name}
+                                className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500 disabled:opacity-50"
                                 aria-label="Delete version"
                               >
                                 <Trash2 className="size-4" />
                               </button>
-                            ) : (
-                              <>
-                                {version.status === "READY" &&
-                                !version.isDefault ? (
-                                  <button
-                                    onClick={() =>
-                                      setVersions((prev) =>
-                                        prev.map((v) => ({
-                                          ...v,
-                                          isDefault: v.id === version.id,
-                                        })),
-                                      )
-                                    }
-                                    className="rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-500"
-                                    aria-label="Set as default"
-                                  >
-                                    <CheckCircle2 className="size-4" />
-                                  </button>
-                                ) : null}
-                                <button
-                                  className="rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-700"
-                                  aria-label="Download files"
-                                >
-                                  <Download className="size-4" />
-                                </button>
-                                {(version.status === "ERROR" ||
-                                  version.status === "READY") &&
-                                !version.isDefault ? (
-                                  <button
-                                    onClick={() => handleDelete(version.id)}
-                                    className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500"
-                                    aria-label="Delete version"
-                                  >
-                                    <Trash2 className="size-4" />
-                                  </button>
-                                ) : null}
-                              </>
                             )}
                           </>
                         )}
@@ -204,7 +245,9 @@ export default function VersionsManager() {
                     colSpan={5}
                     className="px-6 py-12 text-center text-sm text-slate-400"
                   >
-                    No version found
+                    {error
+                      ? "Could not load versions"
+                      : "No version found"}
                   </td>
                 </tr>
               )}

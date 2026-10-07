@@ -1,15 +1,24 @@
 /// <reference path="../.astro/types.d.ts" />
 /// <reference types="astro/client" />
 
-// TODO: Replace `SessionUser` with the real user type (e.g. Keycloak token
-// claims) when adopting real auth. Remove the src/auth/session.ts import.
-import type { SessionUser } from "@/auth/session";
+import type { Session } from "@auth/core/types";
 
 declare global {
   namespace App {
     interface Locals {
-      /** The authenticated user, or null when logged out. */
-      user: SessionUser | null;
+      /** The Auth.js session, or null when signed out. */
+      session: Session | null;
+      /** Convenience projection of `session.user` used by layouts. */
+      user: { email: string; name: string } | null;
     }
   }
 }
+
+declare global {
+  interface Window {
+    /** Hydrated from the admin layout so the client skips a /api/auth/session call. */
+    __SESSION__?: Session;
+  }
+}
+
+export {};
