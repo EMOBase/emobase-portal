@@ -56,7 +56,7 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
             <h2 className="text-lg font-bold text-slate-800">
               Species Data Integration
             </h2>
-            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700">
+            <span className="rounded-sm bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700">
               {mockSpecies.length} Active
             </span>
           </div>

@@ -61,7 +61,7 @@ export default function AddJBrowseTrackButton({
       />
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-slate-900/40" />
-        <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-200 bg-white p-6 shadow-lg outline-none">
+        <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none">
           <Dialog.Title className="text-xl font-bold text-slate-900 mb-1.5">
             Add JBrowse2 Track
           </Dialog.Title>
@@ -129,7 +129,7 @@ export default function AddJBrowseTrackButton({
               type="checkbox"
               checked={selectInDefaultSession}
               onChange={(e) => setSelectInDefaultSession(e.target.checked)}
-              className="size-4 rounded border-slate-300"
+              className="size-4 rounded-sm border-slate-300"
             />
             Select this track in default session
           </label>

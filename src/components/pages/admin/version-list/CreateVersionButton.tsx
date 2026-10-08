@@ -38,7 +38,7 @@ export default function CreateVersionButton({
       />
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-slate-900/40" />
-        <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-200 bg-white p-6 shadow-lg outline-none">
+        <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none">
           <Dialog.Title className="text-xl font-bold text-slate-900 mb-1.5">
             Create New Version
           </Dialog.Title>
@@ -68,7 +68,7 @@ export default function CreateVersionButton({
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2 rounded-lg bg-blue-50 p-4">
+          <div className="flex flex-col gap-2 rounded-sm bg-blue-50 p-4">
             <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
               Info
             </span>

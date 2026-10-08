@@ -121,7 +121,7 @@ export default function HomePage() {
                   alt={card.alt}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute top-3 right-3 bg-white px-2.5 py-1 rounded text-xs font-bold text-slate-800 shadow-sm tracking-wide">
+                <div className="absolute top-3 right-3 bg-white px-2.5 py-1 rounded-sm text-xs font-bold text-slate-800 shadow-sm tracking-wide">
                   {card.tag}
                 </div>
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-black/10 to-transparent" />

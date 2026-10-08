@@ -30,7 +30,7 @@ function StatusBadge({
   return (
     <span
       className={cn(
-        "inline-block rounded border px-2 py-0.5 text-xs font-bold uppercase tracking-wider",
+        "inline-block rounded-sm border px-2 py-0.5 text-xs font-bold uppercase tracking-wider",
         statusStyles[status]
       )}
     >
@@ -161,7 +161,7 @@ export default function VersionsManager() {
                           {version.name}
                         </a>
                         {version.isDefault && (
-                          <span className="rounded bg-blue-50 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-blue-700">
+                          <span className="rounded-sm bg-blue-50 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-blue-700">
                             CURRENT
                           </span>
                         )}

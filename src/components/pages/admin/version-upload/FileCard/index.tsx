@@ -184,7 +184,7 @@ export default function FileCard({
             CHOOSE FILE
           </button>
         ) : isDisabled ? (
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-widest text-slate-400">
+          <span className="rounded-sm bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-widest text-slate-400">
             DISABLED
           </span>
         ) : null}
@@ -203,7 +203,7 @@ export default function FileCard({
 
         {/* READY status pill — shown on main required files */}
         {showStatusBadge && isReady && (
-          <span className="shrink-0 rounded-full bg-blue-700 px-4 py-1 text-xs font-bold uppercase tracking-widest text-white">
+          <span className="shrink-0 rounded-sm bg-blue-700 px-4 py-1 text-xs font-bold uppercase tracking-widest text-white">
             READY
           </span>
         )}

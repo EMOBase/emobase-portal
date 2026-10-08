@@ -63,7 +63,7 @@ export default function SpeciesCard({
           </div>
           <span
             className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 rounded-full pl-2 pr-2.5 py-0.5 text-xs font-semibold border",
+              "inline-flex shrink-0 items-center gap-1.5 rounded-sm pl-2 pr-2.5 py-0.5 text-xs font-semibold border",
               config.pill
             )}
           >
@@ -91,7 +91,7 @@ export default function SpeciesCard({
           {species.tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700"
+              className="inline-flex items-center gap-1 rounded-sm bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700"
             >
               <X className="size-3" strokeWidth={2.5} />
               {tag}
