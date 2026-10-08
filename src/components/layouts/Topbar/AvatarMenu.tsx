@@ -4,8 +4,19 @@ import { signOut } from "@zitadel/astro-auth/client";
 
 import { Button } from "@/components/ui/button";
 
-const AVATAR_URL =
-  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
+function getAvatarChars(value: string) {
+  const words = value.trim().split(" ");
+
+  if (words.length > 1) {
+    return words[0][0] + words[1][0];
+  }
+
+  if (words[0].length > 1) {
+    return words[0][0] + words[0][1];
+  }
+
+  return words[0][0];
+}
 
 export default function AvatarMenu({
   email,
@@ -24,11 +35,12 @@ export default function AvatarMenu({
         className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label="Account menu"
       >
-        <img
-          className="h-9 w-9 rounded-full object-cover border border-slate-200 shadow-sm"
-          src={AVATAR_URL}
-          alt="User avatar"
-        />
+        <span
+          className="flex h-9 w-9 select-none items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-sm font-medium tracking-wide text-slate-600 shadow-sm"
+          aria-hidden="true"
+        >
+          {getAvatarChars(name || email)}
+        </span>
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner
