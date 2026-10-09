@@ -66,7 +66,7 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
               <SpeciesCard
                 key={species.id}
                 species={species}
-                href={`/admin/versions/${encodeURIComponent(versionName)}/species/${encodeURIComponent(species.shorthand)}/upload`}
+                href={`/admin/versions/${encodeURIComponent(versionName)}/species/${encodeURIComponent(species.shorthand)}`}
               />
             ))}
           </div>

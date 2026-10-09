@@ -86,7 +86,7 @@ export default function VersionUpload({
       {/* Breadcrumb */}
       <nav className="flex items-center text-sm text-slate-400">
         <a href="/admin/versions" className="hover:text-slate-600">
-          Genome Versions
+          Data Management
         </a>
         <ChevronRight className="mx-0.5 size-3.5" />
         <a
