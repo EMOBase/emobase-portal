@@ -1,6 +1,7 @@
 import * as React from "react";
-import { ArrowRight, ChevronRight, Plus } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 
+import AddAssemblyCard from "./AddAssemblyCard";
 import SpeciesCard from "./SpeciesCard";
 import VersionActionButton from "./VersionActionButton";
 import { mockSpecies } from "./mockData";
@@ -89,7 +90,7 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
           </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid auto-rows-fr grid-cols-2 gap-4 lg:grid-cols-3">
           {mockSpecies.map((species) => (
             <SpeciesCard
               key={species.id}
@@ -98,17 +99,7 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
             />
           ))}
 
-          <a
-            href={`/admin/versions/${encodeURIComponent(versionName)}/species/new`}
-            className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-white p-5 text-center transition-colors hover:border-blue-400 hover:bg-blue-50/50"
-          >
-            <span className="flex size-10 items-center justify-center rounded-full bg-blue-50 text-blue-700">
-              <Plus className="size-5" />
-            </span>
-            <span className="text-sm font-semibold text-slate-700">
-              Add new Assembly
-            </span>
-          </a>
+          <AddAssemblyCard versionName={versionName} />
         </div>
       </section>
     </div>

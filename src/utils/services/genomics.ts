@@ -50,6 +50,27 @@ type CreateVersionResponse = {
   requestId: string;
 };
 
+export type AssemblyVersion = {
+  id: number;
+  versionId: number;
+  name: string;
+  species: string;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
+};
+
+type CreateAssemblyVersionInput = {
+  name: string;
+  species: string;
+};
+
+type CreateAssemblyVersionResponse = {
+  data: AssemblyVersion;
+  requestId: string;
+};
+
 type JobItem = {
   id: string;
   versionId: string;
@@ -203,6 +224,22 @@ const genomicsService = (fetch: typeof apiFetch = apiFetch) => {
     });
   };
 
+  const createAssemblyVersion = async (
+    version: string,
+    assemblyInput: CreateAssemblyVersionInput,
+  ) => {
+    return await fetch<CreateAssemblyVersionResponse>(
+      "genomicsservice",
+      `/versions/${version}/assemblies`,
+      {
+        method: "POST",
+        body: {
+          ...assemblyInput,
+        },
+      },
+    );
+  };
+
   const fetchJobs = async (version: string) => {
     return await fetch<FetchJobResponse>("genomicsservice", "/jobs", {
       query: {
@@ -309,6 +346,7 @@ const genomicsService = (fetch: typeof apiFetch = apiFetch) => {
     fetchPublicVersions,
     fetchVersions,
     createVersion,
+    createAssemblyVersion,
     fetchJobs,
     fetchVersionDetail,
     deleteUploadFile,

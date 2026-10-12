@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import { Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,26 +8,49 @@ import { Input } from "@/components/ui/input";
 export default function CreateVersionButton({
   onCreate,
 }: {
-  onCreate?: (name: string) => void;
+  onCreate?: (name: string) => Promise<unknown> | void;
 }) {
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState("");
+  const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  function handleContinue() {
+  function reset() {
+    setName("");
+    setError(null);
+    setSubmitting(false);
+  }
+
+  function handleOpenChange(next: boolean) {
+    if (submitting) return;
+    setOpen(next);
+    if (!next) reset();
+  }
+
+  async function handleContinue() {
     const trimmed = name.trim();
     if (!trimmed) {
       setError("Version name is required");
       return;
     }
-    onCreate?.(trimmed);
-    setOpen(false);
-    setName("");
+
+    setSubmitting(true);
     setError(null);
+    try {
+      await onCreate?.(trimmed);
+      window.location.assign(
+        `/admin/versions/${encodeURIComponent(trimmed)}`,
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to create version",
+      );
+      setSubmitting(false);
+    }
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={(next) => setOpen(next)}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Trigger
         render={
           <Button className="h-10 px-4">
@@ -61,6 +84,7 @@ export default function CreateVersionButton({
                 if (error) setError(null);
               }}
               placeholder="e.g., v3.5.0"
+              disabled={submitting}
               aria-invalid={error ? true : undefined}
             />
             {error ? (
@@ -79,9 +103,26 @@ export default function CreateVersionButton({
           </div>
 
           <div className="mt-6 flex justify-end gap-2">
-            <Dialog.Close render={<Button variant="outline">Cancel</Button>} />
-            <Button variant="default" onClick={handleContinue}>
-              Continue
+            <Dialog.Close
+              render={
+                <Button variant="outline" disabled={submitting}>
+                  Cancel
+                </Button>
+              }
+            />
+            <Button
+              variant="default"
+              onClick={handleContinue}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Continue"
+              )}
             </Button>
           </div>
         </Dialog.Popup>

@@ -91,7 +91,7 @@ export default function VersionsManager() {
           </p>
         </div>
         <CreateVersionButton
-          onCreate={(name) => void run(() => createVersion({ name }), name)}
+          onCreate={(name) => createVersion({ name })}
         />
       </div>
 
