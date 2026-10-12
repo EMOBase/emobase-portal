@@ -9,8 +9,21 @@ import { Search, ArrowRight, ExternalLink } from "lucide-react";
 import triboliumImage from "@/assets/species/500px-Tribolium_castaneum.jpg?url";
 import spiderImage from "@/assets/species/Common_House_Spider.jpg?url";
 import lymnaeaImage from "@/assets/species/Lymnaea-stagnalis.jpg?url";
+import placeholderImage from "@/assets/species/placeholder.svg?url";
 
-const speciesCards = [
+type SpeciesCardData = {
+  image?: string;
+  alt: string;
+  tag: string;
+  name: string;
+  common: string;
+  genomeSize: string;
+  gcContent: string;
+  assemblyLevel: string;
+  siteUrl: string;
+};
+
+const speciesCards: SpeciesCardData[] = [
   {
     image: triboliumImage,
     alt: "Beetle",
@@ -43,6 +56,16 @@ const speciesCards = [
     gcContent: "37.55%",
     assemblyLevel: "Scaffold",
     siteUrl: "https://ibb-test.vm19002.virt.gwdg.de/",
+  },
+  {
+    alt: "Fruit fly",
+    tag: "Flies",
+    name: "Dmel",
+    common: "Drosophila melanogaster",
+    genomeSize: "143.7 Mb",
+    gcContent: "42.1%",
+    assemblyLevel: "Chromosome",
+    siteUrl: "https://dmel.emobase.uni-goettingen.de/",
   },
 ];
 
@@ -88,24 +111,11 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Species Directory Section */}
       <div className="max-w-6xl mx-auto px-4 pb-24">
         <div className="flex items-end justify-between mb-6">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-              Species Directory
-            </h2>
-            <p className="text-slate-500 mt-1 font-medium">
-              Recently updated assemblies
-            </p>
-          </div>
-          <a
-            href="#"
-            className="text-blue-700 font-bold flex items-center gap-1 hover:text-blue-800 transition-colors mb-1 text-sm"
-          >
-            View All
-            <ArrowRight className="w-4 h-4" />
-          </a>
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+            Assemblies
+          </h2>
         </div>
 
         {/* Grid */}
@@ -117,14 +127,10 @@ export default function HomePage() {
             >
               <div className="relative h-52 overflow-hidden bg-slate-100 border-b border-slate-200">
                 <img
-                  src={card.image}
+                  src={card.image ?? placeholderImage}
                   alt={card.alt}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute top-3 right-3 bg-white px-2.5 py-1 rounded-sm text-xs font-bold text-slate-800 shadow-sm tracking-wide">
-                  {card.tag}
-                </div>
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-black/10 to-transparent" />
               </div>
               <div className="p-6 flex flex-col flex-grow">
                 <a
@@ -138,34 +144,7 @@ export default function HomePage() {
                   </h3>
                   <ExternalLink className="w-4 h-4 text-gray-400 group-hover/title:text-blue-600 transition-colors" />
                 </a>
-                <p className="text-slate-500 italic mb-8">{card.common}</p>
-
-                <div className="space-y-4 text-sm mt-auto">
-                  <div className="flex justify-between border-t border-slate-100 pt-4">
-                    <span className="text-slate-500 font-medium">
-                      Genome Size:
-                    </span>
-                    <span className="font-bold text-gray-900">
-                      {card.genomeSize}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500 font-medium">
-                      GC Content:
-                    </span>
-                    <span className="font-bold text-gray-900">
-                      {card.gcContent}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500 font-medium">
-                      Assembly Level:
-                    </span>
-                    <span className="font-bold text-gray-900">
-                      {card.assemblyLevel}
-                    </span>
-                  </div>
-                </div>
+                <p className="text-slate-500 italic">{card.common}</p>
               </div>
             </div>
           ))}

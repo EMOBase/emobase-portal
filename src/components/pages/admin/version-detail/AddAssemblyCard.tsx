@@ -95,7 +95,7 @@ export default function AddAssemblyCard({
               htmlFor="assembly-name"
               className="mb-1.5 block text-sm font-medium text-slate-700"
             >
-              Assembly Name
+              Name
             </label>
             <Input
               id="assembly-name"
@@ -115,7 +115,7 @@ export default function AddAssemblyCard({
               htmlFor="assembly-species"
               className="mb-1.5 block text-sm font-medium text-slate-700"
             >
-              Species Code
+              Species
             </label>
             <Input
               id="assembly-species"

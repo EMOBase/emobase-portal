@@ -20,6 +20,7 @@ const { user, session } = Astro.locals;
       </script>
       <SessionManager client:load />
       <slot />
+      <div class="h-8" aria-hidden="true"></div>
     </Layout>
   ) : (
     <BlankLayout>
