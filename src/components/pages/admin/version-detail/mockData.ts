@@ -11,15 +11,6 @@ export type SpeciesItem = {
   tags: string[];
 };
 
-export type OrthologyFileStatus = "synced" | "failed";
-
-export type OrthologyFile = {
-  id: string;
-  name: string;
-  updatedAt: string;
-  status: OrthologyFileStatus;
-};
-
 export const mockSpecies: SpeciesItem[] = [
   {
     id: "1",
@@ -52,26 +43,5 @@ export const mockSpecies: SpeciesItem[] = [
     status: "failed",
     progress: 45,
     tags: ["Order: Diptera"],
-  },
-];
-
-export const mockOrthologyFiles: OrthologyFile[] = [
-  {
-    id: "1",
-    name: "Tiger_Whale_v2.ortho",
-    updatedAt: "Updated 2 hrs ago",
-    status: "synced",
-  },
-  {
-    id: "2",
-    name: "Mammalia_Core_Consensus.ortho",
-    updatedAt: "Updated yesterday",
-    status: "synced",
-  },
-  {
-    id: "3",
-    name: "Insecta_Draft_Map.ortho",
-    updatedAt: "Sync Failed",
-    status: "failed",
   },
 ];

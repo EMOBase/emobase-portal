@@ -1,10 +1,9 @@
 import * as React from "react";
-import { ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronRight, Plus } from "lucide-react";
 
-import OrthologyMapping from "./OrthologyMapping";
 import SpeciesCard from "./SpeciesCard";
 import VersionActionButton from "./VersionActionButton";
-import { mockOrthologyFiles, mockSpecies } from "./mockData";
+import { mockSpecies } from "./mockData";
 import genomicsService from "@/utils/services/genomics";
 import useAsyncData from "@/hooks/useAsyncData";
 import useService from "@/hooks/useService";
@@ -71,27 +70,47 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
         />
       </div>
 
-      <div className="flex items-start gap-8">
-        <section className="min-w-0 flex-1">
-          <div className="mb-4 flex items-center gap-2.5">
-            <h2 className="text-lg font-bold text-slate-800">Assemblies</h2>
-          </div>
+      <section className="mb-8">
+        <h2 className="mb-4 text-lg font-bold text-slate-800">Orthology</h2>
+        <a
+          href={`/admin/versions/${encodeURIComponent(versionName)}/orthology`}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:underline"
+        >
+          Manage orthology data
+          <ArrowRight className="size-4" />
+        </a>
+      </section>
 
-          <div className="grid grid-cols-2 gap-4">
-            {mockSpecies.map((species) => (
-              <SpeciesCard
-                key={species.id}
-                species={species}
-                href={`/admin/versions/${encodeURIComponent(versionName)}/species/${encodeURIComponent(species.shorthand)}`}
-              />
-            ))}
-          </div>
-        </section>
-
-        <div className="w-80 shrink-0">
-          <OrthologyMapping files={mockOrthologyFiles} />
+      <section>
+        <div className="mb-4 flex items-center gap-2.5">
+          <h2 className="text-lg font-bold text-slate-800">Assemblies</h2>
+          <span className="rounded-sm bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700">
+            {mockSpecies.length} items
+          </span>
         </div>
-      </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          {mockSpecies.map((species) => (
+            <SpeciesCard
+              key={species.id}
+              species={species}
+              href={`/admin/versions/${encodeURIComponent(versionName)}/species/${encodeURIComponent(species.shorthand)}`}
+            />
+          ))}
+
+          <a
+            href={`/admin/versions/${encodeURIComponent(versionName)}/species/new`}
+            className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-white p-5 text-center transition-colors hover:border-blue-400 hover:bg-blue-50/50"
+          >
+            <span className="flex size-10 items-center justify-center rounded-full bg-blue-50 text-blue-700">
+              <Plus className="size-5" />
+            </span>
+            <span className="text-sm font-semibold text-slate-700">
+              Add new Assembly
+            </span>
+          </a>
+        </div>
+      </section>
     </div>
   );
 }
