@@ -4,6 +4,7 @@ import { Download, History, Trash2, CheckCircle2 } from "lucide-react";
 import CreateVersionButton from "./CreateVersionButton";
 import { cn } from "@/utils/classname";
 import { formatBytes, formatDate } from "./utils";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import genomicsService, { type VersionItem } from "@/utils/services/genomics";
 import useService from "@/hooks/useService";
 import useAsyncData from "@/hooks/useAsyncData";
@@ -183,16 +184,34 @@ export default function VersionsManager() {
                       <div className="flex items-center justify-end gap-1">
                         {version.status === "DRAFT" ||
                         version.status === "MISSING_REQUIRED_FILE" ? (
-                          <button
-                            onClick={() =>
-                              void run(() => deleteVersion(version.name), version.name)
+                          <ConfirmDialog
+                            trigger={
+                              <button
+                                type="button"
+                                disabled={pendingName === version.name}
+                                className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500 disabled:opacity-50"
+                                aria-label="Delete version"
+                              >
+                                <Trash2 className="size-4" />
+                              </button>
                             }
-                            disabled={pendingName === version.name}
-                            className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500 disabled:opacity-50"
-                            aria-label="Delete version"
-                          >
-                            <Trash2 className="size-4" />
-                          </button>
+                            title="Delete version"
+                            description={
+                              <>
+                                Are you sure you want to delete version{" "}
+                                <span className="font-semibold text-slate-700">
+                                  {version.name}
+                                </span>
+                                ? This action cannot be undone.
+                              </>
+                            }
+                            confirmLabel="Delete"
+                            destructive
+                            onConfirm={async () => {
+                              await deleteVersion(version.name);
+                              refresh();
+                            }}
+                          />
                         ) : (
                           <>
                             {version.status === "READY" &&
@@ -219,19 +238,34 @@ export default function VersionsManager() {
                               <Download className="size-4" />
                             </a>
                             {!version.isDefault && (
-                              <button
-                                onClick={() =>
-                                  void run(
-                                    () => deleteVersion(version.name),
-                                    version.name
-                                  )
+                              <ConfirmDialog
+                                trigger={
+                                  <button
+                                    type="button"
+                                    disabled={pendingName === version.name}
+                                    className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500 disabled:opacity-50"
+                                    aria-label="Delete version"
+                                  >
+                                    <Trash2 className="size-4" />
+                                  </button>
                                 }
-                                disabled={pendingName === version.name}
-                                className="rounded-lg p-2 text-slate-300 transition-colors hover:text-rose-500 disabled:opacity-50"
-                                aria-label="Delete version"
-                              >
-                                <Trash2 className="size-4" />
-                              </button>
+                                title="Delete version"
+                                description={
+                                  <>
+                                    Are you sure you want to delete version{" "}
+                                    <span className="font-semibold text-slate-700">
+                                      {version.name}
+                                    </span>
+                                    ? This action cannot be undone.
+                                  </>
+                                }
+                                confirmLabel="Delete"
+                                destructive
+                                onConfirm={async () => {
+                                  await deleteVersion(version.name);
+                                  refresh();
+                                }}
+                              />
                             )}
                           </>
                         )}
