@@ -1,14 +1,49 @@
-import { ChevronRight, Download, Play } from "lucide-react";
+import * as React from "react";
+import { ChevronRight } from "lucide-react";
 
 import OrthologyMapping from "./OrthologyMapping";
 import SpeciesCard from "./SpeciesCard";
+import VersionActionButton from "./VersionActionButton";
 import { mockOrthologyFiles, mockSpecies } from "./mockData";
+import genomicsService from "@/utils/services/genomics";
+import useAsyncData from "@/hooks/useAsyncData";
+import useService from "@/hooks/useService";
 
 type VersionDetailProps = {
   versionName: string;
 };
 
 export default function VersionDetail({ versionName }: VersionDetailProps) {
+  const { fetchVersionDetail, releaseVersion } = useService(genomicsService);
+
+  const [refreshKey, setRefreshKey] = React.useState(0);
+  const [action, setAction] = React.useState<"release" | "sync" | null>(null);
+  const [actionError, setActionError] = React.useState<string | null>(null);
+
+  const { data } = useAsyncData(
+    () => fetchVersionDetail(versionName),
+    [versionName, refreshKey, fetchVersionDetail]
+  );
+
+  const versionData = data?.data;
+
+  async function handleAction(kind: "release" | "sync") {
+    setAction(kind);
+    setActionError(null);
+    try {
+      await releaseVersion(versionName);
+      setRefreshKey((prev) => prev + 1);
+    } catch (err) {
+      setActionError(
+        err instanceof Error
+          ? err.message
+          : `Failed to ${kind === "sync" ? "sync" : "release"} version ${versionName}`
+      );
+    } finally {
+      setAction(null);
+    }
+  }
+
   return (
     <div className="mx-auto max-w-6xl">
       <nav className="mb-5 flex items-center text-sm text-slate-400">
@@ -32,22 +67,14 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2.5">
-          <button
-            type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-          >
-            <Download className="size-4" />
-            Export Data
-          </button>
-          <button
-            type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800"
-          >
-            <Play className="size-4 fill-current" />
-            Run Pipeline
-          </button>
-        </div>
+        <VersionActionButton
+          status={versionData?.status}
+          isDefault={versionData?.isDefault}
+          pending={action}
+          error={actionError}
+          onRelease={() => void handleAction("release")}
+          onSync={() => void handleAction("sync")}
+        />
       </div>
 
       <div className="flex items-start gap-8">
