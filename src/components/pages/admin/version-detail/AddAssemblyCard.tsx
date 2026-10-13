@@ -32,7 +32,7 @@ export default function AddAssemblyCard({
       onSubmit={async ({ name, species }) => {
         const res = await createAssemblyVersion(versionName, { name, species });
         window.location.assign(
-          `/admin/versions/${encodeURIComponent(versionName)}/species/${encodeURIComponent(res.data.species)}`,
+          `/admin/versions/${encodeURIComponent(versionName)}/assemblies/${encodeURIComponent(res.data.id)}`,
         );
       }}
     />

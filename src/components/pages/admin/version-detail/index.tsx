@@ -117,7 +117,7 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
             <SpeciesCard
               key={species.id}
               species={species}
-              href={`/admin/versions/${encodeURIComponent(versionName)}/species/${encodeURIComponent(species.species)}`}
+              href={`/admin/versions/${encodeURIComponent(versionName)}/assemblies/${encodeURIComponent(species.id)}`}
               onSubmit={handleUpdateAssembly}
               onDelete={() => handleDeleteAssembly(species)}
             />

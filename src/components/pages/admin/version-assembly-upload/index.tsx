@@ -7,17 +7,28 @@ import {
   mockJBrowseTracks,
   mockMainFiles,
   mockSynonyms,
-  mockVersion,
   type FileStatus,
 } from "./mockData";
+import genomicsService from "@/utils/services/genomics";
+import useAsyncData from "@/hooks/useAsyncData";
+import useService from "@/hooks/useService";
 
-export default function VersionUpload({
+export default function VersionAssemblyUpload({
   versionName,
-  speciesName,
+  assemblyId,
 }: {
   versionName: string;
-  speciesName: string;
+  assemblyId: string;
 }) {
+  const { fetchAssemblyVersionDetail } = useService(genomicsService);
+
+  const { data } = useAsyncData(
+    () => fetchAssemblyVersionDetail(versionName, assemblyId),
+    [versionName, assemblyId, fetchAssemblyVersionDetail],
+  );
+
+  const assemblyName = data?.data.name ?? assemblyId;
+
   const [jbrowseTracks, setJBrowseTracks] =
     React.useState<FileStatus[]>(mockJBrowseTracks);
   const [synonyms, setSynonyms] = React.useState<FileStatus[]>(mockSynonyms);
@@ -93,16 +104,15 @@ export default function VersionUpload({
           href={`/admin/versions/${versionName}`}
           className="hover:text-slate-600"
         >
-          Version {mockVersion.name}
+          Version {versionName}
         </a>
         <ChevronRight className="mx-0.5 size-3.5" />
-        <span className="font-semibold text-slate-800">{speciesName}</span>
+        <span className="font-semibold text-slate-800">{assemblyName}</span>
       </nav>
 
       {/* Page title */}
       <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900">
-        {speciesName}{" "}
-        <span className="font-normal text-slate-400">{mockVersion.name}</span>
+        {assemblyName}
       </h1>
 
       {/* Main required files */}

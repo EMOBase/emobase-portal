@@ -1,0 +1,16 @@
+---
+import AdminLayout from "@/layouts/admin.astro";
+import VersionAssemblyUpload from "@/components/pages/admin/version-assembly-upload/index.tsx";
+
+const { version, id } = Astro.params;
+
+if (!version || !id) {
+  return Astro.redirect("/admin/versions");
+}
+---
+
+<AdminLayout title={`Version ${version} - Upload - Admin - EMOBase`}>
+  <main class="flex-grow p-8">
+    <VersionAssemblyUpload versionName={version} assemblyId={id} client:load />
+  </main>
+</AdminLayout>

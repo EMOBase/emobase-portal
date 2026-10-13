@@ -138,6 +138,14 @@ type FetchVersionDetailResponse = {
   requestId: string;
 };
 
+type FetchAssemblyVersionDetailResponse = {
+  data: AssemblyVersion & {
+    status: "DRAFT" | "PROCESSING" | "READY" | "ERROR";
+    files: VersionDetailFiles;
+  };
+  requestId: string;
+};
+
 export type GeneSequence = {
   id: string;
   seq: string;
@@ -289,6 +297,16 @@ const genomicsService = (fetch: typeof apiFetch = apiFetch) => {
     );
   };
 
+  const fetchAssemblyVersionDetail = async (
+    version: string,
+    id: string | number,
+  ) => {
+    return await fetch<FetchAssemblyVersionDetailResponse>(
+      "genomicsservice",
+      `/versions/${version}/assemblies/${id}`,
+    );
+  };
+
   const releaseVersion = async (version: string) => {
     return await fetch<{ data: any; requestId: string }>(
       "genomicsservice",
@@ -365,6 +383,7 @@ const genomicsService = (fetch: typeof apiFetch = apiFetch) => {
     deleteUploadFile,
     deleteVersion,
     deleteAssemblyVersion,
+    fetchAssemblyVersionDetail,
     releaseVersion,
     fetchGenes,
     fetchIBs,
