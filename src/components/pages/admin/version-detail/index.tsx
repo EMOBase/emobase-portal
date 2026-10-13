@@ -44,6 +44,8 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
     }
   }
 
+  async function handleUpdateAssembly() {}
+
   return (
     <div className="mx-auto max-w-6xl">
       <nav className="mb-5 flex items-center text-sm text-slate-400">
@@ -95,7 +97,8 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
             <SpeciesCard
               key={species.id}
               species={species}
-              href={`/admin/versions/${encodeURIComponent(versionName)}/species/${encodeURIComponent(species.shorthand)}`}
+              href={`/admin/versions/${encodeURIComponent(versionName)}/species/${encodeURIComponent(species.species)}`}
+              onSubmit={handleUpdateAssembly}
             />
           ))}
 

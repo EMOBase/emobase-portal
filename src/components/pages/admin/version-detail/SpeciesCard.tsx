@@ -1,103 +1,97 @@
-import { X } from "lucide-react";
+import { ArrowRight, Pencil } from "lucide-react";
+import { Tooltip } from "@base-ui/react/tooltip";
 
-import { cn } from "@/utils/classname";
+import AssemblyFormModal, { type AssemblyFormValues } from "./AssemblyFormModal";
+import placeholderImage from "@/assets/species/placeholder.svg?url";
 import type { SpeciesItem } from "./mockData";
-
-const statusConfig = {
-  complete: {
-    label: "Complete",
-    pill: "bg-green-50 text-green-700 border-green-700",
-    dot: "bg-green-700",
-    bar: "bg-blue-800/80",
-  },
-  processing: {
-    label: "Processing",
-    pill: "bg-yellow-50 text-yellow-600 border-yellow-600",
-    dot: "bg-yellow-600",
-    bar: "bg-blue-800/80",
-  },
-  failed: {
-    label: "Failed",
-    pill: "bg-red-50 text-red-700/90 border-red-700/90",
-    dot: "bg-red-700/90",
-    bar: "bg-red-700/90",
-  },
-} as const;
 
 export default function SpeciesCard({
   species,
   href,
+  onSubmit,
 }: {
   species: SpeciesItem;
   href?: string;
+  onSubmit?: (values: AssemblyFormValues) => Promise<unknown> | void;
 }) {
-  const config = statusConfig[species.status];
-
   return (
-    <article
-      className={cn(
-        "relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5",
-        href && "transition-shadow hover:shadow-md"
-      )}
-    >
-      {/* Decorative background shape — rotated rounded square peeking from top-right */}
-      <div className="pointer-events-none absolute -right-20 -top-20 size-40 rounded-full bg-indigo-50/60" />
+    <article className="relative flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+      {href ? (
+        <a
+          href={href}
+          aria-label={`Manage assembly data for ${species.name}`}
+          className="group/anchor absolute inset-0 z-10"
+        >
+          <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center opacity-0 transition-opacity duration-200 group-hover/anchor:opacity-100">
+            <span className="flex items-center gap-1.5 rounded-full bg-slate-900/75 px-3 py-1 text-xs font-medium text-white shadow-sm">
+              Manage assembly data
+              <ArrowRight className="size-3.5" />
+            </span>
+          </div>
+        </a>
+      ) : null}
 
-      {/* Content sits above the decoration via DOM order (both z-index: auto) */}
-      <div className="relative">
-        {href ? (
-          <a
-            href={href}
-            className="absolute inset-0 rounded-xl"
-            aria-label={`Manage files for ${species.shorthand}`}
-          />
-        ) : null}
+      <div className="relative h-52 overflow-hidden border-b border-slate-200 bg-slate-100">
+        <img
+          src={species.image ?? placeholderImage}
+          alt={species.species}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </div>
+
+      <div className="flex flex-grow flex-col p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="text-base font-bold leading-tight text-slate-900">
-              {species.shorthand}
-            </h3>
-            <p className="mt-0.5 text-sm italic leading-tight text-slate-500">
-              {species.scientificName}
-            </p>
+            <h3 className="text-xl font-bold text-gray-900">{species.name}</h3>
+            <p className="italic text-slate-500">{species.species}</p>
           </div>
-          <span
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 rounded-sm pl-2 pr-2.5 py-0.5 text-xs font-semibold border",
-              config.pill
-            )}
-          >
-            <span className={cn("size-1.5 rounded-full", config.dot)} />
-            {config.label}
-          </span>
+
+          <Tooltip.Provider>
+            <Tooltip.Root>
+              <AssemblyFormModal
+                trigger={
+                  <Tooltip.Trigger
+                    type="button"
+                    aria-label={`Edit ${species.name}`}
+                    className="relative z-20 rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                  >
+                    <Pencil className="size-4" />
+                  </Tooltip.Trigger>
+                }
+                title="Update Assembly"
+                description={`Update the details for ${species.name}.`}
+                submitLabel="Save"
+                defaultValues={{ name: species.name, species: species.species }}
+                onSubmit={onSubmit ?? (() => {})}
+              />
+              <Tooltip.Portal>
+                <Tooltip.Positioner side="bottom" align="end" sideOffset={6}>
+                  <Tooltip.Popup className="z-50 rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white shadow-md outline-none">
+                    Edit
+                  </Tooltip.Popup>
+                </Tooltip.Positioner>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          </Tooltip.Provider>
         </div>
 
-        <div className="mt-5">
-          <div className="mb-1.5 flex items-center justify-between text-sm">
-            <span className="text-slate-500">Genomic Assembly</span>
-            <span className="font-semibold text-slate-700">
-              {species.progress}%
-            </span>
+        <dl className="mt-5 space-y-1 text-sm text-slate-600">
+          <div className="flex min-w-0 gap-1.5">
+            <dt className="shrink-0">Size:</dt>
+            <dd className="truncate font-medium text-slate-800">
+              {species.size}
+            </dd>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-            <div
-              className={cn("h-full rounded-full", config.bar)}
-              style={{ width: `${species.progress}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {species.tags.map((tag) => (
-            <span
-              key={tag}
-              className="inline-flex items-center gap-1 rounded-sm bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700"
+          <div className="flex min-w-0 gap-1.5">
+            <dt className="shrink-0">Link:</dt>
+            <dd
+              className="truncate font-medium text-slate-800"
+              title={species.siteUrl}
             >
-              <X className="size-3" strokeWidth={2.5} />
-              {tag}
-            </span>
-          ))}
-        </div>
+              {species.siteUrl}
+            </dd>
+          </div>
+        </dl>
       </div>
     </article>
   );
