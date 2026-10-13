@@ -3,6 +3,7 @@ import Layout from "./default.astro";
 import BlankLayout from "./blank.astro";
 import AdminLogin from "../components/layouts/AdminLogin/index.tsx";
 import SessionManager from "../components/layouts/SessionManager";
+import Toaster from "../components/ui/toaster.tsx";
 
 interface Props {
   title?: string;
@@ -21,6 +22,7 @@ const { user, session } = Astro.locals;
       <SessionManager client:load />
       <slot />
       <div class="h-8" aria-hidden="true"></div>
+      <Toaster client:load />
     </Layout>
   ) : (
     <BlankLayout>

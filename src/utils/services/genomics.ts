@@ -276,6 +276,19 @@ const genomicsService = (fetch: typeof apiFetch = apiFetch) => {
     });
   };
 
+  const deleteAssemblyVersion = async (
+    version: string,
+    id: string | number,
+  ) => {
+    return await fetch<undefined>(
+      "genomicsservice",
+      `/versions/${version}/assemblies/${id}`,
+      {
+        method: "DELETE",
+      },
+    );
+  };
+
   const releaseVersion = async (version: string) => {
     return await fetch<{ data: any; requestId: string }>(
       "genomicsservice",
@@ -351,6 +364,7 @@ const genomicsService = (fetch: typeof apiFetch = apiFetch) => {
     fetchVersionDetail,
     deleteUploadFile,
     deleteVersion,
+    deleteAssemblyVersion,
     releaseVersion,
     fetchGenes,
     fetchIBs,

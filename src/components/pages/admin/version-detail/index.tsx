@@ -5,6 +5,8 @@ import AddAssemblyCard from "./AddAssemblyCard";
 import SpeciesCard from "./SpeciesCard";
 import VersionActionButton from "./VersionActionButton";
 import { mockSpecies } from "./mockData";
+import type { SpeciesItem } from "./mockData";
+import { toastManager } from "@/components/ui/toaster";
 import genomicsService from "@/utils/services/genomics";
 import useAsyncData from "@/hooks/useAsyncData";
 import useService from "@/hooks/useService";
@@ -14,7 +16,8 @@ type VersionDetailProps = {
 };
 
 export default function VersionDetail({ versionName }: VersionDetailProps) {
-  const { fetchVersionDetail, releaseVersion } = useService(genomicsService);
+  const { fetchVersionDetail, releaseVersion, deleteAssemblyVersion } =
+    useService(genomicsService);
 
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [action, setAction] = React.useState<"release" | "sync" | null>(null);
@@ -45,6 +48,23 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
   }
 
   async function handleUpdateAssembly() {}
+
+  async function handleDeleteAssembly(species: SpeciesItem) {
+    try {
+      await deleteAssemblyVersion(versionName, species.id);
+      setRefreshKey((prev) => prev + 1);
+      toastManager.add({
+        type: "success",
+        title: `Deleted assembly ${species.name}`,
+      });
+    } catch (err) {
+      toastManager.add({
+        type: "error",
+        title: `Failed to delete assembly ${species.name}`,
+        description: err instanceof Error ? err.message : undefined,
+      });
+    }
+  }
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -99,6 +119,7 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
               species={species}
               href={`/admin/versions/${encodeURIComponent(versionName)}/species/${encodeURIComponent(species.species)}`}
               onSubmit={handleUpdateAssembly}
+              onDelete={() => handleDeleteAssembly(species)}
             />
           ))}
 
