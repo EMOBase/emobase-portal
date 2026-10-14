@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import VersionActionButton from "./VersionActionButton";
 
 const meta = {
-  title: "Admin/VersionActionButton",
+  title: "Admin/Version Detail/VersionActionButton",
   component: VersionActionButton,
   parameters: {
     layout: "centered",
@@ -59,9 +59,4 @@ export const Syncing: Story = {
 export const WithError: Story = {
   name: "With error",
   args: { error: "Failed to release version v0.0.2" },
-};
-
-export const NoAction: Story = {
-  name: "No action (PROCESSING)",
-  args: { status: "PROCESSING" },
 };
