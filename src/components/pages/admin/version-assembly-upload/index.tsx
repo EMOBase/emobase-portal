@@ -2,16 +2,92 @@ import * as React from "react";
 import { ChevronRight, Plus } from "lucide-react";
 
 import AddJBrowseTrackButton from "./AddJBrowseTrackButton";
-import FileCard from "./FileCard";
 import {
-  mockJBrowseTracks,
-  mockMainFiles,
-  mockSynonyms,
+  FileCard,
+  GffFileCard,
+  JBrowseTrackFileCard,
+  SynonymFileCard,
   type FileStatus,
-} from "./mockData";
-import genomicsService from "@/utils/services/genomics";
+} from "./FileCard";
+import genomicsService, {
+  type FileDetail,
+  type VersionDetailFiles,
+} from "@/utils/services/genomics";
 import useAsyncData from "@/hooks/useAsyncData";
 import useService from "@/hooks/useService";
+import { formatBytes } from "@/utils/format";
+import { isBeetleSpecies } from "@/utils/species";
+
+type MainFileConfig = {
+  category: string;
+  icon: string;
+};
+
+const getMainFileConfigs = (
+  species: string,
+): Record<string, MainFileConfig> => {
+  const configs: Record<string, MainFileConfig> = {
+    "genomic.fna": { category: "Genome Sequence", icon: "file-text" },
+    "genomic.gff": { category: "Genome Annotation", icon: "hash" },
+    "rna.fna": { category: "RNA Sequences", icon: "microscope" },
+    "cds.fna": { category: "Coding Sequences", icon: "braces" },
+    "protein.faa": { category: "Protein Sequences", icon: "dna" },
+  };
+
+  if (isBeetleSpecies(species)) {
+    configs["dsrna.csv"] = { category: "dsRNA Silencing", icon: "syringe" };
+  }
+
+  return configs;
+};
+
+function computeFileStatus(fileDetail?: FileDetail | null): {
+  status: FileStatus["status"];
+  progress: number;
+  progressTitle: string;
+  error: string;
+} {
+  let status: FileStatus["status"] = "PENDING";
+  let progress = 0;
+  let progressTitle = "";
+  let error = "";
+
+  if (!fileDetail) {
+    return { status, progress, progressTitle, error };
+  }
+
+  if (fileDetail.uploadStatus === "FAILED") {
+    status = "ERROR";
+    error = "Upload failed";
+    progress = 100;
+  } else if (fileDetail.uploadStatus === "UPLOADING") {
+    status = "PAUSED";
+    progress = 50;
+    progressTitle = "INTERRUPTED";
+  } else {
+    const jobs = fileDetail.jobs || [];
+    const failedJob = jobs.find((j) => j.status === "FAILED");
+    const activeJob = jobs.find(
+      (j) => j.status === "RUNNING" || j.status === "PENDING",
+    );
+
+    if (failedJob) {
+      status = "ERROR";
+      error = failedJob.error || "Processing failed";
+      progress = 100;
+    } else if (activeJob) {
+      status = "PROCESSING";
+      const doneJobsCount = jobs.filter((j) => j.status === "DONE").length;
+      progress = Math.min(100, Math.max(10, doneJobsCount * 20));
+      progressTitle = activeJob.description || "PROCESSING DATA";
+    } else {
+      status = "READY";
+      progress = 100;
+    }
+  }
+
+  return { status, progress, progressTitle, error };
+}
 
 export default function VersionAssemblyUpload({
   versionName,
@@ -22,16 +98,121 @@ export default function VersionAssemblyUpload({
 }) {
   const { fetchAssemblyVersionDetail } = useService(genomicsService);
 
+  const [refreshToken, setRefreshToken] = React.useState(0);
+  const refresh = React.useCallback(() => setRefreshToken((n) => n + 1), []);
+
   const { data } = useAsyncData(
     () => fetchAssemblyVersionDetail(versionName, assemblyId),
-    [versionName, assemblyId, fetchAssemblyVersionDetail],
+    [versionName, assemblyId, fetchAssemblyVersionDetail, refreshToken],
   );
 
   const assemblyName = data?.data.name ?? assemblyId;
+  const species = data?.data.species ?? "";
+  const versionFiles: VersionDetailFiles = data?.data.files ?? {};
 
-  const [jbrowseTracks, setJBrowseTracks] =
-    React.useState<FileStatus[]>(mockJBrowseTracks);
-  const [synonyms, setSynonyms] = React.useState<FileStatus[]>(mockSynonyms);
+  const mainFiles = React.useMemo<FileStatus[]>(() => {
+    return Object.entries(getMainFileConfigs(species)).map(
+      ([fileName, config]) => {
+        const fileDetail = versionFiles[
+          fileName as keyof VersionDetailFiles
+        ] as FileDetail | null | undefined;
+        const { status, progress, progressTitle, error } =
+          computeFileStatus(fileDetail);
+
+        return {
+          id: fileDetail?.id,
+          name: fileName,
+          category: config.category,
+          icon: config.icon,
+          status,
+          progress,
+          progressTitle,
+          error,
+          size: fileDetail ? formatBytes(fileDetail.fileSize) : "",
+          theme: status === "READY" ? "blue" : "orange",
+        };
+      },
+    );
+  }, [versionFiles, species]);
+
+  const jbrowseTrackFiles = React.useMemo<FileStatus[]>(() => {
+    const files: FileDetail[] = versionFiles["jbrowse.track"] || [];
+
+    return files.map((fileDetail) => {
+      const { status, progress, progressTitle, error } =
+        computeFileStatus(fileDetail);
+      const fileName = fileDetail.filePath.split("/").pop() || "jbrowse.track";
+
+      return {
+        id: fileDetail.id,
+        name: fileName,
+        category: "JBrowse2 Track",
+        icon: "database",
+        status,
+        progress,
+        progressTitle,
+        error,
+        size: formatBytes(fileDetail.fileSize),
+        theme: status === "READY" ? "blue" : "orange",
+      };
+    });
+  }, [versionFiles]);
+
+  const synonymFiles = React.useMemo<FileStatus[]>(() => {
+    const files: FileDetail[] = (versionFiles["species.synonym"] || []).filter(
+      (fileDetail) => {
+        const fileSpecies = fileDetail.jobs?.find(
+          (j) => j.payload?.species,
+        )?.payload?.species;
+        return !fileSpecies || fileSpecies === species;
+      },
+    );
+
+    return files.map((fileDetail) => {
+      const { status, progress, progressTitle, error } =
+        computeFileStatus(fileDetail);
+      const fileName = fileDetail.filePath.split("/").pop() || "species.synonym";
+
+      return {
+        id: fileDetail.id,
+        name: fileName,
+        category: "Synonyms",
+        icon: "book-open",
+        status,
+        progress,
+        progressTitle,
+        error,
+        size: formatBytes(fileDetail.fileSize),
+        theme: status === "READY" ? "blue" : "orange",
+      };
+    });
+  }, [versionFiles, species]);
+
+  const needsPolling =
+    data?.data.status === "PROCESSING" ||
+    [...mainFiles, ...jbrowseTrackFiles, ...synonymFiles].some(
+      (f) => f.status === "PROCESSING",
+    );
+
+  React.useEffect(() => {
+    if (!needsPolling) return;
+    const timer = setInterval(refresh, 5000);
+    return () => clearInterval(timer);
+  }, [needsPolling, refresh]);
+
+  const [jbrowseTrackUploads, setJBrowseTrackUploads] = React.useState<
+    Array<{
+      id: string;
+      file: File;
+      trackName: string;
+      category?: string;
+      selectInDefaultSession?: boolean;
+    }>
+  >([]);
+
+  const [synonymUploads, setSynonymUploads] = React.useState<
+    Array<{ id: string; file: File }>
+  >([]);
 
   function handleAddTrack(
     file: File,
@@ -39,57 +220,16 @@ export default function VersionAssemblyUpload({
     category?: string,
     selectInDefaultSession?: boolean,
   ) {
-    console.log("track file", file.name, {
-      trackName,
-      category,
-      selectInDefaultSession,
-    });
-    setJBrowseTracks((prev) => [
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    setJBrowseTrackUploads((prev) => [
       ...prev,
-      {
-        id: String(Date.now()),
-        name: trackName,
-        category: "JBrowse2 Track",
-        status: "READY",
-        progress: 100,
-        size: file.size ? (file.size / 1024 / 1024).toFixed(2) + " MB" : "",
-        icon: "chart-line",
-        theme: "blue",
-      },
+      { id, file, trackName, category, selectInDefaultSession },
     ]);
   }
 
-  function handleAddSynonym(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = e.target.files?.[0];
-    if (selected) {
-      setSynonyms((prev) => [
-        ...prev,
-        {
-          id: String(Date.now()),
-          name: selected.name,
-          category: "Synonyms",
-          status: "READY",
-          progress: 100,
-          size:
-            selected.size > 0
-              ? (selected.size / 1024 / 1024).toFixed(2) + " MB"
-              : "",
-          icon: "arrows-left-right",
-          theme: "blue",
-        },
-      ]);
-    }
-    e.target.value = "";
-  }
-
-  function handleDeleteJBrowseTrack(id?: string) {
-    if (!id) return;
-    setJBrowseTracks((prev) => prev.filter((t) => t.id !== id));
-  }
-
-  function handleDeleteSynonym(id?: string) {
-    if (!id) return;
-    setSynonyms((prev) => prev.filter((s) => s.id !== id));
+  function handleAddSynonym(file: File) {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    setSynonymUploads((prev) => [...prev, { id, file }]);
   }
 
   return (
@@ -117,9 +257,27 @@ export default function VersionAssemblyUpload({
 
       {/* Main required files */}
       <div className="grid gap-4">
-        {mockMainFiles.map((file) => (
-          <FileCard key={file.name} file={file} showStatusBadge />
-        ))}
+        {mainFiles.map((file) =>
+          file.name === "genomic.gff" ? (
+            <GffFileCard
+              key={file.name}
+              file={file}
+              versionName={versionName}
+              assemblyId={assemblyId}
+              onRefresh={refresh}
+              showStatusBadge
+            />
+          ) : (
+            <FileCard
+              key={file.name}
+              file={file}
+              versionName={versionName}
+              assemblyId={assemblyId}
+              onRefresh={refresh}
+              showStatusBadge
+            />
+          ),
+        )}
       </div>
 
       <hr className="border-slate-200" />
@@ -139,20 +297,39 @@ export default function VersionAssemblyUpload({
         </div>
 
         <div className="grid gap-4">
-          {jbrowseTracks.length > 0 ? (
-            jbrowseTracks.map((track) => (
-              <FileCard
-                key={track.id}
-                file={track}
-                canDelete
-                onDelete={() => handleDeleteJBrowseTrack(track.id)}
-              />
-            ))
-          ) : (
+          {jbrowseTrackFiles.map((track) => (
+            <FileCard
+              key={track.id}
+              file={track}
+              canDelete
+              onRefresh={refresh}
+            />
+          ))}
+
+          {jbrowseTrackUploads.map((item) => (
+            <JBrowseTrackFileCard
+              key={item.id}
+              file={item.file}
+              versionName={versionName}
+              assemblyId={assemblyId}
+              trackName={item.trackName}
+              category={item.category}
+              selectInDefaultSession={item.selectInDefaultSession}
+              onComplete={() => {
+                setJBrowseTrackUploads((prev) =>
+                  prev.filter((u) => u.id !== item.id),
+                );
+                refresh();
+              }}
+            />
+          ))}
+
+          {jbrowseTrackFiles.length === 0 &&
+          jbrowseTrackUploads.length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-400">
               No JBrowse2 track files uploaded yet.
             </p>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -177,26 +354,46 @@ export default function VersionAssemblyUpload({
               type="file"
               accept=".gz,.bgz"
               className="absolute inset-0 cursor-pointer opacity-0"
-              onChange={handleAddSynonym}
+              onChange={(e) => {
+                const selected = e.target.files?.[0];
+                if (selected) handleAddSynonym(selected);
+                e.target.value = "";
+              }}
             />
           </button>
         </div>
 
         <div className="grid gap-4">
-          {synonyms.length > 0 ? (
-            synonyms.map((file) => (
-              <FileCard
-                key={file.id}
-                file={file}
-                canDelete
-                onDelete={() => handleDeleteSynonym(file.id)}
-              />
-            ))
-          ) : (
+          {synonymFiles.map((file) => (
+            <FileCard
+              key={file.id}
+              file={file}
+              canDelete
+              onRefresh={refresh}
+            />
+          ))}
+
+          {synonymUploads.map((item) => (
+            <SynonymFileCard
+              key={item.id}
+              file={item.file}
+              versionName={versionName}
+              assemblyId={assemblyId}
+              species={species}
+              onComplete={() => {
+                setSynonymUploads((prev) =>
+                  prev.filter((u) => u.id !== item.id),
+                );
+                refresh();
+              }}
+            />
+          ))}
+
+          {synonymFiles.length === 0 && synonymUploads.length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-400">
               No synonym files uploaded yet.
             </p>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
