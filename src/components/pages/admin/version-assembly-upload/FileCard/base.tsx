@@ -160,7 +160,7 @@ export const FileCardBase = ({
                 <Tooltip.Trigger
                   type="button"
                   aria-label="Upload error"
-                  className="relative cursor-help text-red-500"
+                  className="relative shrink-0 cursor-help self-center text-red-500"
                 >
                   <AlertCircle className="size-4" />
                 </Tooltip.Trigger>
