@@ -118,9 +118,9 @@ export const FileCardBase = ({
         className={cn(
           "flex shrink-0 items-center justify-center",
           cardSize === "sm" ? "size-9 rounded-lg" : "size-11 rounded-full",
-          isReady || isUploading
+          isReady
             ? "bg-blue-50 text-blue-600"
-            : isPending || isDisabled
+            : isUploading || isPending || isPaused || isDisabled
               ? "bg-slate-100 text-slate-400"
               : isError
                 ? "bg-red-100 text-red-500"
@@ -200,7 +200,7 @@ export const FileCardBase = ({
           <ProgressBar
             progress={effectiveProgress ?? 0}
             title={effectiveProgressTitle || ""}
-            theme={file.theme}
+            theme="gray"
             showComplete={isReady}
             size={cardSize}
           />
@@ -230,7 +230,7 @@ export const FileCardBase = ({
           <ProgressBar
             progress={effectiveProgress}
             title={effectiveProgressTitle || ""}
-            theme={file.theme}
+            theme={isPaused ? "gray" : file.theme}
             showComplete={isReady}
             size={cardSize}
           />
@@ -244,52 +244,47 @@ export const FileCardBase = ({
           </button>
         ) : null}
 
-        {/* Delete slot: the fixed-width container is always reserved for
-            deletable (listed) files so the progress bar keeps the same width
-            whether or not the button is shown (e.g. while processing). */}
-        {onDelete && !isUploading && !isDisabled && (
-          <div
-            className={cn(
-              "flex shrink-0 justify-center",
-              cardSize === "sm" ? "w-8" : "w-10",
-            )}
-          >
-            {(isReady ||
-              isError ||
-              isPaused ||
-              file.status === "UPLOADING") && (
-              <button
-                onClick={onDelete}
-                disabled={isDeleting}
-                className="text-slate-300 transition-colors hover:text-red-500 disabled:opacity-50"
-                title="Delete file"
-              >
-                <Trash2 className={cardSize === "sm" ? "size-4" : "size-5"} />
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Status badge: only rendered on full-size (md) cards so the progress
-            bar keeps a constant width across states. Small (sm) cards and
-            disabled files don't show it. */}
-        {cardSize !== "sm" && !isDisabled && (
-          <div className="flex w-32 shrink-0 justify-end">
-            <span
-              className={cn(
-                "rounded-sm px-4 py-1 text-xs font-bold whitespace-nowrap uppercase tracking-widest",
-                isReady
-                  ? "bg-blue-700 text-white"
-                  : isPending
-                    ? "bg-slate-100 text-slate-400"
-                    : isError
-                      ? "bg-red-100 text-red-600"
-                      : "bg-orange-100 text-orange-600",
+        {/* Small cards always reserve a fixed-width trailing slot (for the
+            delete button) so the progress bar keeps the same width across every
+            state — including while uploading, before the file is listed. */}
+        {cardSize === "sm" ? (
+          <div className="flex w-8 shrink-0 justify-center">
+            {onDelete &&
+              !isUploading &&
+              !isDisabled &&
+              (isReady ||
+                isError ||
+                isPaused ||
+                file.status === "UPLOADING") && (
+                <button
+                  onClick={onDelete}
+                  disabled={isDeleting}
+                  className="text-slate-300 transition-colors hover:text-red-500 disabled:opacity-50"
+                  title="Delete file"
+                >
+                  <Trash2 className="size-4" />
+                </button>
               )}
-            >
-              {effectiveStatus}
-            </span>
           </div>
+        ) : (
+          !isDisabled && (
+            <div className="flex w-32 shrink-0 justify-end">
+              <span
+                className={cn(
+                  "rounded-sm px-4 py-1 text-xs font-bold whitespace-nowrap uppercase tracking-widest",
+                  isReady
+                    ? "bg-blue-700 text-white"
+                    : isPending
+                      ? "bg-slate-100 text-slate-400"
+                      : isError
+                        ? "bg-red-100 text-red-600"
+                        : "bg-orange-100 text-orange-600",
+                )}
+              >
+                {effectiveStatus}
+              </span>
+            </div>
+          )
         )}
       </div>
     </div>

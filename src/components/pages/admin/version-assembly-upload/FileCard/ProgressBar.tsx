@@ -3,19 +3,34 @@ import { cn } from "@/utils/classname";
 export function ProgressBar({
   progress,
   title,
-  theme = "blue",
+  theme = "orange",
   showComplete = false,
   size = "md",
 }: {
   progress: number;
   title: string;
-  theme?: "orange" | "blue";
+  theme?: "orange" | "blue" | "gray";
   showComplete?: boolean;
   size?: "sm" | "md";
 }) {
-  const barColor = theme === "blue" ? "bg-blue-700" : "bg-orange-500";
-  const completeColor = theme === "blue" ? "text-blue-700" : "text-orange-500";
-  const progressColor = theme === "blue" ? "text-blue-700" : "text-orange-500";
+  const barColor =
+    theme === "blue"
+      ? "bg-blue-700"
+      : theme === "gray"
+        ? "bg-slate-400"
+        : "bg-orange-500";
+  const completeColor =
+    theme === "blue"
+      ? "text-blue-700"
+      : theme === "gray"
+        ? "text-slate-500"
+        : "text-orange-500";
+  const progressColor =
+    theme === "blue"
+      ? "text-blue-700"
+      : theme === "gray"
+        ? "text-slate-500"
+        : "text-orange-500";
 
   const isComplete = showComplete && progress === 100;
 

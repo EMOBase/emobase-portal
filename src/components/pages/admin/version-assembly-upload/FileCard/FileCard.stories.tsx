@@ -73,6 +73,24 @@ export const Uploading: Story = {
   },
 };
 
+export const UploadingSmall: Story = {
+  name: "Uploading — small (JBrowse2 track)",
+  args: {
+    file: makeFile({
+      name: "coverage.bw.gz",
+      category: "JBrowse2 Track",
+      icon: "database",
+      status: "UPLOADING",
+      theme: "orange",
+      size: "8.4 MB",
+      id: "file-7",
+    }),
+    isUploading: true,
+    uploadProgress: 55,
+    cardSize: "sm",
+  },
+};
+
 export const Processing: Story = {
   name: "Processing — job running",
   args: {
@@ -315,6 +333,20 @@ export const AllCases: Story = {
         isUploading={false}
         uploadProgress={0}
         onDelete={() => {}}
+        cardSize="sm"
+      />
+      <FileCardBase
+        file={makeFile({
+          name: "coverage.bw.gz",
+          category: "JBrowse2 Track",
+          icon: "database",
+          status: "UPLOADING",
+          theme: "orange",
+          size: "8.4 MB",
+          id: "file-7",
+        })}
+        isUploading
+        uploadProgress={55}
         cardSize="sm"
       />
     </div>
