@@ -3,7 +3,8 @@ import { Download, History, Trash2, CheckCircle2 } from "lucide-react";
 
 import CreateVersionButton from "./CreateVersionButton";
 import { cn } from "@/utils/classname";
-import { formatBytes, formatDate } from "./utils";
+import { formatDate } from "./utils";
+import { formatBytes } from "@/utils/format";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import genomicsService, { type VersionItem } from "@/utils/services/genomics";
 import useService from "@/hooks/useService";
@@ -32,7 +33,7 @@ function StatusBadge({
     <span
       className={cn(
         "inline-block rounded-sm border px-2 py-0.5 text-xs font-bold uppercase tracking-wider",
-        statusStyles[status]
+        statusStyles[status],
       )}
     >
       {label}
@@ -50,18 +51,14 @@ export default function VersionsManager() {
 
   const { data, loading, error } = useAsyncData(
     () => fetchVersions({ page: 1, pageSize: PAGE_SIZE }),
-    [refreshKey, fetchVersions]
+    [refreshKey, fetchVersions],
   );
 
   const versions = data?.data.versions ?? [];
   const total = data?.data.total ?? 0;
   const errorMessage =
     actionError ??
-    (error
-      ? error instanceof Error
-        ? error.message
-        : String(error)
-      : null);
+    (error ? (error instanceof Error ? error.message : String(error)) : null);
 
   const refresh = () => setRefreshKey((prev) => prev + 1);
 
@@ -73,7 +70,7 @@ export default function VersionsManager() {
       refresh();
     } catch (err) {
       setActionError(
-        err instanceof Error ? err.message : `Version ${name} failed`
+        err instanceof Error ? err.message : `Version ${name} failed`,
       );
     } finally {
       setPendingName(null);
@@ -91,16 +88,16 @@ export default function VersionsManager() {
             Upload and publish genomic data
           </p>
         </div>
-        <CreateVersionButton
-          onCreate={(name) => createVersion({ name })}
-        />
+        <CreateVersionButton onCreate={(name) => createVersion({ name })} />
       </div>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
           <div className="flex items-center gap-3">
             <History className="size-5 text-blue-700" />
-            <h2 className="text-lg font-bold text-slate-800">Version History</h2>
+            <h2 className="text-lg font-bold text-slate-800">
+              Version History
+            </h2>
           </div>
           {!loading && !error && (
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -220,7 +217,7 @@ export default function VersionsManager() {
                                   onClick={() =>
                                     void run(
                                       () => releaseVersion(version.name),
-                                      version.name
+                                      version.name,
                                     )
                                   }
                                   disabled={pendingName === version.name}
@@ -279,9 +276,7 @@ export default function VersionsManager() {
                     colSpan={5}
                     className="px-6 py-12 text-center text-sm text-slate-400"
                   >
-                    {error
-                      ? "Could not load versions"
-                      : "No version found"}
+                    {error ? "Could not load versions" : "No version found"}
                   </td>
                 </tr>
               )}

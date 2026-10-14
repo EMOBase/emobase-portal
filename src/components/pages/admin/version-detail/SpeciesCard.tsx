@@ -1,10 +1,21 @@
 import { ArrowRight, Pencil, Trash2 } from "lucide-react";
 import { Tooltip } from "@base-ui/react/tooltip";
 
-import AssemblyFormModal, { type AssemblyFormValues } from "./AssemblyFormModal";
+import AssemblyFormModal, {
+  type AssemblyFormValues,
+} from "./AssemblyFormModal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { cn } from "@/utils/classname";
 import placeholderImage from "@/assets/species/placeholder.svg?url";
-import type { SpeciesItem } from "./mockData";
+
+export type AssemblyCardItem = {
+  id: string | number;
+  name: string;
+  species: string;
+  image?: string;
+  size?: string;
+  siteUrl?: string;
+};
 
 export default function SpeciesCard({
   species,
@@ -12,7 +23,7 @@ export default function SpeciesCard({
   onSubmit,
   onDelete,
 }: {
-  species: SpeciesItem;
+  species: AssemblyCardItem;
   href?: string;
   onSubmit?: (values: AssemblyFormValues) => Promise<unknown> | void;
   onDelete?: () => Promise<unknown> | void;
@@ -115,16 +126,21 @@ export default function SpeciesCard({
           <div className="flex min-w-0 gap-1.5">
             <dt className="shrink-0">Size:</dt>
             <dd className="truncate font-medium text-slate-800">
-              {species.size}
+              {species.size || "0 B"}
             </dd>
           </div>
           <div className="flex min-w-0 gap-1.5">
             <dt className="shrink-0">Link:</dt>
             <dd
-              className="truncate font-medium text-slate-800"
-              title={species.siteUrl}
+              className={cn(
+                "truncate font-medium",
+                species.siteUrl
+                  ? "text-slate-800"
+                  : "italic font-normal text-slate-400",
+              )}
+              title={species.siteUrl || undefined}
             >
-              {species.siteUrl}
+              {species.siteUrl || "Not set"}
             </dd>
           </div>
         </dl>

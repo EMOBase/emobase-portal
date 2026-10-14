@@ -4,16 +4,40 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 import AddAssemblyCard from "./AddAssemblyCard";
 import SpeciesCard from "./SpeciesCard";
 import VersionActionButton from "./VersionActionButton";
-import { mockSpecies } from "./mockData";
-import type { SpeciesItem } from "./mockData";
 import { toastManager } from "@/components/ui/toaster";
 import genomicsService from "@/utils/services/genomics";
+import type { AssemblyVersionDetail } from "@/utils/services/genomics";
+import { formatBytes } from "@/utils/format";
 import useAsyncData from "@/hooks/useAsyncData";
 import useService from "@/hooks/useService";
 
 type VersionDetailProps = {
   versionName: string;
 };
+
+// Total size of an assembly, summed from all of its own uploaded files.
+// orthology.tsv is intentionally excluded — it is shared across every assembly
+// in a version rather than owned by one.
+function assemblySize(files: AssemblyVersionDetail["files"]): number {
+  const singleFiles = [
+    files["genomic.fna"],
+    files["genomic.gff"],
+    files["rna.fna"],
+    files["cds.fna"],
+    files["protein.faa"],
+    files["dsrna.csv"],
+  ];
+  const fileLists = [files["jbrowse.track"], files["species.synonym"]];
+
+  return (
+    singleFiles.reduce((sum, file) => sum + (file?.fileSize ?? 0), 0) +
+    fileLists.reduce(
+      (sum, list) =>
+        sum + (list ?? []).reduce((inner, file) => inner + file.fileSize, 0),
+      0,
+    )
+  );
+}
 
 export default function VersionDetail({ versionName }: VersionDetailProps) {
   const { fetchVersionDetail, releaseVersion, deleteAssemblyVersion } =
@@ -29,6 +53,7 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
   );
 
   const versionData = data?.data;
+  const assemblies = versionData?.assemblies ?? [];
 
   async function handleAction(kind: "release" | "sync") {
     setAction(kind);
@@ -49,18 +74,18 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
 
   async function handleUpdateAssembly() {}
 
-  async function handleDeleteAssembly(species: SpeciesItem) {
+  async function handleDeleteAssembly(assembly: AssemblyVersionDetail) {
     try {
-      await deleteAssemblyVersion(versionName, species.id);
+      await deleteAssemblyVersion(versionName, assembly.id);
       setRefreshKey((prev) => prev + 1);
       toastManager.add({
         type: "success",
-        title: `Deleted assembly ${species.name}`,
+        title: `Deleted assembly ${assembly.name}`,
       });
     } catch (err) {
       toastManager.add({
         type: "error",
-        title: `Failed to delete assembly ${species.name}`,
+        title: `Failed to delete assembly ${assembly.name}`,
         description: err instanceof Error ? err.message : undefined,
       });
     }
@@ -108,18 +133,23 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
         <div className="mb-4 flex items-center gap-2.5">
           <h2 className="text-lg font-bold text-slate-800">Assemblies</h2>
           <span className="rounded-sm bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700">
-            {mockSpecies.length} items
+            {assemblies.length} items
           </span>
         </div>
 
         <div className="grid auto-rows-fr grid-cols-2 gap-4 lg:grid-cols-3">
-          {mockSpecies.map((species) => (
+          {assemblies.map((assembly) => (
             <SpeciesCard
-              key={species.id}
-              species={species}
-              href={`/admin/versions/${encodeURIComponent(versionName)}/assemblies/${encodeURIComponent(species.id)}`}
+              key={assembly.id}
+              species={{
+                id: assembly.id,
+                name: assembly.name,
+                species: assembly.species,
+                size: formatBytes(assemblySize(assembly.files)),
+              }}
+              href={`/admin/versions/${encodeURIComponent(versionName)}/assemblies/${encodeURIComponent(assembly.id)}`}
               onSubmit={handleUpdateAssembly}
-              onDelete={() => handleDeleteAssembly(species)}
+              onDelete={() => handleDeleteAssembly(assembly)}
             />
           ))}
 

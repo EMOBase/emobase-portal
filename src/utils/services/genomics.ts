@@ -123,26 +123,31 @@ export type VersionDetailFiles = {
   "species.synonym"?: FileDetail[];
 };
 
+export type AssemblyVersionDetail = AssemblyVersion & {
+  status: "DRAFT" | "PROCESSING" | "READY" | "ERROR" | "MISSING_REQUIRED_FILE";
+  files: VersionDetailFiles;
+};
+
 type FetchVersionDetailResponse = {
   data: {
     id: number;
     name: string;
     isDefault: boolean;
-    status: "DRAFT" | "PROCESSING" | "READY" | "ERROR";
+    status:
+      "DRAFT" | "PROCESSING" | "READY" | "ERROR" | "MISSING_REQUIRED_FILE";
     createdAt: string;
     createdBy: string;
     updatedAt: string;
     updatedBy: string;
-    files: VersionDetailFiles;
+    totalFileSize: number;
+    orthologyTSV: FileDetail[];
+    assemblies: AssemblyVersionDetail[];
   };
   requestId: string;
 };
 
 type FetchAssemblyVersionDetailResponse = {
-  data: AssemblyVersion & {
-    status: "DRAFT" | "PROCESSING" | "READY" | "ERROR";
-    files: VersionDetailFiles;
-  };
+  data: AssemblyVersionDetail;
   requestId: string;
 };
 
