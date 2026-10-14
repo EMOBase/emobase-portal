@@ -246,6 +246,19 @@ export const AllCases: Story = {
       <FileCardBase file={makeFile()} isUploading uploadProgress={64} />
       <FileCardBase
         file={makeFile({
+          status: "PAUSED",
+          progress: 50,
+          progressTitle: "INTERRUPTED",
+          theme: "orange",
+          size: "312 MB",
+          id: "file-4",
+        })}
+        isUploading={false}
+        uploadProgress={0}
+        canUpload
+      />
+      <FileCardBase
+        file={makeFile({
           status: "PROCESSING",
           progress: 40,
           progressTitle: "INDEXING GENOME",
@@ -274,19 +287,6 @@ export const AllCases: Story = {
           theme: "orange",
           size: "312 MB",
           id: "file-2",
-        })}
-        isUploading={false}
-        uploadProgress={0}
-        canUpload
-      />
-      <FileCardBase
-        file={makeFile({
-          status: "PAUSED",
-          progress: 50,
-          progressTitle: "INTERRUPTED",
-          theme: "orange",
-          size: "312 MB",
-          id: "file-4",
         })}
         isUploading={false}
         uploadProgress={0}

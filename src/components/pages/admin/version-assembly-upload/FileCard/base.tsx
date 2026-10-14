@@ -274,7 +274,7 @@ export const FileCardBase = ({
                   "rounded-sm px-4 py-1 text-xs font-bold whitespace-nowrap uppercase tracking-widest",
                   isReady
                     ? "bg-blue-700 text-white"
-                    : isPending
+                    : isPending || isPaused
                       ? "bg-slate-100 text-slate-400"
                       : isError
                         ? "bg-red-100 text-red-600"
