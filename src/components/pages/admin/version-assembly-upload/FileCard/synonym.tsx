@@ -10,12 +10,14 @@ export const SynonymFileCard = ({
   assemblyId,
   species,
   onComplete,
+  size = "sm",
 }: {
   file: File;
   versionName: string;
   assemblyId: string | number;
   species: string;
   onComplete: () => void;
+  size?: "sm" | "md";
 }) => {
   const { upload, progress, isUploading, error } = useUpload();
 
@@ -67,6 +69,7 @@ export const SynonymFileCard = ({
       }}
       isUploading={isUploading}
       uploadProgress={progress}
+      cardSize={size}
     />
   );
 };

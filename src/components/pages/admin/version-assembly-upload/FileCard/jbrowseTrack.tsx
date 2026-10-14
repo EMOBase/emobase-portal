@@ -12,6 +12,7 @@ export const JBrowseTrackFileCard = ({
   category,
   selectInDefaultSession,
   onComplete,
+  size = "sm",
 }: {
   file: File;
   versionName: string;
@@ -20,6 +21,7 @@ export const JBrowseTrackFileCard = ({
   category?: string;
   selectInDefaultSession?: boolean;
   onComplete: () => void;
+  size?: "sm" | "md";
 }) => {
   const { upload, progress, isUploading, error } = useUpload();
 
@@ -73,6 +75,7 @@ export const JBrowseTrackFileCard = ({
       }}
       isUploading={isUploading}
       uploadProgress={progress}
+      cardSize={size}
     />
   );
 };

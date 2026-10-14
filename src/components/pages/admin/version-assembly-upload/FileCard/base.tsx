@@ -77,7 +77,7 @@ export const FileCardBase = ({
   onChooseFile,
   onDelete,
   isDeleting = false,
-  showStatusBadge = false,
+  cardSize = "md",
   children,
 }: {
   file: FileStatus;
@@ -87,7 +87,7 @@ export const FileCardBase = ({
   onChooseFile?: () => void;
   onDelete?: () => void;
   isDeleting?: boolean;
-  showStatusBadge?: boolean;
+  cardSize?: "sm" | "md";
   children?: React.ReactNode;
 }) => {
   const isReady = !isUploading && file.status === "READY";
@@ -101,10 +101,13 @@ export const FileCardBase = ({
     ? "IN TRANSIT"
     : file.progressTitle;
 
+  const effectiveStatus = isUploading ? "UPLOADING" : file.status;
+
   return (
     <div
       className={cn(
-        "flex items-center gap-5 rounded-xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-sm",
+        "flex items-center border border-slate-200 bg-white transition-shadow hover:shadow-sm",
+        cardSize === "sm" ? "gap-4 rounded-lg p-4" : "gap-5 rounded-xl p-5",
         isError && "border-red-100 bg-red-50/30",
       )}
     >
@@ -113,7 +116,8 @@ export const FileCardBase = ({
       {/* Round icon */}
       <div
         className={cn(
-          "flex size-11 shrink-0 items-center justify-center rounded-full",
+          "flex shrink-0 items-center justify-center",
+          cardSize === "sm" ? "size-9 rounded-lg" : "size-11 rounded-full",
           isReady || isUploading
             ? "bg-blue-50 text-blue-600"
             : isPending || isDisabled
@@ -123,15 +127,30 @@ export const FileCardBase = ({
                 : "bg-orange-50 text-orange-500",
         )}
       >
-        <FileIcon name={file.icon} className="size-5" />
+        <FileIcon
+          name={file.icon}
+          className={cardSize === "sm" ? "size-4" : "size-5"}
+        />
       </div>
 
       {/* File info */}
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <h3 className="truncate font-bold text-slate-900">{file.name}</h3>
+          <h3
+            className={cn(
+              "truncate font-bold text-slate-900",
+              cardSize === "sm" && "text-sm",
+            )}
+          >
+            {file.name}
+          </h3>
           {file.size && !isUploading && (
-            <span className="shrink-0 text-sm text-slate-400">
+            <span
+              className={cn(
+                "shrink-0 text-slate-400",
+                cardSize === "sm" ? "text-xs" : "text-sm",
+              )}
+            >
               {file.size}
             </span>
           )}
@@ -146,7 +165,11 @@ export const FileCardBase = ({
                   <AlertCircle className="size-4" />
                 </Tooltip.Trigger>
                 <Tooltip.Portal>
-                  <Tooltip.Positioner side="top" sideOffset={6} className="z-50">
+                  <Tooltip.Positioner
+                    side="top"
+                    sideOffset={6}
+                    className="z-50"
+                  >
                     <Tooltip.Popup className="max-w-xs break-words rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white shadow-md outline-none">
                       {file.error}
                     </Tooltip.Popup>
@@ -156,19 +179,30 @@ export const FileCardBase = ({
             </Tooltip.Provider>
           )}
         </div>
-        <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-slate-400">
+        <p
+          className={cn(
+            "mt-0.5 font-bold uppercase tracking-widest text-slate-400",
+            cardSize === "sm" ? "text-[10px]" : "text-xs",
+          )}
+        >
           {file.category}
         </p>
       </div>
 
       {/* Progress / action area */}
-      <div className="flex w-1/2 items-center gap-4">
+      <div
+        className={cn(
+          "flex w-1/2 items-center",
+          cardSize === "sm" ? "gap-3" : "gap-4",
+        )}
+      >
         {isUploading ? (
           <ProgressBar
             progress={effectiveProgress ?? 0}
             title={effectiveProgressTitle || ""}
             theme={file.theme}
             showComplete={isReady}
+            size={cardSize}
           />
         ) : isError && canUpload ? (
           <button
@@ -187,15 +221,18 @@ export const FileCardBase = ({
             RESUME UPLOAD
           </button>
         ) : isDisabled ? (
-          <span className="rounded-sm bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-widest text-slate-400">
-            DISABLED
-          </span>
+          <div className="ml-auto flex w-32 shrink-0 justify-end">
+            <span className="rounded-sm bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-widest text-slate-400">
+              DISABLED
+            </span>
+          </div>
         ) : !isPending && effectiveProgress !== undefined ? (
           <ProgressBar
             progress={effectiveProgress}
             title={effectiveProgressTitle || ""}
             theme={file.theme}
             showComplete={isReady}
+            size={cardSize}
           />
         ) : isPending && canUpload ? (
           <button
@@ -207,24 +244,52 @@ export const FileCardBase = ({
           </button>
         ) : null}
 
-        {onDelete &&
-          !isUploading &&
-          !isDisabled &&
-          (isReady || isError || isPaused || file.status === "UPLOADING") && (
-            <button
-              onClick={onDelete}
-              disabled={isDeleting}
-              className="shrink-0 text-slate-300 transition-colors hover:text-red-500 disabled:opacity-50"
-              title="Delete file"
-            >
-              <Trash2 className="size-5" />
-            </button>
-          )}
+        {/* Delete slot: the fixed-width container is always reserved for
+            deletable (listed) files so the progress bar keeps the same width
+            whether or not the button is shown (e.g. while processing). */}
+        {onDelete && !isUploading && !isDisabled && (
+          <div
+            className={cn(
+              "flex shrink-0 justify-center",
+              cardSize === "sm" ? "w-8" : "w-10",
+            )}
+          >
+            {(isReady ||
+              isError ||
+              isPaused ||
+              file.status === "UPLOADING") && (
+              <button
+                onClick={onDelete}
+                disabled={isDeleting}
+                className="text-slate-300 transition-colors hover:text-red-500 disabled:opacity-50"
+                title="Delete file"
+              >
+                <Trash2 className={cardSize === "sm" ? "size-4" : "size-5"} />
+              </button>
+            )}
+          </div>
+        )}
 
-        {showStatusBadge && isReady && (
-          <span className="shrink-0 rounded-sm bg-blue-700 px-4 py-1 text-xs font-bold uppercase tracking-widest text-white">
-            READY
-          </span>
+        {/* Status badge: only rendered on full-size (md) cards so the progress
+            bar keeps a constant width across states. Small (sm) cards and
+            disabled files don't show it. */}
+        {cardSize !== "sm" && !isDisabled && (
+          <div className="flex w-32 shrink-0 justify-end">
+            <span
+              className={cn(
+                "rounded-sm px-4 py-1 text-xs font-bold whitespace-nowrap uppercase tracking-widest",
+                isReady
+                  ? "bg-blue-700 text-white"
+                  : isPending
+                    ? "bg-slate-100 text-slate-400"
+                    : isError
+                      ? "bg-red-100 text-red-600"
+                      : "bg-orange-100 text-orange-600",
+              )}
+            >
+              {effectiveStatus}
+            </span>
+          </div>
         )}
       </div>
     </div>

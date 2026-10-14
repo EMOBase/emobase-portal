@@ -14,14 +14,14 @@ export const GffFileCard = ({
   assemblyId,
   canDelete,
   onRefresh,
-  showStatusBadge = false,
+  size = "md",
 }: {
   file: FileStatus;
   versionName?: string;
   assemblyId?: string | number;
   canDelete?: boolean;
   onRefresh?: () => void;
-  showStatusBadge?: boolean;
+  size?: "sm" | "md";
 }) => {
   const { deleteUploadFile } = useService(genomicsService);
   const { upload, progress: uploadProgress, isUploading } = useUpload();
@@ -128,7 +128,7 @@ export const GffFileCard = ({
       onChooseFile={handleChooseFile}
       onDelete={canDelete && file.id ? handleDelete : undefined}
       isDeleting={isDeleting}
-      showStatusBadge={showStatusBadge}
+      cardSize={size}
     >
       <input
         ref={fileInputRef}

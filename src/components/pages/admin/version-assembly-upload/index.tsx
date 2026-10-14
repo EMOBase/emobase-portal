@@ -161,9 +161,8 @@ export default function VersionAssemblyUpload({
   const synonymFiles = React.useMemo<FileStatus[]>(() => {
     const files: FileDetail[] = (versionFiles["species.synonym"] || []).filter(
       (fileDetail) => {
-        const fileSpecies = fileDetail.jobs?.find(
-          (j) => j.payload?.species,
-        )?.payload?.species;
+        const fileSpecies = fileDetail.jobs?.find((j) => j.payload?.species)
+          ?.payload?.species;
         return !fileSpecies || fileSpecies === species;
       },
     );
@@ -171,7 +170,8 @@ export default function VersionAssemblyUpload({
     return files.map((fileDetail) => {
       const { status, progress, progressTitle, error } =
         computeFileStatus(fileDetail);
-      const fileName = fileDetail.filePath.split("/").pop() || "species.synonym";
+      const fileName =
+        fileDetail.filePath.split("/").pop() || "species.synonym";
 
       return {
         id: fileDetail.id,
@@ -265,7 +265,6 @@ export default function VersionAssemblyUpload({
               versionName={versionName}
               assemblyId={assemblyId}
               onRefresh={refresh}
-              showStatusBadge
             />
           ) : (
             <FileCard
@@ -274,7 +273,6 @@ export default function VersionAssemblyUpload({
               versionName={versionName}
               assemblyId={assemblyId}
               onRefresh={refresh}
-              showStatusBadge
             />
           ),
         )}
@@ -303,6 +301,7 @@ export default function VersionAssemblyUpload({
               file={track}
               canDelete
               onRefresh={refresh}
+              size="sm"
             />
           ))}
 
@@ -370,6 +369,7 @@ export default function VersionAssemblyUpload({
               file={file}
               canDelete
               onRefresh={refresh}
+              size="sm"
             />
           ))}
 

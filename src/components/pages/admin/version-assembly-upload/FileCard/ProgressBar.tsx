@@ -5,11 +5,13 @@ export function ProgressBar({
   title,
   theme = "blue",
   showComplete = false,
+  size = "md",
 }: {
   progress: number;
   title: string;
   theme?: "orange" | "blue";
   showComplete?: boolean;
+  size?: "sm" | "md";
 }) {
   const barColor = theme === "blue" ? "bg-blue-700" : "bg-orange-500";
   const completeColor = theme === "blue" ? "text-blue-700" : "text-orange-500";
@@ -19,7 +21,12 @@ export function ProgressBar({
 
   return (
     <div className="w-full space-y-1.5">
-      <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest">
+      <div
+        className={cn(
+          "flex items-center justify-between font-bold uppercase tracking-widest",
+          size === "sm" ? "text-[10px]" : "text-xs",
+        )}
+      >
         {/* Left label: only shown when in-progress */}
         <span className={cn(title ? progressColor : "invisible")}>
           {title || "·"}
@@ -31,7 +38,10 @@ export function ProgressBar({
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
         <div
-          className={cn("h-full rounded-full transition-all duration-500", barColor)}
+          className={cn(
+            "h-full rounded-full transition-all duration-500",
+            barColor,
+          )}
           style={{ width: `${progress}%` }}
         />
       </div>
