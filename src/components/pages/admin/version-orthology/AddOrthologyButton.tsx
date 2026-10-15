@@ -1,15 +1,23 @@
 import * as React from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import { CloudUpload, Plus } from "lucide-react";
+import { Menu } from "@base-ui/react/menu";
+import {
+  ChevronDown,
+  CloudUpload,
+  FilePlusCorner,
+  Files,
+  Plus,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function AddOrthologyButton({
-  onConfirm,
-}: {
-  onConfirm?: (file: File, order: number, algorithm: string) => void;
-}) {
+type OnConfirm = (file: File, order: number, algorithm: string) => void;
+
+const triggerClassName =
+  "inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 hover:bg-slate-50";
+
+function useOrthologyUploadDialog(onConfirm?: OnConfirm) {
   const [open, setOpen] = React.useState(false);
   const [file, setFile] = React.useState<File | null>(null);
   const [order, setOrder] = React.useState("1");
@@ -52,7 +60,7 @@ export default function AddOrthologyButton({
     reset();
   }
 
-  return (
+  const dialog = (
     <Dialog.Root
       open={open}
       onOpenChange={(next) => {
@@ -60,17 +68,6 @@ export default function AddOrthologyButton({
         if (!next) reset();
       }}
     >
-      <Dialog.Trigger
-        render={
-          <button
-            type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-          >
-            <Plus className="size-4" strokeWidth={2.5} />
-            Add Orthology Dataset
-          </button>
-        }
-      />
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-slate-900/40" />
         <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none">
@@ -157,5 +154,90 @@ export default function AddOrthologyButton({
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>
+  );
+
+  return { openDialog: () => setOpen(true), dialog };
+}
+
+export function AddSingleOrthologyButton({
+  onConfirm,
+}: {
+  onConfirm?: OnConfirm;
+}) {
+  const { openDialog, dialog } = useOrthologyUploadDialog(onConfirm);
+
+  return (
+    <>
+      <button type="button" className={triggerClassName} onClick={openDialog}>
+        <FilePlusCorner className="size-4" strokeWidth={2.5} />
+        Add Single Dataset
+      </button>
+      {dialog}
+    </>
+  );
+}
+
+export function AddBatchOrthologyButton() {
+  return (
+    <button
+      type="button"
+      disabled
+      className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-400 cursor-not-allowed opacity-70"
+      title="Batch upload not supported yet"
+    >
+      <Files className="size-4" strokeWidth={2.5} />
+      Add Batch
+    </button>
+  );
+}
+
+export default function AddOrthologyButton({
+  onConfirm,
+}: {
+  onConfirm?: OnConfirm;
+}) {
+  const { openDialog, dialog } = useOrthologyUploadDialog(onConfirm);
+
+  return (
+    <>
+      <Menu.Root>
+        <Menu.Trigger
+          render={
+            <button type="button" className={triggerClassName}>
+              <Plus className="size-4" strokeWidth={2.5} />
+              Add Orthology
+              <ChevronDown className="size-3.5 text-slate-400" />
+            </button>
+          }
+        />
+        <Menu.Portal>
+          <Menu.Positioner
+            align="end"
+            sideOffset={8}
+            className="z-50 outline-none"
+          >
+            <Menu.Popup className="min-w-56 rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg">
+              <Menu.Item
+                onClick={openDialog}
+                className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-slate-700 outline-none data-[highlighted]:bg-muted"
+              >
+                <FilePlusCorner className="h-4 w-4" />
+                Add Single Dataset
+              </Menu.Item>
+              <Menu.Item
+                disabled
+                title="Batch upload not supported yet"
+                className="flex cursor-not-allowed items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-slate-400 outline-none data-[disabled]:cursor-not-allowed"
+              >
+                <Files className="h-4 w-4" />
+                Add Batch
+              </Menu.Item>
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
+
+      {dialog}
+    </>
   );
 }

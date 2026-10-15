@@ -1,7 +1,10 @@
 import * as React from "react";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
-import AddOrthologyButton from "./AddOrthologyButton";
+import AddOrthologyButton, {
+  AddBatchOrthologyButton,
+  AddSingleOrthologyButton,
+} from "./AddOrthologyButton";
 import { OrthologyFileCard } from "./OrthologyFileCard";
 import {
   FileCard,
@@ -145,18 +148,7 @@ export default function VersionOrthology({
             species. Shared across every assembly in this version.
           </p>
         </div>
-        <div className="flex gap-2">
-          <AddOrthologyButton onConfirm={handleAdd} />
-          <button
-            type="button"
-            disabled
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-400 cursor-not-allowed opacity-70"
-            title="Batch upload not supported yet"
-          >
-            <Plus className="size-4" strokeWidth={2.5} />
-            Add Batch
-          </button>
-        </div>
+        <AddOrthologyButton onConfirm={handleAdd} />
       </div>
 
       {/* Files */}
@@ -191,20 +183,12 @@ export default function VersionOrthology({
               No orthology datasets yet
             </h3>
             <p className="text-sm text-slate-500 mb-6 text-center max-w-md">
-              Upload orthology mapping data for this version. You can add a single
-              dataset or a batch of datasets.
+              Upload orthology mapping data for this version. You can add a
+              single dataset or a batch of datasets.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <AddOrthologyButton onConfirm={handleAdd} />
-              <button
-                type="button"
-                disabled
-                className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-400 cursor-not-allowed opacity-70"
-                title="Batch upload not supported yet"
-              >
-                <Plus className="size-4" strokeWidth={2.5} />
-                Add Batch
-              </button>
+              <AddSingleOrthologyButton onConfirm={handleAdd} />
+              <AddBatchOrthologyButton />
             </div>
           </div>
         ) : null}
