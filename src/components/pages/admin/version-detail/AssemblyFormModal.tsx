@@ -54,7 +54,7 @@ export default function AssemblyFormModal({
       return;
     }
     if (!trimmedSpecies) {
-      setError("Species code is required");
+      setError("Species is required");
       return;
     }
 
