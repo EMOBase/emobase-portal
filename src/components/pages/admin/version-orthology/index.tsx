@@ -195,18 +195,7 @@ export default function VersionOrthology({
               dataset or a batch of datasets.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex gap-2">
-          <AddOrthologyButton onConfirm={handleAdd} />
-          <button
-            type="button"
-            disabled
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-400 cursor-not-allowed opacity-70"
-            title="Batch upload not supported yet"
-          >
-            <Plus className="size-4" strokeWidth={2.5} />
-            Add Batch
-          </button>
-        </div>
+              <AddOrthologyButton onConfirm={handleAdd} />
               <button
                 type="button"
                 disabled
