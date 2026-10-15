@@ -175,9 +175,26 @@ export default function VersionOrthology({
         ))}
 
         {orthologyFiles.length === 0 && uploads.length === 0 ? (
-          <p className="py-8 text-center text-sm text-slate-400">
-            No orthology datasets uploaded yet.
-          </p>
+          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50/50">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              No orthology datasets yet
+            </h3>
+            <p className="text-sm text-slate-500 mb-6 text-center max-w-md">
+              Upload orthology mapping data for this version. You can add a single
+              dataset or a batch of datasets.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <AddOrthologyButton onConfirm={handleAdd} />
+              <button
+                type="button"
+                disabled
+                className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-400 cursor-not-allowed opacity-70"
+                title="Batch upload not supported yet"
+              >
+                Add Batch
+              </button>
+            </div>
+          </div>
         ) : null}
       </div>
     </div>
