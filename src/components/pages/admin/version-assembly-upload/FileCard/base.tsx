@@ -13,6 +13,7 @@ import {
   Microscope,
   RefreshCw,
   Syringe,
+  Table,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -62,6 +63,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   syringe: Syringe,
   "chart-line": ChartLine,
   "arrow-left-right": ArrowLeftRight,
+  tsv: Table,
 };
 
 function FileIcon({ name, className }: { name: string; className?: string }) {

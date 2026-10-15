@@ -1,0 +1,16 @@
+---
+import AdminLayout from "@/layouts/admin.astro";
+import VersionOrthology from "@/components/pages/admin/version-orthology/index.tsx";
+
+const { version } = Astro.params;
+
+if (!version) {
+  return Astro.redirect("/admin/versions");
+}
+---
+
+<AdminLayout title={`Version ${version} - Orthology - Admin - EMOBase`}>
+  <main class="flex-grow p-8">
+    <VersionOrthology versionName={version} client:load />
+  </main>
+</AdminLayout>

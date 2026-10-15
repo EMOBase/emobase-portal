@@ -6,7 +6,8 @@ import { useSessionStore } from "@/states/sessionStore";
 export type UploadInput = {
   file: File;
   version: string;
-  assembly: string | number;
+  // Version-scoped uploads (e.g. orthology.tsv) have no assembly.
+  assembly?: string | number;
   fileType: string;
   fileName?: string;
   order?: number;
@@ -65,7 +66,7 @@ export const upload = async (input: UploadInput): Promise<UploadResponse> => {
         fileType,
         fileName: fileName ?? file.name,
         version,
-        assembly: assembly.toString(),
+        ...(assembly !== undefined ? { assembly: assembly.toString() } : {}),
         ...(order ? { order: order.toString() } : {}),
         ...(algorithm ? { algorithm } : {}),
         ...(trackName ? { trackName } : {}),
