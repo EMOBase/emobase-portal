@@ -133,9 +133,9 @@ export default function SpeciesCard({
             <dt className="shrink-0">Link:</dt>
             <dd
               className={cn(
-                "truncate font-medium",
+                "font-medium",
                 species.siteUrl
-                  ? "text-slate-800"
+                  ? "truncate text-slate-800"
                   : "italic font-normal text-slate-400",
               )}
               title={species.siteUrl || undefined}
