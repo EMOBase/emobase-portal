@@ -29,7 +29,7 @@ export default function SpeciesCard({
   onDelete?: () => Promise<unknown> | void;
 }) {
   return (
-    <article className="relative flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+    <article className="relative isolate flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
       {href ? (
         <a
           href={href}
