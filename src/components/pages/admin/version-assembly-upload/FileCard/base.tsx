@@ -232,8 +232,9 @@ export const FileCardBase = ({
           <ProgressBar
             progress={effectiveProgress}
             title={effectiveProgressTitle || ""}
-            theme={isPaused ? "gray" : file.theme}
+            theme={isError ? "red" : isPaused ? "gray" : file.theme}
             showComplete={isReady}
+            showError={isError}
             size={cardSize}
           />
         ) : isPending && canUpload ? (

@@ -214,6 +214,25 @@ export const ProcessingTrack: Story = {
   },
 };
 
+export const ErrorTrack: Story = {
+  name: "Error — small JBrowse2 track (failed processing)",
+  args: {
+    file: makeFile({
+      name: "genes.gff.gz",
+      category: "JBrowse2 Track",
+      icon: "database",
+      status: "ERROR",
+      progress: 100,
+      error: "Processing failed",
+      theme: "orange",
+      size: "8.4 MB",
+      id: "file-8",
+    }),
+    onDelete: () => {},
+    cardSize: "sm",
+  },
+};
+
 export const ProcessingOrange: Story = {
   name: "Processing — orange theme (dsRNA)",
   args: {
@@ -329,6 +348,23 @@ export const AllCases: Story = {
           theme: "orange",
           size: "8.4 MB",
           id: "file-6",
+        })}
+        isUploading={false}
+        uploadProgress={0}
+        onDelete={() => {}}
+        cardSize="sm"
+      />
+      <FileCardBase
+        file={makeFile({
+          name: "genes.gff.gz",
+          category: "JBrowse2 Track",
+          icon: "database",
+          status: "ERROR",
+          progress: 100,
+          error: "Processing failed",
+          theme: "orange",
+          size: "8.4 MB",
+          id: "file-8",
         })}
         isUploading={false}
         uploadProgress={0}

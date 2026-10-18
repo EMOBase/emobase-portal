@@ -5,12 +5,14 @@ export function ProgressBar({
   title,
   theme = "orange",
   showComplete = false,
+  showError = false,
   size = "md",
 }: {
   progress: number;
   title: string;
-  theme?: "orange" | "blue" | "gray";
+  theme?: "orange" | "blue" | "gray" | "red";
   showComplete?: boolean;
+  showError?: boolean;
   size?: "sm" | "md";
 }) {
   const barColor =
@@ -18,19 +20,17 @@ export function ProgressBar({
       ? "bg-blue-700"
       : theme === "gray"
         ? "bg-slate-400"
-        : "bg-orange-500";
-  const completeColor =
+        : theme === "red"
+          ? "bg-red-500"
+          : "bg-orange-500";
+  const accentColor =
     theme === "blue"
       ? "text-blue-700"
       : theme === "gray"
         ? "text-slate-500"
-        : "text-orange-500";
-  const progressColor =
-    theme === "blue"
-      ? "text-blue-700"
-      : theme === "gray"
-        ? "text-slate-500"
-        : "text-orange-500";
+        : theme === "red"
+          ? "text-red-500"
+          : "text-orange-500";
 
   const isComplete = showComplete && progress === 100;
 
@@ -43,12 +43,26 @@ export function ProgressBar({
         )}
       >
         {/* Left label: only shown when in-progress */}
-        <span className={cn(title ? progressColor : "invisible")}>
+        <span className={cn(title && !showError ? accentColor : "invisible")}>
           {title || "·"}
         </span>
-        {/* Right label: COMPLETE or blank */}
-        <span className={isComplete ? completeColor : "text-slate-400"}>
-          {isComplete ? "COMPLETE" : title ? `${progress}%` : ""}
+        {/* Right label: ERROR, COMPLETE, or blank */}
+        <span
+          className={cn(
+            showError
+              ? "text-red-500"
+              : isComplete
+                ? accentColor
+                : "text-slate-400",
+          )}
+        >
+          {showError
+            ? "ERROR"
+            : isComplete
+              ? "COMPLETE"
+              : title
+                ? `${progress}%`
+                : ""}
         </span>
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
