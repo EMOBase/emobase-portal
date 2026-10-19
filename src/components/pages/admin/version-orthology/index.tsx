@@ -100,12 +100,30 @@ export default function VersionOrthology({
   }, [data]);
 
   const [uploads, setUploads] = React.useState<
-    Array<{ id: string; file: File; order: number; algorithm: string }>
+    Array<{
+      id: string;
+      file: File;
+      fileType: "orthology.tsv" | "orthology.bundle";
+      order?: number;
+      algorithm?: string;
+      metadataFile?: File | null;
+    }>
   >([]);
 
   function handleAdd(file: File, order: number, algorithm: string) {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    setUploads((prev) => [...prev, { id, file, order, algorithm }]);
+    setUploads((prev) => [
+      ...prev,
+      { id, file, fileType: "orthology.tsv", order, algorithm },
+    ]);
+  }
+
+  function handleAddBundle(bundleFile: File, metadataFile: File | null) {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    setUploads((prev) => [
+      ...prev,
+      { id, file: bundleFile, fileType: "orthology.bundle", metadataFile },
+    ]);
   }
 
   const needsPolling =
@@ -148,7 +166,10 @@ export default function VersionOrthology({
             species. Shared across every assembly in this version.
           </p>
         </div>
-        <AddOrthologyButton onConfirm={handleAdd} />
+        <AddOrthologyButton
+          onConfirm={handleAdd}
+          onBatchConfirm={handleAddBundle}
+        />
       </div>
 
       {/* Files */}
@@ -168,6 +189,7 @@ export default function VersionOrthology({
             key={item.id}
             file={item.file}
             versionName={versionName}
+            fileType={item.fileType}
             order={item.order}
             algorithm={item.algorithm}
             onComplete={() => {
@@ -188,7 +210,7 @@ export default function VersionOrthology({
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <AddSingleOrthologyButton onConfirm={handleAdd} />
-              <AddBatchOrthologyButton />
+              <AddBatchOrthologyButton onConfirm={handleAddBundle} />
             </div>
           </div>
         ) : null}

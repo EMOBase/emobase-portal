@@ -7,6 +7,7 @@ import { FileCardBase } from "@/components/pages/admin/version-assembly-upload/F
 export const OrthologyFileCard = ({
   file,
   versionName,
+  fileType = "orthology.tsv",
   order,
   algorithm,
   onComplete,
@@ -14,12 +15,14 @@ export const OrthologyFileCard = ({
 }: {
   file: File;
   versionName: string;
-  order: number;
-  algorithm: string;
+  fileType?: "orthology.tsv" | "orthology.bundle";
+  order?: number;
+  algorithm?: string;
   onComplete: () => void;
   size?: "sm" | "md";
 }) => {
   const { upload, progress, isUploading, error } = useUpload();
+  const isBundle = fileType === "orthology.bundle";
 
   useEffect(() => {
     let cancelled = false;
@@ -27,7 +30,7 @@ export const OrthologyFileCard = ({
     upload({
       file,
       version: versionName,
-      fileType: "orthology.tsv",
+      fileType,
       order,
       algorithm,
     })
@@ -60,8 +63,8 @@ export const OrthologyFileCard = ({
     <FileCardBase
       file={{
         name: file.name,
-        category: "Orthology Mapping",
-        icon: "tsv",
+        category: isBundle ? "Orthology Bundle" : "Orthology Mapping",
+        icon: isBundle ? "zip" : "tsv",
         status: error ? "ERROR" : "UPLOADING",
         progress,
         progressTitle: "IN TRANSIT",

@@ -8,6 +8,7 @@ import {
   ChartLine,
   Database,
   Dna,
+  FileArchive,
   FileText,
   Hash,
   Microscope,
@@ -64,6 +65,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   "chart-line": ChartLine,
   "arrow-left-right": ArrowLeftRight,
   tsv: Table,
+  zip: FileArchive,
 };
 
 function FileIcon({ name, className }: { name: string; className?: string }) {
