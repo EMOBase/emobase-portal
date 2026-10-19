@@ -2,7 +2,7 @@ import * as React from "react";
 import { ArrowRight, ChevronRight } from "lucide-react";
 
 import AddAssemblyCard from "./AddAssemblyCard";
-import SpeciesCard from "./SpeciesCard";
+import AssemblyCard from "./AssemblyCard";
 import VersionActionButton from "./VersionActionButton";
 import type { AssemblyFormValues } from "./AssemblyFormModal";
 import { toastManager } from "@/components/ui/toaster";
@@ -208,7 +208,7 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
 
         <div className="grid auto-rows-fr grid-cols-2 gap-4 lg:grid-cols-3">
           {assemblies.map((assembly) => (
-            <SpeciesCard
+            <AssemblyCard
               key={assembly.id}
               species={{
                 id: assembly.id,

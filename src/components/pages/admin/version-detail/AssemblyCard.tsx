@@ -18,7 +18,7 @@ export type AssemblyCardItem = {
   infoUrl?: string | null;
 };
 
-export default function SpeciesCard({
+export default function AssemblyCard({
   species,
   href,
   onSubmit,
@@ -59,44 +59,31 @@ export default function SpeciesCard({
           className="absolute inset-0 h-full w-full object-cover"
         />
 
-        <Tooltip.Provider>
-          <Tooltip.Root>
-            <AssemblyImageModal
-              trigger={
-                <Tooltip.Trigger
-                  type="button"
-                  aria-label={`${hasImage ? "Replace" : "Upload"} image for ${species.name}`}
-                  className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1.5 rounded-full bg-slate-900/70 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-slate-900"
-                >
-                  {hasImage ? (
-                    <ImageUp className="size-3.5" />
-                  ) : (
-                    <ImagePlus className="size-3.5" />
-                  )}
-                  {hasImage ? "Replace" : "Upload"}
-                </Tooltip.Trigger>
-              }
-              title={
-                hasImage ? "Replace Assembly Image" : "Upload Assembly Image"
-              }
-              description={
-                hasImage
-                  ? `Replace or remove the image shown for ${species.name}.`
-                  : `Upload an image to show for ${species.name}.`
-              }
-              currentImageUrl={species.image}
-              onSubmit={onImageUpload ?? (() => {})}
-              onRemove={onImageRemove}
-            />
-            <Tooltip.Portal>
-              <Tooltip.Positioner side="top" sideOffset={6}>
-                <Tooltip.Popup className="z-50 rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white shadow-md outline-none">
-                  {hasImage ? "Replace image" : "Upload image"}
-                </Tooltip.Popup>
-              </Tooltip.Positioner>
-            </Tooltip.Portal>
-          </Tooltip.Root>
-        </Tooltip.Provider>
+        <AssemblyImageModal
+          trigger={
+            <button
+              type="button"
+              aria-label={`${hasImage ? "Replace" : "Upload"} image for ${species.name}`}
+              className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1.5 rounded-full bg-slate-900/70 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-slate-900"
+            >
+              {hasImage ? (
+                <ImageUp className="size-3.5" />
+              ) : (
+                <ImagePlus className="size-3.5" />
+              )}
+              {hasImage ? "Replace" : "Upload"}
+            </button>
+          }
+          title={hasImage ? "Replace Assembly Image" : "Upload Assembly Image"}
+          description={
+            hasImage
+              ? `Replace or remove the image shown for ${species.name}.`
+              : `Upload an image to show for ${species.name}.`
+          }
+          currentImageUrl={species.image}
+          onSubmit={onImageUpload ?? (() => {})}
+          onRemove={onImageRemove}
+        />
       </div>
 
       <div className="flex flex-grow flex-col p-6">

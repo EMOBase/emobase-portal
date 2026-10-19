@@ -11,7 +11,7 @@ import spiderImage from "@/assets/species/Common_House_Spider.jpg?url";
 import lymnaeaImage from "@/assets/species/Lymnaea-stagnalis.jpg?url";
 import placeholderImage from "@/assets/species/placeholder.svg?url";
 
-type SpeciesCardData = {
+type AssemblyCardData = {
   image?: string;
   alt: string;
   tag: string;
@@ -23,7 +23,7 @@ type SpeciesCardData = {
   siteUrl: string;
 };
 
-const speciesCards: SpeciesCardData[] = [
+const assemblyCards: AssemblyCardData[] = [
   {
     image: triboliumImage,
     alt: "Beetle",
@@ -120,7 +120,7 @@ export default function HomePage() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {speciesCards.map((card) => (
+          {assemblyCards.map((card) => (
             <div
               key={card.name}
               className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col"
