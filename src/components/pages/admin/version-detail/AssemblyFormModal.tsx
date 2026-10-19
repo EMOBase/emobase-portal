@@ -63,7 +63,7 @@ export default function AssemblyFormModal({
   function handleOpenChange(next: boolean) {
     if (form.submitting) return;
     setOpen(next);
-    if (!next) form.reset();
+    form.reset();
   }
 
   async function handleSubmit() {
@@ -127,7 +127,7 @@ export default function AssemblyFormModal({
               id="assembly-info-url"
               value={form.values.infoUrl}
               onChange={(e) => form.setField("infoUrl", e.target.value)}
-              placeholder="https://example.org"
+              placeholder="e.g. https://example.org"
               disabled={form.submitting}
               aria-invalid={Boolean(form.errors.infoUrl)}
             />
