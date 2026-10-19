@@ -3,6 +3,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { CloudUpload, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { FileInput } from "@/components/ui/file-input";
 import { Input } from "@/components/ui/input";
 
 export default function AddJBrowseTrackButton({
@@ -76,12 +77,12 @@ export default function AddJBrowseTrackButton({
             >
               Track File
             </label>
-            <Input
+            <FileInput
               id="jbrowse-track-file"
-              type="file"
               accept=".bw,.bgz,.gz"
-              onChange={(e) => {
-                setFile(e.target.files?.[0] ?? null);
+              value={file}
+              onFiles={(files) => {
+                setFile(files[0] ?? null);
                 if (error) setError(null);
               }}
               aria-invalid={error && !file ? true : undefined}

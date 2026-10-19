@@ -3,7 +3,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Loader2, Trash2, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { FileInput } from "@/components/ui/file-input";
 import placeholderImage from "@/assets/species/placeholder.svg?url";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -57,8 +57,8 @@ export default function AssemblyImageModal({
     if (!next) reset();
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = e.target.files?.[0] ?? null;
+  function handleFiles(files: File[]) {
+    const selected = files[0] ?? null;
     revokePreview();
     setFile(null);
     if (!selected) return;
@@ -133,12 +133,13 @@ export default function AssemblyImageModal({
             >
               Image
             </label>
-            <Input
+            <FileInput
               id="assembly-image"
-              type="file"
               accept="image/png,image/jpeg,image/webp"
-              onChange={handleFileChange}
+              value={file}
+              onFiles={handleFiles}
               disabled={busy}
+              placeholder="Choose an image…"
               aria-invalid={error ? true : undefined}
             />
             <p className="mt-1 text-xs text-slate-500">

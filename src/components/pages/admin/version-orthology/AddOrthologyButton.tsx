@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { FileInput } from "@/components/ui/file-input";
 import { Input } from "@/components/ui/input";
 
 type OnConfirm = (file: File, order: number, algorithm: string) => void;
@@ -86,12 +87,12 @@ function useOrthologyUploadDialog(onConfirm?: OnConfirm) {
             >
               Source File
             </label>
-            <Input
+            <FileInput
               id="orthology-file"
-              type="file"
               accept=".gz,.gzip"
-              onChange={(e) => {
-                setFile(e.target.files?.[0] ?? null);
+              value={file}
+              onFiles={(files) => {
+                setFile(files[0] ?? null);
                 if (error) setError(null);
               }}
               aria-invalid={error && !file ? true : undefined}
