@@ -3,7 +3,9 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Loader2, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useForm } from "@/hooks/useForm";
 
 export default function CreateVersionButton({
   onCreate,
@@ -11,41 +13,25 @@ export default function CreateVersionButton({
   onCreate?: (name: string) => Promise<unknown> | void;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [name, setName] = React.useState("");
-  const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  function reset() {
-    setName("");
-    setError(null);
-    setSubmitting(false);
-  }
+  const form = useForm<{ name: string }>({
+    defaultValues: { name: "" },
+    validate: (values) => ({
+      name: values.name.trim() ? undefined : "Version name is required",
+    }),
+    onSubmit: (values) => onCreate?.(values.name.trim()),
+  });
 
   function handleOpenChange(next: boolean) {
-    if (submitting) return;
+    if (form.submitting) return;
     setOpen(next);
-    if (!next) reset();
+    if (!next) form.reset();
   }
 
   async function handleContinue() {
-    const trimmed = name.trim();
-    if (!trimmed) {
-      setError("Version name is required");
-      return;
-    }
-
-    setSubmitting(true);
-    setError(null);
-    try {
-      await onCreate?.(trimmed);
+    if (await form.handleSubmit()) {
       window.location.assign(
-        `/admin/versions/${encodeURIComponent(trimmed)}`,
+        `/admin/versions/${encodeURIComponent(form.values.name.trim())}`,
       );
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create version",
-      );
-      setSubmitting(false);
     }
   }
 
@@ -61,7 +47,10 @@ export default function CreateVersionButton({
       />
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-slate-900/40" />
-        <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none">
+        <Dialog.Popup
+          ref={form.formRef}
+          className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none"
+        >
           <Dialog.Title className="text-xl font-bold text-slate-900 mb-1.5">
             Create New Version
           </Dialog.Title>
@@ -69,28 +58,20 @@ export default function CreateVersionButton({
             Initialize a new version of genomic data.
           </Dialog.Description>
 
-          <div className="mb-4">
-            <label
-              htmlFor="version-name"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-            >
-              Version Name
-            </label>
+          <Field
+            label="Version Name"
+            htmlFor="version-name"
+            error={form.errors.name}
+          >
             <Input
               id="version-name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (error) setError(null);
-              }}
+              value={form.values.name}
+              onChange={(e) => form.setField("name", e.target.value)}
               placeholder="e.g., v3.5.0"
-              disabled={submitting}
-              aria-invalid={error ? true : undefined}
+              disabled={form.submitting}
+              aria-invalid={Boolean(form.errors.name)}
             />
-            {error ? (
-              <p className="mt-1 text-sm text-destructive">{error}</p>
-            ) : null}
-          </div>
+          </Field>
 
           <div className="flex flex-col gap-2 rounded-sm bg-blue-50 p-4">
             <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
@@ -102,10 +83,14 @@ export default function CreateVersionButton({
             </p>
           </div>
 
+          {form.formError ? (
+            <p className="mt-4 text-sm text-destructive">{form.formError}</p>
+          ) : null}
+
           <div className="mt-6 flex justify-end gap-2">
             <Dialog.Close
               render={
-                <Button variant="outline" disabled={submitting}>
+                <Button variant="outline" disabled={form.submitting}>
                   Cancel
                 </Button>
               }
@@ -113,9 +98,9 @@ export default function CreateVersionButton({
             <Button
               variant="default"
               onClick={handleContinue}
-              disabled={submitting}
+              disabled={form.submitting}
             >
-              {submitting ? (
+              {form.submitting ? (
                 <>
                   <Loader2 className="animate-spin" />
                   Creating...

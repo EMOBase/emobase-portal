@@ -47,7 +47,8 @@ function FileInput({
       }}
       className={cn(
         "relative flex h-10 w-full min-w-0 cursor-pointer items-center gap-3 rounded-(--radius-control) border border-input bg-transparent pl-3 pr-2.5 text-base transition-colors outline-none md:text-sm dark:bg-input/30",
-        "focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
+        !invalid &&
+          "focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
         invalid &&
           "border-destructive ring-3 ring-destructive/20 dark:border-destructive/50 dark:ring-destructive/40",
         disabled &&

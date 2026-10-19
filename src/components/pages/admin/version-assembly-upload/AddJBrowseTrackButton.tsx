@@ -3,8 +3,10 @@ import { Dialog } from "@base-ui/react/dialog";
 import { CloudUpload, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import { FileInput } from "@/components/ui/file-input";
 import { Input } from "@/components/ui/input";
+import { useForm } from "@/hooks/useForm";
 
 export default function AddJBrowseTrackButton({
   onConfirm,
@@ -17,38 +19,45 @@ export default function AddJBrowseTrackButton({
   ) => void;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [file, setFile] = React.useState<File | null>(null);
-  const [trackName, setTrackName] = React.useState("");
-  const [category, setCategory] = React.useState("");
-  const [selectInDefaultSession, setSelectInDefaultSession] =
-    React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const form = useForm<{
+    file: File | null;
+    trackName: string;
+    category: string;
+    selectInDefaultSession: boolean;
+  }>({
+    defaultValues: {
+      file: null,
+      trackName: "",
+      category: "",
+      selectInDefaultSession: false,
+    },
+    validate: (values) => ({
+      file: values.file ? undefined : "Please choose a track file",
+      trackName: values.trackName.trim() ? undefined : "Track name is required",
+    }),
+    onSubmit: (values) =>
+      onConfirm?.(
+        values.file!,
+        values.trackName.trim(),
+        values.category.trim() || undefined,
+        values.selectInDefaultSession,
+      ),
+  });
 
-  function handleConfirm() {
-    if (!file) {
-      setError("Please choose a track file");
-      return;
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    if (!next) form.reset();
+  }
+
+  async function handleConfirm() {
+    if (await form.handleSubmit()) {
+      setOpen(false);
+      form.reset();
     }
-    if (!trackName.trim()) {
-      setError("Track name is required");
-      return;
-    }
-    onConfirm?.(
-      file,
-      trackName.trim(),
-      category.trim() || undefined,
-      selectInDefaultSession,
-    );
-    setOpen(false);
-    setFile(null);
-    setTrackName("");
-    setCategory("");
-    setSelectInDefaultSession(false);
-    setError(null);
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={(next) => setOpen(next)}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Trigger
         render={
           <button
@@ -62,7 +71,10 @@ export default function AddJBrowseTrackButton({
       />
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-slate-900/40" />
-        <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none">
+        <Dialog.Popup
+          ref={form.formRef}
+          className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none"
+        >
           <Dialog.Title className="text-xl font-bold text-slate-900 mb-1.5">
             Add JBrowse2 Track
           </Dialog.Title>
@@ -70,74 +82,75 @@ export default function AddJBrowseTrackButton({
             Upload a visualisation track for the JBrowse2 genome browser.
           </Dialog.Description>
 
-          <div className="mb-4">
-            <label
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-              htmlFor="jbrowse-track-file"
-            >
-              Track File
-            </label>
+          <Field
+            label="Track File"
+            htmlFor="jbrowse-track-file"
+            error={form.errors.file}
+          >
             <FileInput
               id="jbrowse-track-file"
               accept=".bw,.bgz,.gz"
-              value={file}
-              onFiles={(files) => {
-                setFile(files[0] ?? null);
-                if (error) setError(null);
-              }}
-              aria-invalid={error && !file ? true : undefined}
+              value={form.values.file}
+              onFiles={(files) => form.setField("file", files[0] ?? null)}
+              disabled={form.submitting}
+              aria-invalid={Boolean(form.errors.file)}
             />
-            {error && !file ? (
-              <p className="mt-1 text-sm text-destructive">{error}</p>
-            ) : null}
-          </div>
+          </Field>
 
-          <div className="mb-4">
-            <label
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-              htmlFor="jbrowse-track-name"
-            >
-              Track Name
-            </label>
+          <Field
+            label="Track Name"
+            htmlFor="jbrowse-track-name"
+            error={form.errors.trackName}
+          >
             <Input
               id="jbrowse-track-name"
-              value={trackName}
-              onChange={(e) => {
-                setTrackName(e.target.value);
-                if (error) setError(null);
-              }}
+              value={form.values.trackName}
+              onChange={(e) => form.setField("trackName", e.target.value)}
               placeholder="e.g., Coverage track"
+              disabled={form.submitting}
+              aria-invalid={Boolean(form.errors.trackName)}
             />
-          </div>
+          </Field>
 
-          <div className="mb-4">
-            <label
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-              htmlFor="jbrowse-track-category"
-            >
-              Category <span className="text-slate-400">(optional)</span>
-            </label>
+          <Field label="Category" htmlFor="jbrowse-track-category" optional>
             <Input
               id="jbrowse-track-category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={form.values.category}
+              onChange={(e) => form.setField("category", e.target.value)}
               placeholder="e.g., Functional annotation"
+              disabled={form.submitting}
             />
-          </div>
+          </Field>
 
           <label className="flex items-center gap-2 text-sm text-slate-600">
             <input
               type="checkbox"
-              checked={selectInDefaultSession}
-              onChange={(e) => setSelectInDefaultSession(e.target.checked)}
+              checked={form.values.selectInDefaultSession}
+              onChange={(e) =>
+                form.setField("selectInDefaultSession", e.target.checked)
+              }
               className="size-4 rounded-sm border-slate-300"
             />
             Select this track in default session
           </label>
 
+          {form.formError ? (
+            <p className="mt-4 text-sm text-destructive">{form.formError}</p>
+          ) : null}
+
           <div className="mt-6 flex justify-end gap-2">
-            <Dialog.Close render={<Button variant="outline">Cancel</Button>} />
-            <Button variant="default" onClick={handleConfirm}>
+            <Dialog.Close
+              render={
+                <Button variant="outline" disabled={form.submitting}>
+                  Cancel
+                </Button>
+              }
+            />
+            <Button
+              variant="default"
+              onClick={handleConfirm}
+              disabled={form.submitting}
+            >
               <CloudUpload className="h-4 w-4" />
               Confirm & Upload
             </Button>

@@ -3,7 +3,9 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useForm } from "@/hooks/useForm";
 
 export type AssemblyFormValues = {
   name: string;
@@ -31,56 +33,43 @@ export default function AssemblyFormModal({
   lockSpecies = false,
 }: AssemblyFormModalProps) {
   const [open, setOpen] = React.useState(false);
-  const [name, setName] = React.useState(defaultValues?.name ?? "");
-  const [species, setSpecies] = React.useState(defaultValues?.species ?? "");
-  const [infoUrl, setInfoUrl] = React.useState(defaultValues?.infoUrl ?? "");
-  const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  function reset() {
-    setName(defaultValues?.name ?? "");
-    setSpecies(defaultValues?.species ?? "");
-    setInfoUrl(defaultValues?.infoUrl ?? "");
-    setError(null);
-    setSubmitting(false);
-  }
+  const form = useForm<AssemblyFormValues>({
+    defaultValues: {
+      name: defaultValues?.name ?? "",
+      species: defaultValues?.species ?? "",
+      infoUrl: defaultValues?.infoUrl ?? "",
+    },
+    validate: (values) => {
+      const name = values.name.trim();
+      const species = values.species.trim();
+      const infoUrl = values.infoUrl.trim();
+      return {
+        name: name ? undefined : "Assembly name is required",
+        species: species ? undefined : "Species is required",
+        infoUrl:
+          infoUrl && !/^https?:\/\/.+/i.test(infoUrl)
+            ? "Link must be an absolute http or https URL"
+            : undefined,
+      };
+    },
+    onSubmit: (values) =>
+      onSubmit({
+        name: values.name.trim(),
+        species: values.species.trim(),
+        infoUrl: values.infoUrl.trim(),
+      }),
+  });
 
   function handleOpenChange(next: boolean) {
-    if (submitting) return;
+    if (form.submitting) return;
     setOpen(next);
-    if (!next) reset();
+    if (!next) form.reset();
   }
 
   async function handleSubmit() {
-    const trimmedName = name.trim();
-    const trimmedSpecies = species.trim();
-    const trimmedInfoUrl = infoUrl.trim();
-    if (!trimmedName) {
-      setError("Assembly name is required");
-      return;
-    }
-    if (!trimmedSpecies) {
-      setError("Species is required");
-      return;
-    }
-    if (trimmedInfoUrl && !/^https?:\/\/.+/i.test(trimmedInfoUrl)) {
-      setError("Link must be an absolute http or https URL");
-      return;
-    }
-
-    setSubmitting(true);
-    setError(null);
-    try {
-      await onSubmit({
-        name: trimmedName,
-        species: trimmedSpecies,
-        infoUrl: trimmedInfoUrl,
-      });
+    if (await form.handleSubmit()) {
       setOpen(false);
-      reset();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-      setSubmitting(false);
+      form.reset();
     }
   }
 
@@ -89,7 +78,10 @@ export default function AssemblyFormModal({
       <Dialog.Trigger render={trigger} />
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-slate-900/40" />
-        <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none">
+        <Dialog.Popup
+          ref={form.formRef}
+          className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none"
+        >
           <Dialog.Title className="text-xl font-bold text-slate-900 mb-1.5">
             {title}
           </Dialog.Title>
@@ -99,75 +91,56 @@ export default function AssemblyFormModal({
             </Dialog.Description>
           ) : null}
 
-          <div className="mb-4">
-            <label
-              htmlFor="assembly-name"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-            >
-              Name
-            </label>
+          <Field label="Name" htmlFor="assembly-name" error={form.errors.name}>
             <Input
               id="assembly-name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (error) setError(null);
-              }}
+              value={form.values.name}
+              onChange={(e) => form.setField("name", e.target.value)}
               placeholder="e.g. Tcas 5.2"
-              disabled={submitting}
-              aria-invalid={error ? true : undefined}
+              disabled={form.submitting}
+              aria-invalid={Boolean(form.errors.name)}
             />
-          </div>
+          </Field>
 
-          <div className="mb-4">
-            <label
-              htmlFor="assembly-species"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-            >
-              Species
-            </label>
+          <Field
+            label="Species"
+            htmlFor="assembly-species"
+            error={form.errors.species}
+          >
             <Input
               id="assembly-species"
-              value={species}
-              onChange={(e) => {
-                setSpecies(e.target.value);
-                if (error) setError(null);
-              }}
+              value={form.values.species}
+              onChange={(e) => form.setField("species", e.target.value)}
               placeholder="e.g. Tribolium castaneum"
-              disabled={submitting || lockSpecies}
-              aria-invalid={error ? true : undefined}
+              disabled={form.submitting || lockSpecies}
+              aria-invalid={Boolean(form.errors.species)}
             />
-          </div>
+          </Field>
 
-          <div className="mb-4">
-            <label
-              htmlFor="assembly-info-url"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-            >
-              Link{" "}
-              <span className="font-normal text-slate-400">(optional)</span>
-            </label>
+          <Field
+            label="Link"
+            htmlFor="assembly-info-url"
+            optional
+            error={form.errors.infoUrl}
+          >
             <Input
               id="assembly-info-url"
-              value={infoUrl}
-              onChange={(e) => {
-                setInfoUrl(e.target.value);
-                if (error) setError(null);
-              }}
+              value={form.values.infoUrl}
+              onChange={(e) => form.setField("infoUrl", e.target.value)}
               placeholder="https://example.org"
-              disabled={submitting}
-              aria-invalid={error ? true : undefined}
+              disabled={form.submitting}
+              aria-invalid={Boolean(form.errors.infoUrl)}
             />
-          </div>
+          </Field>
 
-          {error ? (
-            <p className="mb-4 text-sm text-destructive">{error}</p>
+          {form.formError ? (
+            <p className="mb-4 text-sm text-destructive">{form.formError}</p>
           ) : null}
 
           <div className="flex justify-end gap-2">
             <Dialog.Close
               render={
-                <Button variant="outline" disabled={submitting}>
+                <Button variant="outline" disabled={form.submitting}>
                   Cancel
                 </Button>
               }
@@ -175,9 +148,9 @@ export default function AssemblyFormModal({
             <Button
               variant="default"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={form.submitting}
             >
-              {submitting ? (
+              {form.submitting ? (
                 <>
                   <Loader2 className="animate-spin" />
                   {submitLabel}

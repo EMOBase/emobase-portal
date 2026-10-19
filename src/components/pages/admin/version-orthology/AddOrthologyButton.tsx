@@ -10,8 +10,10 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import { FileInput } from "@/components/ui/file-input";
 import { Input } from "@/components/ui/input";
+import { useForm } from "@/hooks/useForm";
 
 type OnConfirm = (file: File, order: number, algorithm: string) => void;
 
@@ -20,45 +22,42 @@ const triggerClassName =
 
 function useOrthologyUploadDialog(onConfirm?: OnConfirm) {
   const [open, setOpen] = React.useState(false);
-  const [file, setFile] = React.useState<File | null>(null);
-  const [order, setOrder] = React.useState("1");
-  const [algorithm, setAlgorithm] = React.useState("");
-  const [error, setError] = React.useState<string | null>(null);
+  const form = useForm<{
+    file: File | null;
+    order: string;
+    algorithm: string;
+  }>({
+    defaultValues: { file: null, order: "1", algorithm: "" },
+    validate: (values) => {
+      const file = values.file;
+      const orderValue = Number(values.order);
+      return {
+        file: !file
+          ? "Please select a file to upload"
+          : !file.name.endsWith(".gz") && !file.name.endsWith(".gzip")
+            ? "Only .gz or .gzip files are accepted"
+            : undefined,
+        order:
+          values.order.trim() === "" ||
+          Number.isNaN(orderValue) ||
+          orderValue <= 0 ||
+          !Number.isInteger(orderValue)
+            ? "Please enter a valid positive integer"
+            : undefined,
+        algorithm: values.algorithm.trim()
+          ? undefined
+          : "Please enter an algorithm name",
+      };
+    },
+    onSubmit: (values) =>
+      onConfirm?.(values.file!, Number(values.order), values.algorithm.trim()),
+  });
 
-  function reset() {
-    setFile(null);
-    setOrder("1");
-    setAlgorithm("");
-    setError(null);
-  }
-
-  function handleConfirm() {
-    if (!file) {
-      setError("Please select a file to upload");
-      return;
+  async function handleConfirm() {
+    if (await form.handleSubmit()) {
+      setOpen(false);
+      form.reset();
     }
-    if (!file.name.endsWith(".gz") && !file.name.endsWith(".gzip")) {
-      setError("Only .gz or .gzip files are accepted");
-      return;
-    }
-    const orderValue = Number(order);
-    if (
-      order.trim() === "" ||
-      Number.isNaN(orderValue) ||
-      orderValue <= 0 ||
-      !Number.isInteger(orderValue)
-    ) {
-      setError("Please enter a valid positive integer for Display Order");
-      return;
-    }
-    if (!algorithm.trim()) {
-      setError("Please enter an algorithm name");
-      return;
-    }
-
-    onConfirm?.(file, orderValue, algorithm.trim());
-    setOpen(false);
-    reset();
   }
 
   const dialog = (
@@ -66,12 +65,15 @@ function useOrthologyUploadDialog(onConfirm?: OnConfirm) {
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) reset();
+        if (!next) form.reset();
       }}
     >
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-slate-900/40" />
-        <Dialog.Popup className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none">
+        <Dialog.Popup
+          ref={form.formRef}
+          className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none"
+        >
           <Dialog.Title className="text-xl font-bold text-slate-900 mb-1.5">
             Add Orthology Dataset
           </Dialog.Title>
@@ -80,74 +82,71 @@ function useOrthologyUploadDialog(onConfirm?: OnConfirm) {
             every species in this version.
           </Dialog.Description>
 
-          <div className="mb-4">
-            <label
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-              htmlFor="orthology-file"
-            >
-              Source File
-            </label>
+          <Field
+            label="Source File"
+            htmlFor="orthology-file"
+            error={form.errors.file}
+          >
             <FileInput
               id="orthology-file"
               accept=".gz,.gzip"
-              value={file}
-              onFiles={(files) => {
-                setFile(files[0] ?? null);
-                if (error) setError(null);
-              }}
-              aria-invalid={error && !file ? true : undefined}
+              value={form.values.file}
+              onFiles={(files) => form.setField("file", files[0] ?? null)}
+              disabled={form.submitting}
+              aria-invalid={Boolean(form.errors.file)}
             />
-            {error && !file ? (
-              <p className="mt-1 text-sm text-destructive">{error}</p>
-            ) : null}
-          </div>
+          </Field>
 
-          <div className="mb-4">
-            <label
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-              htmlFor="orthology-order"
-            >
-              Display Order
-            </label>
+          <Field
+            label="Display Order"
+            htmlFor="orthology-order"
+            error={form.errors.order}
+          >
             <Input
               id="orthology-order"
               type="number"
               min="1"
               step="1"
-              value={order}
-              onChange={(e) => {
-                setOrder(e.target.value);
-                if (error) setError(null);
-              }}
+              value={form.values.order}
+              onChange={(e) => form.setField("order", e.target.value)}
               placeholder="e.g., 1"
+              disabled={form.submitting}
+              aria-invalid={Boolean(form.errors.order)}
             />
-          </div>
+          </Field>
 
-          <div className="mb-4">
-            <label
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-              htmlFor="orthology-algorithm"
-            >
-              Algorithm
-            </label>
+          <Field
+            label="Algorithm"
+            htmlFor="orthology-algorithm"
+            error={form.errors.algorithm}
+          >
             <Input
               id="orthology-algorithm"
-              value={algorithm}
-              onChange={(e) => {
-                setAlgorithm(e.target.value);
-                if (error) setError(null);
-              }}
+              value={form.values.algorithm}
+              onChange={(e) => form.setField("algorithm", e.target.value)}
               placeholder="e.g., OrthoFinder 2.0"
+              disabled={form.submitting}
+              aria-invalid={Boolean(form.errors.algorithm)}
             />
-          </div>
+          </Field>
 
-          {error && file ? (
-            <p className="mt-1 mb-2 text-sm text-destructive">{error}</p>
+          {form.formError ? (
+            <p className="mb-2 text-sm text-destructive">{form.formError}</p>
           ) : null}
 
           <div className="mt-6 flex justify-end gap-2">
-            <Dialog.Close render={<Button variant="outline">Cancel</Button>} />
-            <Button variant="default" onClick={handleConfirm}>
+            <Dialog.Close
+              render={
+                <Button variant="outline" disabled={form.submitting}>
+                  Cancel
+                </Button>
+              }
+            />
+            <Button
+              variant="default"
+              onClick={handleConfirm}
+              disabled={form.submitting}
+            >
               <CloudUpload className="h-4 w-4" />
               Confirm & Upload
             </Button>
