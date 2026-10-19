@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 export type AssemblyFormValues = {
   name: string;
   species: string;
+  infoUrl: string;
 };
 
 type AssemblyFormModalProps = {
@@ -15,8 +16,9 @@ type AssemblyFormModalProps = {
   title: string;
   description?: React.ReactNode;
   submitLabel: string;
-  defaultValues?: AssemblyFormValues;
+  defaultValues?: Partial<AssemblyFormValues>;
   onSubmit: (values: AssemblyFormValues) => Promise<unknown> | void;
+  lockSpecies?: boolean;
 };
 
 export default function AssemblyFormModal({
@@ -26,16 +28,19 @@ export default function AssemblyFormModal({
   submitLabel,
   defaultValues,
   onSubmit,
+  lockSpecies = false,
 }: AssemblyFormModalProps) {
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState(defaultValues?.name ?? "");
   const [species, setSpecies] = React.useState(defaultValues?.species ?? "");
+  const [infoUrl, setInfoUrl] = React.useState(defaultValues?.infoUrl ?? "");
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   function reset() {
     setName(defaultValues?.name ?? "");
     setSpecies(defaultValues?.species ?? "");
+    setInfoUrl(defaultValues?.infoUrl ?? "");
     setError(null);
     setSubmitting(false);
   }
@@ -49,6 +54,7 @@ export default function AssemblyFormModal({
   async function handleSubmit() {
     const trimmedName = name.trim();
     const trimmedSpecies = species.trim();
+    const trimmedInfoUrl = infoUrl.trim();
     if (!trimmedName) {
       setError("Assembly name is required");
       return;
@@ -57,11 +63,19 @@ export default function AssemblyFormModal({
       setError("Species is required");
       return;
     }
+    if (trimmedInfoUrl && !/^https?:\/\/.+/i.test(trimmedInfoUrl)) {
+      setError("Link must be an absolute http or https URL");
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
     try {
-      await onSubmit({ name: trimmedName, species: trimmedSpecies });
+      await onSubmit({
+        name: trimmedName,
+        species: trimmedSpecies,
+        infoUrl: trimmedInfoUrl,
+      });
       setOpen(false);
       reset();
     } catch (err) {
@@ -120,6 +134,27 @@ export default function AssemblyFormModal({
                 if (error) setError(null);
               }}
               placeholder="e.g. Tribolium castaneum"
+              disabled={submitting || lockSpecies}
+              aria-invalid={error ? true : undefined}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label
+              htmlFor="assembly-info-url"
+              className="mb-1.5 block text-sm font-medium text-slate-700"
+            >
+              Link{" "}
+              <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <Input
+              id="assembly-info-url"
+              value={infoUrl}
+              onChange={(e) => {
+                setInfoUrl(e.target.value);
+                if (error) setError(null);
+              }}
+              placeholder="https://example.org"
               disabled={submitting}
               aria-invalid={error ? true : undefined}
             />

@@ -1,9 +1,10 @@
-import { ArrowRight, Pencil, Trash2 } from "lucide-react";
+import { ArrowRight, ImagePlus, ImageUp, Pencil, Trash2 } from "lucide-react";
 import { Tooltip } from "@base-ui/react/tooltip";
 
 import AssemblyFormModal, {
   type AssemblyFormValues,
 } from "./AssemblyFormModal";
+import AssemblyImageModal from "./AssemblyImageModal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/utils/classname";
 import placeholderImage from "@/assets/species/placeholder.svg?url";
@@ -14,7 +15,7 @@ export type AssemblyCardItem = {
   species: string;
   image?: string;
   size?: string;
-  siteUrl?: string;
+  infoUrl?: string | null;
 };
 
 export default function SpeciesCard({
@@ -22,12 +23,18 @@ export default function SpeciesCard({
   href,
   onSubmit,
   onDelete,
+  onImageUpload,
+  onImageRemove,
 }: {
   species: AssemblyCardItem;
   href?: string;
   onSubmit?: (values: AssemblyFormValues) => Promise<unknown> | void;
   onDelete?: () => Promise<unknown> | void;
+  onImageUpload?: (file: File) => Promise<unknown> | void;
+  onImageRemove?: () => Promise<unknown> | void;
 }) {
+  const hasImage = Boolean(species.image);
+
   return (
     <article className="relative isolate flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
       {href ? (
@@ -51,6 +58,45 @@ export default function SpeciesCard({
           alt={species.species}
           className="absolute inset-0 h-full w-full object-cover"
         />
+
+        <Tooltip.Provider>
+          <Tooltip.Root>
+            <AssemblyImageModal
+              trigger={
+                <Tooltip.Trigger
+                  type="button"
+                  aria-label={`${hasImage ? "Replace" : "Upload"} image for ${species.name}`}
+                  className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1.5 rounded-full bg-slate-900/70 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-slate-900"
+                >
+                  {hasImage ? (
+                    <ImageUp className="size-3.5" />
+                  ) : (
+                    <ImagePlus className="size-3.5" />
+                  )}
+                  {hasImage ? "Replace" : "Upload"}
+                </Tooltip.Trigger>
+              }
+              title={
+                hasImage ? "Replace Assembly Image" : "Upload Assembly Image"
+              }
+              description={
+                hasImage
+                  ? `Replace or remove the image shown for ${species.name}.`
+                  : `Upload an image to show for ${species.name}.`
+              }
+              currentImageUrl={species.image}
+              onSubmit={onImageUpload ?? (() => {})}
+              onRemove={onImageRemove}
+            />
+            <Tooltip.Portal>
+              <Tooltip.Positioner side="top" sideOffset={6}>
+                <Tooltip.Popup className="z-50 rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white shadow-md outline-none">
+                  {hasImage ? "Replace image" : "Upload image"}
+                </Tooltip.Popup>
+              </Tooltip.Positioner>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </Tooltip.Provider>
       </div>
 
       <div className="flex flex-grow flex-col p-6">
@@ -60,7 +106,7 @@ export default function SpeciesCard({
             <p className="italic text-slate-500">{species.species}</p>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="-mr-1 flex shrink-0 items-center gap-1">
             <Tooltip.Provider>
               <Tooltip.Root>
                 <AssemblyFormModal
@@ -79,7 +125,9 @@ export default function SpeciesCard({
                   defaultValues={{
                     name: species.name,
                     species: species.species,
+                    infoUrl: species.infoUrl ?? "",
                   }}
+                  lockSpecies
                   onSubmit={onSubmit ?? (() => {})}
                 />
                 <Tooltip.Portal>
@@ -134,13 +182,24 @@ export default function SpeciesCard({
             <dd
               className={cn(
                 "font-medium",
-                species.siteUrl
+                species.infoUrl
                   ? "truncate text-slate-800"
                   : "italic font-normal text-slate-400",
               )}
-              title={species.siteUrl || undefined}
+              title={species.infoUrl || undefined}
             >
-              {species.siteUrl || "Not set"}
+              {species.infoUrl ? (
+                <a
+                  href={species.infoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative z-20 hover:underline"
+                >
+                  {species.infoUrl}
+                </a>
+              ) : (
+                "Not set"
+              )}
             </dd>
           </div>
         </dl>

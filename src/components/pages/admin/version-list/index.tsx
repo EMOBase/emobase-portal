@@ -7,6 +7,7 @@ import { formatDate } from "./utils";
 import { formatBytes } from "@/utils/format";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import genomicsService, { type VersionItem } from "@/utils/services/genomics";
+import { downloadUrl } from "@/utils/url";
 import useService from "@/hooks/useService";
 import useAsyncData from "@/hooks/useAsyncData";
 
@@ -230,7 +231,9 @@ export default function VersionsManager() {
                             <a
                               className="rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-700"
                               aria-label="Download files"
-                              href={`download/emobase-genomics/${encodeURIComponent(version.name)}/`}
+                              href={downloadUrl(
+                                `emobase-genomics/${encodeURIComponent(version.name)}/`,
+                              )}
                             >
                               <Download className="size-4" />
                             </a>

@@ -55,6 +55,8 @@ export type AssemblyVersion = {
   versionId: number;
   name: string;
   species: string;
+  imagePath?: string | null;
+  infoUrl?: string | null;
   createdAt: string;
   createdBy: string;
   updatedAt: string;
@@ -64,6 +66,12 @@ export type AssemblyVersion = {
 type CreateAssemblyVersionInput = {
   name: string;
   species: string;
+  infoUrl?: string;
+};
+
+type UpdateAssemblyVersionInput = {
+  name?: string;
+  infoUrl?: string;
 };
 
 type CreateAssemblyVersionResponse = {
@@ -253,6 +261,53 @@ const genomicsService = (fetch: typeof apiFetch = apiFetch) => {
     );
   };
 
+  const updateAssemblyVersion = async (
+    version: string,
+    id: string | number,
+    assemblyInput: UpdateAssemblyVersionInput,
+  ) => {
+    return await fetch<CreateAssemblyVersionResponse>(
+      "genomicsservice",
+      `/versions/${version}/assemblies/${id}`,
+      {
+        method: "PATCH",
+        body: {
+          ...assemblyInput,
+        },
+      },
+    );
+  };
+
+  const setAssemblyVersionImage = async (
+    version: string,
+    id: string | number,
+    file: File,
+  ) => {
+    const formData = new FormData();
+    formData.append("image", file);
+    return await fetch<CreateAssemblyVersionResponse>(
+      "genomicsservice",
+      `/versions/${version}/assemblies/${id}/image`,
+      {
+        method: "PUT",
+        body: formData,
+      },
+    );
+  };
+
+  const deleteAssemblyVersionImage = async (
+    version: string,
+    id: string | number,
+  ) => {
+    return await fetch<undefined>(
+      "genomicsservice",
+      `/versions/${version}/assemblies/${id}/image`,
+      {
+        method: "DELETE",
+      },
+    );
+  };
+
   const fetchJobs = async (version: string) => {
     return await fetch<FetchJobResponse>("genomicsservice", "/jobs", {
       query: {
@@ -383,6 +438,9 @@ const genomicsService = (fetch: typeof apiFetch = apiFetch) => {
     fetchVersions,
     createVersion,
     createAssemblyVersion,
+    updateAssemblyVersion,
+    setAssemblyVersionImage,
+    deleteAssemblyVersionImage,
     fetchJobs,
     fetchVersionDetail,
     deleteUploadFile,

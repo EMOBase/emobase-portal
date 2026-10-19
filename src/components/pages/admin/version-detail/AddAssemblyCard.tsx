@@ -1,13 +1,17 @@
 import { Plus } from "lucide-react";
 
 import AssemblyFormModal from "./AssemblyFormModal";
-import genomicsService from "@/utils/services/genomics";
+import genomicsService, {
+  type AssemblyVersion,
+} from "@/utils/services/genomics";
 import useService from "@/hooks/useService";
 
 export default function AddAssemblyCard({
   versionName,
+  onCreated,
 }: {
   versionName: string;
+  onCreated?: (assembly: AssemblyVersion) => void;
 }) {
   const { createAssemblyVersion } = useService(genomicsService);
 
@@ -29,11 +33,13 @@ export default function AddAssemblyCard({
       title="Add new Assembly"
       description={`Add a new assembly to version ${versionName}.`}
       submitLabel="Create"
-      onSubmit={async ({ name, species }) => {
-        const res = await createAssemblyVersion(versionName, { name, species });
-        window.location.assign(
-          `/admin/versions/${encodeURIComponent(versionName)}/assemblies/${encodeURIComponent(res.data.id)}`,
-        );
+      onSubmit={async ({ name, species, infoUrl }) => {
+        const res = await createAssemblyVersion(versionName, {
+          name,
+          species,
+          infoUrl: infoUrl || undefined,
+        });
+        onCreated?.(res.data);
       }}
     />
   );

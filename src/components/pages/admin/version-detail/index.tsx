@@ -4,9 +4,11 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 import AddAssemblyCard from "./AddAssemblyCard";
 import SpeciesCard from "./SpeciesCard";
 import VersionActionButton from "./VersionActionButton";
+import type { AssemblyFormValues } from "./AssemblyFormModal";
 import { toastManager } from "@/components/ui/toaster";
 import genomicsService from "@/utils/services/genomics";
 import type { AssemblyVersionDetail } from "@/utils/services/genomics";
+import { assemblyImageUrl } from "@/utils/url";
 import { formatBytes } from "@/utils/format";
 import useAsyncData from "@/hooks/useAsyncData";
 import useService from "@/hooks/useService";
@@ -40,8 +42,14 @@ function assemblySize(files: AssemblyVersionDetail["files"]): number {
 }
 
 export default function VersionDetail({ versionName }: VersionDetailProps) {
-  const { fetchVersionDetail, releaseVersion, deleteAssemblyVersion } =
-    useService(genomicsService);
+  const {
+    fetchVersionDetail,
+    releaseVersion,
+    deleteAssemblyVersion,
+    updateAssemblyVersion,
+    setAssemblyVersionImage,
+    deleteAssemblyVersionImage,
+  } = useService(genomicsService);
 
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [action, setAction] = React.useState<"release" | "sync" | null>(null);
@@ -72,7 +80,68 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
     }
   }
 
-  async function handleUpdateAssembly() {}
+  async function handleUpdateAssembly(
+    assembly: AssemblyVersionDetail,
+    values: AssemblyFormValues,
+  ) {
+    try {
+      await updateAssemblyVersion(versionName, assembly.id, {
+        name: values.name,
+        infoUrl: values.infoUrl,
+      });
+      setRefreshKey((prev) => prev + 1);
+      toastManager.add({
+        type: "success",
+        title: `Updated assembly ${values.name}`,
+      });
+    } catch (err) {
+      toastManager.add({
+        type: "error",
+        title: `Failed to update assembly ${values.name}`,
+        description: err instanceof Error ? err.message : undefined,
+      });
+      throw err;
+    }
+  }
+
+  async function handleUploadAssemblyImage(
+    assembly: AssemblyVersionDetail,
+    file: File,
+  ) {
+    try {
+      await setAssemblyVersionImage(versionName, assembly.id, file);
+      setRefreshKey((prev) => prev + 1);
+      toastManager.add({
+        type: "success",
+        title: `Updated image for ${assembly.name}`,
+      });
+    } catch (err) {
+      toastManager.add({
+        type: "error",
+        title: `Failed to upload image for ${assembly.name}`,
+        description: err instanceof Error ? err.message : undefined,
+      });
+      throw err;
+    }
+  }
+
+  async function handleRemoveAssemblyImage(assembly: AssemblyVersionDetail) {
+    try {
+      await deleteAssemblyVersionImage(versionName, assembly.id);
+      setRefreshKey((prev) => prev + 1);
+      toastManager.add({
+        type: "success",
+        title: `Removed image for ${assembly.name}`,
+      });
+    } catch (err) {
+      toastManager.add({
+        type: "error",
+        title: `Failed to remove image for ${assembly.name}`,
+        description: err instanceof Error ? err.message : undefined,
+      });
+      throw err;
+    }
+  }
 
   async function handleDeleteAssembly(assembly: AssemblyVersionDetail) {
     try {
@@ -146,14 +215,29 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
                 name: assembly.name,
                 species: assembly.species,
                 size: formatBytes(assemblySize(assembly.files)),
+                infoUrl: assembly.infoUrl,
+                image: assemblyImageUrl(assembly.imagePath),
               }}
               href={`/admin/versions/${encodeURIComponent(versionName)}/assemblies/${encodeURIComponent(assembly.id)}`}
-              onSubmit={handleUpdateAssembly}
+              onSubmit={(values) => handleUpdateAssembly(assembly, values)}
               onDelete={() => handleDeleteAssembly(assembly)}
+              onImageUpload={(file) =>
+                handleUploadAssemblyImage(assembly, file)
+              }
+              onImageRemove={() => handleRemoveAssemblyImage(assembly)}
             />
           ))}
 
-          <AddAssemblyCard versionName={versionName} />
+          <AddAssemblyCard
+            versionName={versionName}
+            onCreated={(assembly) => {
+              setRefreshKey((prev) => prev + 1);
+              toastManager.add({
+                type: "success",
+                title: `Added assembly ${assembly.name}`,
+              });
+            }}
+          />
         </div>
       </section>
     </div>

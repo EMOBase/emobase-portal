@@ -5,6 +5,30 @@ export const directusUrl = getEnv("PUBLIC_DIRECTUS_URL");
 export const keycloakIssuerUrl = getEnv("KEYCLOAK_ISSUER");
 export const apiBaseUrl = getEnv("PUBLIC_APIS_BASE_URL");
 export const jbrowseBaseUrl = getEnv("PUBLIC_UI_PAGE_GENOMEBROWSER");
+export const publicServerUrl = getEnv("PUBLIC_SERVER");
+export const downloadBaseUrl = getEnv("PUBLIC_DOWNLOAD_URL");
+
+const ASSEMBLY_IMAGE_PATH_PREFIX = "public/uploads/";
+
+export const downloadUrl = (path: string): string => {
+  const origin = publicServerUrl.replace(/\/+$/, "");
+  const download = downloadBaseUrl.startsWith("/")
+    ? downloadBaseUrl
+    : `/${downloadBaseUrl}`;
+  const base = download.endsWith("/") ? download : `${download}/`;
+  return `${origin}${base}${path.replace(/^\/+/, "")}`;
+};
+
+export const assemblyImageUrl = (
+  imagePath?: string | null,
+): string | undefined => {
+  if (!imagePath) return undefined;
+  const normalized = imagePath.replace(/^\/+/, "");
+  const rel = normalized.startsWith(ASSEMBLY_IMAGE_PATH_PREFIX)
+    ? normalized.slice(ASSEMBLY_IMAGE_PATH_PREFIX.length)
+    : normalized;
+  return downloadUrl(`emobase-genomics/${rel}`);
+};
 
 export const getKeyCloakBaseUrl = (issuerUrl: string) => {
   const ibbIndex = issuerUrl.indexOf("/ibb/keycloak/");
