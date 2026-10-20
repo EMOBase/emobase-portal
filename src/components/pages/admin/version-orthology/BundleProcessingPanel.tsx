@@ -207,7 +207,7 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                 : "Review failed bundle extractions"}
           </div>
         </div>
-        <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-orange-600 shadow-sm">
+        <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-slate-500 shadow-sm">
           {rows.length}
         </span>
       </header>
