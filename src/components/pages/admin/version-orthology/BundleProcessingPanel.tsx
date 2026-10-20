@@ -149,6 +149,36 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
     (job) => job.status === "PENDING" || job.status === "RUNNING",
   ).length;
 
+  // Panel theme follows the dominant state, priority processing > error >
+  // complete: while anything is in flight the panel stays orange (it is the
+  // processing panel), otherwise green when every visible row is completing
+  // (no failures alongside), red when failures are on screen. Fully
+  // class-mapped (no dynamic Tailwind names) so the JIT keeps the classes.
+  const anyFailed = visible.some((job) => job.status === "FAILED");
+  const theme =
+    activeCount > 0
+      ? "orange"
+      : completing.length > 0 && !anyFailed
+        ? "green"
+        : "red";
+  const themeClasses = {
+    orange: {
+      root: "border-orange-200",
+      header: "border-orange-100 bg-orange-50/70",
+      icon: "bg-orange-100 text-orange-600",
+    },
+    red: {
+      root: "border-red-200",
+      header: "border-red-100 bg-red-50/70",
+      icon: "bg-red-100 text-red-600",
+    },
+    green: {
+      root: "border-green-200",
+      header: "border-green-100 bg-green-50/70",
+      icon: "bg-green-100 text-green-600",
+    },
+  }[theme];
+
   // One merged array for BOTH live and completing rows. Rendering them as two
   // sibling .map() calls would make React treat them as two independent
   // reconciliation slots - a finishing row moving from the live list to the
@@ -189,10 +219,18 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
     <div
       ref={rootRef}
       aria-live="polite"
-      className="fixed bottom-4 right-4 z-[90] w-[22.5rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-orange-200 bg-white shadow-lg"
+      className={cn(
+        "fixed bottom-4 right-4 z-[90] w-[22.5rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border bg-white shadow-lg",
+        themeClasses.root,
+      )}
     >
-      <header className="flex items-center gap-3 border-b border-orange-100 bg-orange-50/70 px-4 py-3">
-        <span className="rounded-lg bg-orange-100 p-1.5 text-orange-600">
+      <header
+        className={cn(
+          "flex items-center gap-3 border-b px-4 py-3",
+          themeClasses.header,
+        )}
+      >
+        <span className={cn("rounded-lg p-1.5", themeClasses.icon)}>
           <FileArchive className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
