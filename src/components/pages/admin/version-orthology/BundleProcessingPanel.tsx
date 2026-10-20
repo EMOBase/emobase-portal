@@ -2,6 +2,7 @@ import * as React from "react";
 import { FileArchive, X } from "lucide-react";
 
 import { ProgressBar } from "@/components/pages/admin/version-assembly-upload/FileCard/ProgressBar";
+import { cn } from "@/utils/classname";
 import type { JobItem } from "@/utils/services/genomics";
 
 function statusPill(status: JobItem["status"]) {
@@ -202,9 +203,20 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
           const isFailed = !row.completed && row.status === "FAILED";
 
           return (
-            <div key={row.key} className="flex items-start gap-2 px-4 py-3">
+            <div
+              key={row.key}
+              className="relative flex items-start gap-2 px-4 py-3"
+            >
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+                <div
+                  className={cn(
+                    "flex items-center gap-2",
+                    // Keep the name/pill clear of the overlay dismiss button
+                    // (the bar itself stays full width, unlike when the
+                    // button was an in-flow sibling that shrank it).
+                    isFailed && "pr-7",
+                  )}
+                >
                   <span
                     className="truncate text-sm font-semibold text-slate-800"
                     title={row.name}
@@ -259,7 +271,7 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                   type="button"
                   aria-label={`Dismiss ${row.name}`}
                   onClick={() => dismiss(row.key)}
-                  className="shrink-0 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                  className="absolute right-2 top-2 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                 >
                   <X className="size-4" />
                 </button>
