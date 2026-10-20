@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { cn } from "@/utils/classname";
 
 export function ProgressBar({
@@ -7,6 +9,7 @@ export function ProgressBar({
   showComplete = false,
   showError = false,
   size = "md",
+  leftSlot,
 }: {
   progress: number;
   title: string;
@@ -14,6 +17,9 @@ export function ProgressBar({
   showComplete?: boolean;
   showError?: boolean;
   size?: "sm" | "md";
+  /** Rendered at the start of the label row (e.g. an error icon with a
+      tooltip) without affecting the track width. */
+  leftSlot?: ReactNode;
 }) {
   const barColor =
     theme === "blue"
@@ -43,6 +49,9 @@ export function ProgressBar({
         )}
       >
         {/* Left label: only shown when in-progress */}
+        {leftSlot ? (
+          <span className="flex shrink-0 items-center">{leftSlot}</span>
+        ) : null}
         <span className={cn(title && !showError ? accentColor : "invisible")}>
           {title || "·"}
         </span>
