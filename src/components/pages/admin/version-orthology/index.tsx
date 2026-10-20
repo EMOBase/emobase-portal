@@ -6,11 +6,11 @@ import AddOrthologyButton, {
   AddSingleOrthologyButton,
 } from "./AddOrthologyButton";
 import { OrthologyFileCard } from "./OrthologyFileCard";
+import { BundleProcessingPanel } from "./BundleProcessingPanel";
 import {
   FileCard,
   type FileStatus,
 } from "@/components/pages/admin/version-assembly-upload/FileCard";
-import { FileCardBase } from "@/components/pages/admin/version-assembly-upload/FileCard/base";
 import genomicsService, {
   type FileDetail,
   type JobItem,
@@ -210,37 +210,8 @@ export default function VersionOrthology({
         ))}
 
         {/* Bundles are extracted server-side after the upload finishes, before
-            their child orthology.tsv files exist. Show the archive's job as a
-            processing card until the children appear. */}
-        {bundleJobs.map((job) => {
-          const bundleName =
-            (job.payload?.file_path as string | undefined)?.split("/").pop() ||
-            "orthology bundle";
-          const isFailed = job.status === "FAILED";
-
-          return (
-            <FileCardBase
-              key={job.id}
-              file={{
-                id: String(job.id),
-                name: bundleName,
-                category: "Orthology Bundle",
-                icon: "zip",
-                status: isFailed ? "ERROR" : "PROCESSING",
-                progress: isFailed ? 100 : job.status === "RUNNING" ? 50 : 10,
-                progressTitle: isFailed
-                  ? ""
-                  : job.description || "PROCESSING DATA",
-                error: job.error ?? "",
-                theme: "orange",
-              }}
-              isUploading={false}
-              uploadProgress={0}
-              cardSize="sm"
-            />
-          );
-        })}
-
+            their child orthology.tsv files exist. The archive is not a file in
+            this list, so its extraction shows in the floating panel instead. */}
         {uploads.map((item) => (
           <OrthologyFileCard
             key={item.id}
@@ -274,6 +245,8 @@ export default function VersionOrthology({
           </div>
         ) : null}
       </div>
+
+      <BundleProcessingPanel jobs={bundleJobs} versionName={versionName} />
     </div>
   );
 }
