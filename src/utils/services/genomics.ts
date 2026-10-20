@@ -149,6 +149,7 @@ type FetchVersionDetailResponse = {
     updatedBy: string;
     totalFileSize: number;
     orthologyTSV: FileDetail[];
+    orthologyBundles: FileDetail[];
     assemblies: AssemblyVersionDetail[];
   };
   requestId: string;

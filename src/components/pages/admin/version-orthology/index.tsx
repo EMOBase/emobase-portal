@@ -99,6 +99,30 @@ export default function VersionOrthology({
     });
   }, [data]);
 
+  const bundleFiles = React.useMemo<FileStatus[]>(() => {
+    const files: FileDetail[] = data?.data.orthologyBundles ?? [];
+
+    return files.map((fileDetail) => {
+      const { status, progress, progressTitle, error } =
+        computeFileStatus(fileDetail);
+      const fileName =
+        fileDetail.filePath.split("/").pop() || "orthology bundle";
+
+      return {
+        id: fileDetail.id,
+        name: fileName,
+        category: "Orthology Bundle",
+        icon: "zip",
+        status,
+        progress,
+        progressTitle,
+        error,
+        size: formatBytes(fileDetail.fileSize),
+        theme: status === "READY" ? "blue" : "orange",
+      };
+    });
+  }, [data]);
+
   const [uploads, setUploads] = React.useState<
     Array<{
       id: string;
@@ -129,6 +153,7 @@ export default function VersionOrthology({
   const needsPolling =
     versionStatus === "PROCESSING" ||
     orthologyFiles.some((f) => f.status === "PROCESSING") ||
+    bundleFiles.some((f) => f.status === "PROCESSING") ||
     uploads.length > 0;
 
   React.useEffect(() => {
@@ -184,6 +209,13 @@ export default function VersionOrthology({
           />
         ))}
 
+        {/* Bundles are extracted server-side after the upload finishes, before
+            their child orthology.tsv files exist. Show the archive as a
+            processing card until the children appear. */}
+        {bundleFiles.map((file) => (
+          <FileCard key={file.id} file={file} size="sm" />
+        ))}
+
         {uploads.map((item) => (
           <OrthologyFileCard
             key={item.id}
@@ -199,7 +231,9 @@ export default function VersionOrthology({
           />
         ))}
 
-        {orthologyFiles.length === 0 && uploads.length === 0 ? (
+        {orthologyFiles.length === 0 &&
+        bundleFiles.length === 0 &&
+        uploads.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50/50">
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
               No orthology datasets yet
