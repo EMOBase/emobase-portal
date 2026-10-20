@@ -69,32 +69,35 @@ export function BundleProcessingPanel({
 
   // When an active job leaves the jobs list (it reached DONE), keep its row
   // around as "completing" so the bar can animate to 100% before the row and
-  // the panel close, instead of vanishing mid-progress.
+  // the panel close. Detected during render, not in an effect: React then
+  // re-renders before committing, so the row's DOM (and its ProgressBar) is
+  // preserved across 50% -> 100% and the CSS transition actually runs.
+  // An effect would be one commit too late - the row would unmount and
+  // remount at 100%, and transitions never fire on a fresh element.
   const [completing, setCompleting] = React.useState<
     Array<{ id: number; name: string }>
   >([]);
-  const activeJobsRef = React.useRef<Map<number, string>>(new Map());
+  const [prevJobs, setPrevJobs] = React.useState<JobItem[]>(jobs);
 
-  React.useEffect(() => {
-    const currentIds = new Set(jobs.map((job) => job.id));
-    const newlyDone: Array<{ id: number; name: string }> = [];
-    activeJobsRef.current.forEach((name, id) => {
-      if (!currentIds.has(id)) newlyDone.push({ id, name });
+  if (jobs !== prevJobs) {
+    setPrevJobs(jobs);
+    const prevActive = new Map<number, string>();
+    prevJobs.forEach((job) => {
+      if (job.status === "PENDING" || job.status === "RUNNING") {
+        prevActive.set(job.id, bundleName(job));
+      }
     });
+    const currentIds = new Set(jobs.map((job) => job.id));
+    const newlyDone = [...prevActive.entries()]
+      .filter(([id]) => !currentIds.has(id))
+      .map(([id, name]) => ({ id, name }));
     if (newlyDone.length > 0) {
       setCompleting((prev) => [
         ...prev,
         ...newlyDone.filter((row) => !prev.some((p) => p.id === row.id)),
       ]);
     }
-    const next = new Map<number, string>();
-    jobs.forEach((job) => {
-      if (job.status === "PENDING" || job.status === "RUNNING") {
-        next.set(job.id, bundleName(job));
-      }
-    });
-    activeJobsRef.current = next;
-  }, [jobs]);
+  }
 
   React.useEffect(() => {
     if (completing.length === 0) return;
