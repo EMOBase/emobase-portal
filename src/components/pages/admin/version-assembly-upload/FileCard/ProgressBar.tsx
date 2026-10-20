@@ -13,7 +13,7 @@ export function ProgressBar({
 }: {
   progress: number;
   title: string;
-  theme?: "orange" | "blue" | "gray" | "red";
+  theme?: "orange" | "blue" | "gray" | "red" | "green";
   showComplete?: boolean;
   showError?: boolean;
   size?: "sm" | "md";
@@ -28,7 +28,9 @@ export function ProgressBar({
         ? "bg-slate-400"
         : theme === "red"
           ? "bg-red-500"
-          : "bg-orange-500";
+          : theme === "green"
+            ? "bg-green-500"
+            : "bg-orange-500";
   const accentColor =
     theme === "blue"
       ? "text-blue-700"
@@ -36,7 +38,9 @@ export function ProgressBar({
         ? "text-slate-500"
         : theme === "red"
           ? "text-red-500"
-          : "text-orange-500";
+          : theme === "green"
+            ? "text-green-600"
+            : "text-orange-500";
 
   const isComplete = showComplete && progress === 100;
 

@@ -263,7 +263,9 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                         ? ""
                         : row.description || "Extract orthology bundle"
                     }
-                    theme={isFailed ? "red" : "orange"}
+                    theme={
+                      row.completed ? "green" : isFailed ? "red" : "orange"
+                    }
                     size="sm"
                     showComplete={row.completed}
                     showError={isFailed}
