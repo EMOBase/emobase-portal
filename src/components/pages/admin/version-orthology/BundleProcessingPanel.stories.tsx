@@ -171,26 +171,6 @@ export const Failed: Story = {
     <WitnessedFailureDemo
       initialJobs={[
         makeJob({
-          id: 21,
-          status: "RUNNING",
-          payload: { file_path: "/data/uploads/broken_bundle.zip" },
-        }),
-      ]}
-      failures={{
-        21: "invalid manifest: missing orthology.tsv at bundle root",
-      }}
-    />
-  ),
-};
-
-export const FailedOnly: Story = {
-  name: "Failed only — review subtitle",
-  parameters: { controls: { disable: true } },
-  args: { jobs: [] },
-  render: () => (
-    <WitnessedFailureDemo
-      initialJobs={[
-        makeJob({
           id: 51,
           status: "RUNNING",
           payload: { file_path: "/data/uploads/broken_bundle.zip" },
