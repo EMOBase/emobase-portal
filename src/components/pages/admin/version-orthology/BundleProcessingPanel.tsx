@@ -248,7 +248,9 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
 
                 {/* Bar for every row shape: a witnessed failure keeps its
                     element from the active state, so progress transitions to
-                    100% (red, ERROR label) exactly like a completion does. */}
+                    100% (ERROR label) exactly like a completion does. Bars,
+                    labels, and the error icon stay panel-orange - the state
+                    pills are the only colored differentiator. */}
                 <div className="mt-2">
                   <ProgressBar
                     progress={
@@ -263,9 +265,7 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                         ? ""
                         : row.description || "Extract orthology bundle"
                     }
-                    theme={
-                      row.completed ? "green" : isFailed ? "red" : "orange"
-                    }
+                    theme="orange"
                     size="sm"
                     showComplete={row.completed}
                     showError={isFailed}
@@ -279,7 +279,7 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                             <Tooltip.Trigger
                               type="button"
                               aria-label="Bundle extraction error"
-                              className="flex cursor-help items-center text-red-500"
+                              className="flex cursor-help items-center text-orange-500"
                             >
                               {/* No padding: the 14px icon must fit inside the
                                   label line's 15px box (10px * lh 1.5) or the

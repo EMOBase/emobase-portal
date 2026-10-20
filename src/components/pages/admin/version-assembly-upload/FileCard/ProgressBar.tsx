@@ -13,7 +13,7 @@ export function ProgressBar({
 }: {
   progress: number;
   title: string;
-  theme?: "orange" | "blue" | "gray" | "red" | "green";
+  theme?: "orange" | "blue" | "gray" | "red";
   showComplete?: boolean;
   showError?: boolean;
   size?: "sm" | "md";
@@ -28,9 +28,7 @@ export function ProgressBar({
         ? "bg-slate-400"
         : theme === "red"
           ? "bg-red-500"
-          : theme === "green"
-            ? "bg-green-500"
-            : "bg-orange-500";
+          : "bg-orange-500";
   const accentColor =
     theme === "blue"
       ? "text-blue-700"
@@ -38,9 +36,7 @@ export function ProgressBar({
         ? "text-slate-500"
         : theme === "red"
           ? "text-red-500"
-          : theme === "green"
-            ? "text-green-600"
-            : "text-orange-500";
+          : "text-orange-500";
 
   const isComplete = showComplete && progress === 100;
 
@@ -59,14 +55,12 @@ export function ProgressBar({
         <span className={cn(title && !showError ? accentColor : "invisible")}>
           {title || "·"}
         </span>
-        {/* Right label: ERROR, COMPLETE, or blank */}
+        {/* Right label: ERROR, COMPLETE, or blank - always the theme
+            accent, so callers control the color via `theme` alone
+            (FileCard pairs showError with theme="red", unchanged). */}
         <span
           className={cn(
-            showError
-              ? "text-red-500"
-              : isComplete
-                ? accentColor
-                : "text-slate-400",
+            showError || isComplete ? accentColor : "text-slate-400",
           )}
         >
           {showError
