@@ -12,26 +12,7 @@ const meta = {
   },
   argTypes: {
     jobs: { control: false },
-    versionName: { control: false },
   },
-  decorators: [
-    (Story, context) => {
-      // The panel records displayed FAILED ids to localStorage so a real
-      // failure is announced only once ever. Reset the story's version
-      // before mount so the failed stories are not empty on a revisit.
-      const { versionName } = context.args;
-      if (typeof versionName === "string") {
-        try {
-          localStorage.removeItem(
-            `emobase:dismissed-bundle-jobs:${versionName}`,
-          );
-        } catch {
-          // storage unavailable - nothing to reset
-        }
-      }
-      return <Story />;
-    },
-  ],
 } satisfies Meta<typeof BundleProcessingPanel>;
 
 export default meta;
@@ -50,7 +31,6 @@ const makeJob = (overrides: Partial<JobItem> = {}): JobItem => ({
 export const Queued: Story = {
   name: "Queued — single pending job",
   args: {
-    versionName: "story-queued",
     jobs: [makeJob()],
   },
 };
@@ -58,7 +38,6 @@ export const Queued: Story = {
 export const Running: Story = {
   name: "Running — extracting",
   args: {
-    versionName: "story-running",
     jobs: [
       makeJob({
         id: 11,
@@ -69,25 +48,9 @@ export const Running: Story = {
   },
 };
 
-export const Failed: Story = {
-  name: "Failed — error with dismiss",
-  args: {
-    versionName: "story-failed",
-    jobs: [
-      makeJob({
-        id: 21,
-        status: "FAILED",
-        error: "invalid manifest: missing orthology.tsv at bundle root",
-        payload: { file_path: "/data/uploads/broken_bundle.zip" },
-      }),
-    ],
-  },
-};
-
 export const MultipleActive: Story = {
   name: "Multiple active jobs",
   args: {
-    versionName: "story-multiple-active",
     jobs: [
       makeJob({
         id: 31,
@@ -109,50 +72,130 @@ export const MultipleActive: Story = {
   },
 };
 
+// The panel only shows a failure it WATCHED happen (the job was active in
+// this page instance first). These stories therefore start their failing
+// jobs active and flip them to FAILED after a beat, exactly like a real
+// poll would deliver the transition.
+function WitnessedFailureDemo({
+  initialJobs,
+  failures,
+}: {
+  initialJobs: JobItem[];
+  failures: Record<number, string>;
+}) {
+  const [jobs, setJobs] = React.useState<JobItem[]>(initialJobs);
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setJobs((prev) =>
+        prev.map((job) =>
+          failures[job.id]
+            ? { ...job, status: "FAILED", error: failures[job.id] }
+            : job,
+        ),
+      );
+    }, 1500);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return <BundleProcessingPanel jobs={jobs} />;
+}
+
+export const Failed: Story = {
+  name: "Failed — fails live, then dismiss",
+  parameters: { controls: { disable: true } },
+  args: { jobs: [] },
+  render: () => (
+    <WitnessedFailureDemo
+      initialJobs={[
+        makeJob({
+          id: 21,
+          status: "RUNNING",
+          payload: { file_path: "/data/uploads/broken_bundle.zip" },
+        }),
+      ]}
+      failures={{
+        21: "invalid manifest: missing orthology.tsv at bundle root",
+      }}
+    />
+  ),
+};
+
 export const MixedStates: Story = {
   name: "All states — queued, extracting, failed",
-  args: {
-    versionName: "story-mixed-states",
-    jobs: [
-      makeJob({
-        id: 41,
-        status: "RUNNING",
-        payload: { file_path: "/data/uploads/fly_orthologs.zip" },
-      }),
-      makeJob({
-        id: 42,
-        status: "PENDING",
-        payload: { file_path: "/data/uploads/mouse_orthologs.zip" },
-      }),
-      makeJob({
-        id: 43,
-        status: "FAILED",
-        error: "gzip: unexpected end of file",
-        payload: { file_path: "/data/uploads/corrupt.zip" },
-      }),
-    ],
-  },
+  parameters: { controls: { disable: true } },
+  args: { jobs: [] },
+  render: () => (
+    <WitnessedFailureDemo
+      initialJobs={[
+        makeJob({
+          id: 41,
+          status: "RUNNING",
+          payload: { file_path: "/data/uploads/fly_orthologs.zip" },
+        }),
+        makeJob({
+          id: 42,
+          status: "PENDING",
+          payload: { file_path: "/data/uploads/mouse_orthologs.zip" },
+        }),
+        makeJob({
+          id: 43,
+          status: "RUNNING",
+          payload: { file_path: "/data/uploads/corrupt.zip" },
+        }),
+      ]}
+      failures={{ 43: "gzip: unexpected end of file" }}
+    />
+  ),
 };
 
 export const FailedOnly: Story = {
   name: "Failed only — review subtitle",
-  args: {
-    versionName: "story-failed-only",
-    jobs: [
-      makeJob({
-        id: 51,
-        status: "FAILED",
-        error: "invalid manifest: missing orthology.tsv at bundle root",
-        payload: { file_path: "/data/uploads/broken_bundle.zip" },
-      }),
-      makeJob({
-        id: 52,
-        status: "FAILED",
-        error: "gzip: unexpected end of file",
-        payload: { file_path: "/data/uploads/another_corrupt.zip" },
-      }),
-    ],
-  },
+  parameters: { controls: { disable: true } },
+  args: { jobs: [] },
+  render: () => (
+    <WitnessedFailureDemo
+      initialJobs={[
+        makeJob({
+          id: 51,
+          status: "RUNNING",
+          payload: { file_path: "/data/uploads/broken_bundle.zip" },
+        }),
+        makeJob({
+          id: 52,
+          status: "PENDING",
+          payload: { file_path: "/data/uploads/another_corrupt.zip" },
+        }),
+      ]}
+      failures={{
+        51: "invalid manifest: missing orthology.tsv at bundle root",
+        52: "gzip: unexpected end of file",
+      }}
+    />
+  ),
+};
+
+export const UnwitnessedFailure: Story = {
+  name: "Unwitnessed failure — renders nothing (by design)",
+  parameters: { controls: { disable: true } },
+  args: { jobs: [] },
+  render: () => (
+    // A FAILED job that was never watched as active - e.g. it failed while
+    // the tab was closed, or days ago and still sits in the jobs table. The
+    // panel deliberately renders nothing: this is the rule that keeps stale
+    // failures off every device with zero client-side storage.
+    <BundleProcessingPanel
+      jobs={[
+        makeJob({
+          id: 71,
+          status: "FAILED",
+          error: "job failed 3 days ago",
+          payload: { file_path: "/data/uploads/old_failure.zip" },
+        }),
+      ]}
+    />
+  ),
 };
 
 function CompletionDemo() {
@@ -169,12 +212,12 @@ function CompletionDemo() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  return <BundleProcessingPanel jobs={jobs} versionName="story-completion" />;
+  return <BundleProcessingPanel jobs={jobs} />;
 }
 
 export const CompletionAnimation: Story = {
   name: "Completion animation — job finishes, bar fills to 100%, panel closes",
   parameters: { controls: { disable: true } },
-  args: { jobs: [], versionName: "story-completion" },
+  args: { jobs: [] },
   render: () => <CompletionDemo />,
 };

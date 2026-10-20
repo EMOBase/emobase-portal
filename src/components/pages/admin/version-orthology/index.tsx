@@ -87,19 +87,18 @@ export default function VersionOrthology({
 
   // In-flight orthology bundle extractions: the bundle archive itself is not
   // listed in orthologyTSV (bundle rows are audit records), so the jobs list
-  // is the only place the processing state is visible. PENDING/RUNNING jobs
-  // always show; a FAILED job only shows while it is the latest bundle job,
-  // so a successful re-upload supersedes the old failure. On top of that the
-  // panel itself announces each failure only once (recorded in localStorage),
-  // since FAILED rows are kept in the database forever, like DONE ones.
+  // is the only place the processing state is visible. DONE jobs drop out
+  // here so the panel can watch a job leave the list (its completion
+  // animation); everything else - including all historical FAILED rows, which
+  // live in the database forever - is passed through for the panel to decide.
+  // The panel only ever shows a failure it watched happen (the job was active
+  // in this page instance first), so stale failures never surface, on any
+  // device, with no client-side storage involved.
   const bundleJobs = React.useMemo<JobItem[]>(() => {
     const jobs: JobItem[] = jobsData?.data ?? [];
-    const bundles = jobs.filter((j) => j.type === "ORTHOLOGY.BUNDLE");
-
-    return bundles.filter((j) => {
-      if (j.status !== "FAILED") return j.status !== "DONE";
-      return !bundles.some((other) => other.id > j.id);
-    });
+    return jobs.filter(
+      (j) => j.type === "ORTHOLOGY.BUNDLE" && j.status !== "DONE",
+    );
   }, [jobsData]);
 
   const orthologyFiles = React.useMemo<FileStatus[]>(() => {
@@ -248,7 +247,7 @@ export default function VersionOrthology({
         ) : null}
       </div>
 
-      <BundleProcessingPanel jobs={bundleJobs} versionName={versionName} />
+      <BundleProcessingPanel jobs={bundleJobs} />
     </div>
   );
 }

@@ -4,25 +4,6 @@ import { FileArchive, X } from "lucide-react";
 import { ProgressBar } from "@/components/pages/admin/version-assembly-upload/FileCard/ProgressBar";
 import type { JobItem } from "@/utils/services/genomics";
 
-const storageKey = (versionName: string) =>
-  `emobase:dismissed-bundle-jobs:${versionName}`;
-
-// Job ids whose FAILED row has already been announced: either the user
-// dismissed it with the X, or it was displayed once. FAILED jobs live in the
-// database forever (like DONE ones), so without this record every old failure
-// would resurface on every visit. Announcing each failure exactly once means
-// it is shown while fresh - including failures that happened while the tab
-// was closed - and never again afterwards.
-function loadDismissed(versionName: string): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = localStorage.getItem(storageKey(versionName));
-    return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
-  } catch {
-    return new Set();
-  }
-}
-
 function statusPill(status: JobItem["status"]) {
   if (status === "FAILED") {
     return (
@@ -54,51 +35,23 @@ function bundleName(job: JobItem) {
 
 const COMPLETE_LINGER_MS = 1600;
 
-export function BundleProcessingPanel({
-  jobs,
-  versionName,
-}: {
-  jobs: JobItem[];
-  versionName: string;
-}) {
-  // Session-hidden failed ids: initialized from storage (already-announced
-  // failures never show again), extended by manual dismissals. Failures that
-  // become visible during THIS session are recorded to storage by the effect
-  // below but stay visible until reload - they were just announced.
-  const [dismissed, setDismissed] = React.useState<Set<string>>(() =>
-    loadDismissed(versionName),
-  );
+export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
+  // Job ids this page instance has watched in an active state (PENDING or
+  // RUNNING). FAILED rows live in the database forever, but the panel only
+  // shows a failure it actually watched happen - a reload (or another
+  // device/browser) starts with an empty watch list, so stale failures never
+  // resurface anywhere. Purely in-memory: no localStorage involved.
+  const seenActiveRef = React.useRef<Set<number>>(new Set());
 
-  React.useEffect(() => {
-    setDismissed(loadDismissed(versionName));
-  }, [versionName]);
+  // Failed rows the user explicitly hid with the X - for this page instance
+  // only; a reload forgets it (and the failure itself will not return anyway,
+  // since it is no longer being watched).
+  const [dismissed, setDismissed] = React.useState<Set<number>>(new Set());
 
-  const visible = jobs.filter(
-    (job) => !(job.status === "FAILED" && dismissed.has(String(job.id))),
-  );
-
-  // Record every failed id currently on display so the next visit skips it.
-  // Writes storage only - NOT the session state - so the row stays visible.
-  const failedVisibleKey = visible
-    .filter((job) => job.status === "FAILED")
-    .map((job) => job.id)
-    .join(",");
-  React.useEffect(() => {
-    if (failedVisibleKey === "") return;
-    const stored = loadDismissed(versionName);
-    const ids = failedVisibleKey.split(",");
-    if (ids.some((id) => !stored.has(id))) {
-      ids.forEach((id) => stored.add(id));
-      try {
-        localStorage.setItem(
-          storageKey(versionName),
-          JSON.stringify([...stored]),
-        );
-      } catch {
-        // storage unavailable - announcements will simply repeat
-      }
-    }
-  }, [failedVisibleKey, versionName]);
+  const visible = jobs.filter((job) => {
+    if (job.status !== "FAILED") return true;
+    return seenActiveRef.current.has(job.id) && !dismissed.has(job.id);
+  });
 
   // When an active job leaves the jobs list (it reached DONE), keep its row
   // around as "completing" so the bar can animate to 100% before the row and
@@ -110,12 +63,12 @@ export function BundleProcessingPanel({
   const [completing, setCompleting] = React.useState<
     Array<{ id: number; name: string }>
   >([]);
-  const [prevJobs, setPrevJobs] = React.useState<JobItem[]>(jobs);
+  const [prevJobs, setPrevJobs] = React.useState<JobItem[] | null>(null);
 
   if (jobs !== prevJobs) {
     setPrevJobs(jobs);
     const prevActive = new Map<number, string>();
-    prevJobs.forEach((job) => {
+    (prevJobs ?? []).forEach((job) => {
       if (job.status === "PENDING" || job.status === "RUNNING") {
         prevActive.set(job.id, bundleName(job));
       }
@@ -130,6 +83,14 @@ export function BundleProcessingPanel({
         ...newlyDone.filter((row) => !prev.some((p) => p.id === row.id)),
       ]);
     }
+    // Also observe actives in the CURRENT snapshot (including the very first
+    // one at mount), so a job that fails before its next poll was still
+    // witnessed as active first.
+    jobs.forEach((job) => {
+      if (job.status === "PENDING" || job.status === "RUNNING") {
+        seenActiveRef.current.add(job.id);
+      }
+    });
   }
 
   React.useEffect(() => {
@@ -167,24 +128,11 @@ export function BundleProcessingPanel({
   if (!hasJobs) return null;
 
   function dismiss(jobId: number) {
-    const id = String(jobId);
     setDismissed((prev) => {
       const next = new Set(prev);
-      next.add(id);
+      next.add(jobId);
       return next;
     });
-    // Merge into whatever is stored (the mark-on-display effect may have
-    // recorded other failures this session that are not in session state).
-    try {
-      const stored = loadDismissed(versionName);
-      stored.add(id);
-      localStorage.setItem(
-        storageKey(versionName),
-        JSON.stringify([...stored]),
-      );
-    } catch {
-      // storage unavailable - dismissal only lasts for this session
-    }
   }
 
   const activeCount = visible.filter(
