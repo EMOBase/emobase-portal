@@ -272,7 +272,9 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                               <Tooltip.Positioner
                                 side="top"
                                 sideOffset={6}
-                                className="z-50"
+                                // Above the panel (z-90) and the toast stack
+                                // (z-100) - the portal renders at body level.
+                                className="z-[110]"
                               >
                                 <Tooltip.Popup className="max-w-xs break-words rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white shadow-md outline-none">
                                   {row.error || "Processing failed"}
