@@ -173,9 +173,12 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
       icon: "bg-red-100 text-red-600",
     },
     green: {
-      root: "border-green-200",
-      header: "border-green-100 bg-green-50/70",
-      icon: "bg-green-100 text-green-600",
+      // One ramp step deeper than red/orange: Tailwind green is far more
+      // luminous than they are at the same level, so green-50/100 read as
+      // washed out next to them in the same header slot.
+      root: "border-green-300",
+      header: "border-green-200 bg-green-100/70",
+      icon: "bg-green-200 text-green-700",
     },
   }[theme];
 
