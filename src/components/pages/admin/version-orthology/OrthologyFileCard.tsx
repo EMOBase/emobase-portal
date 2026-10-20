@@ -36,10 +36,14 @@ export const OrthologyFileCard = ({
     })
       .then(() => {
         if (!cancelled) {
-          toastManager.add({
-            type: "success",
-            title: `Uploaded ${file.name}`,
-          });
+          // For bundles, the floating processing panel appearing is the
+          // success signal — a toast would be redundant noise on top of it.
+          if (!isBundle) {
+            toastManager.add({
+              type: "success",
+              title: `Uploaded ${file.name}`,
+            });
+          }
           onComplete();
         }
       })
