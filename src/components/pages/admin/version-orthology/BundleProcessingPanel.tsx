@@ -264,10 +264,11 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                             <Tooltip.Trigger
                               type="button"
                               aria-label="Bundle extraction error"
-                              className="flex cursor-help items-center p-0.5 text-red-500"
+                              className="flex cursor-help items-center text-red-500"
                             >
-                              {/* Scaled to the 10px bar labels around it
-                                  (p-0.5 keeps a usable hover target). */}
+                              {/* No padding: the 14px icon must fit inside the
+                                  label line's 15px box (10px * lh 1.5) or the
+                                  row grows when PROCESSING -> ERROR. */}
                               <AlertCircle className="size-3.5" />
                             </Tooltip.Trigger>
                             <Tooltip.Portal>
