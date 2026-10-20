@@ -14,6 +14,24 @@ const meta = {
     jobs: { control: false },
     versionName: { control: false },
   },
+  decorators: [
+    (Story, context) => {
+      // The panel records displayed FAILED ids to localStorage so a real
+      // failure is announced only once ever. Reset the story's version
+      // before mount so the failed stories are not empty on a revisit.
+      const { versionName } = context.args;
+      if (typeof versionName === "string") {
+        try {
+          localStorage.removeItem(
+            `emobase:dismissed-bundle-jobs:${versionName}`,
+          );
+        } catch {
+          // storage unavailable - nothing to reset
+        }
+      }
+      return <Story />;
+    },
+  ],
 } satisfies Meta<typeof BundleProcessingPanel>;
 
 export default meta;

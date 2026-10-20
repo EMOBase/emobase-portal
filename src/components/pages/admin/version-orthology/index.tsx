@@ -89,7 +89,9 @@ export default function VersionOrthology({
   // listed in orthologyTSV (bundle rows are audit records), so the jobs list
   // is the only place the processing state is visible. PENDING/RUNNING jobs
   // always show; a FAILED job only shows while it is the latest bundle job,
-  // so a successful re-upload supersedes the old failure.
+  // so a successful re-upload supersedes the old failure. On top of that the
+  // panel itself announces each failure only once (recorded in localStorage),
+  // since FAILED rows are kept in the database forever, like DONE ones.
   const bundleJobs = React.useMemo<JobItem[]>(() => {
     const jobs: JobItem[] = jobsData?.data ?? [];
     const bundles = jobs.filter((j) => j.type === "ORTHOLOGY.BUNDLE");

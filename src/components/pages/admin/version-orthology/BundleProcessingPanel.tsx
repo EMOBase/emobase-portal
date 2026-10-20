@@ -7,6 +7,12 @@ import type { JobItem } from "@/utils/services/genomics";
 const storageKey = (versionName: string) =>
   `emobase:dismissed-bundle-jobs:${versionName}`;
 
+// Job ids whose FAILED row has already been announced: either the user
+// dismissed it with the X, or it was displayed once. FAILED jobs live in the
+// database forever (like DONE ones), so without this record every old failure
+// would resurface on every visit. Announcing each failure exactly once means
+// it is shown while fresh - including failures that happened while the tab
+// was closed - and never again afterwards.
 function loadDismissed(versionName: string): Set<string> {
   if (typeof window === "undefined") return new Set();
   try {
@@ -55,6 +61,10 @@ export function BundleProcessingPanel({
   jobs: JobItem[];
   versionName: string;
 }) {
+  // Session-hidden failed ids: initialized from storage (already-announced
+  // failures never show again), extended by manual dismissals. Failures that
+  // become visible during THIS session are recorded to storage by the effect
+  // below but stay visible until reload - they were just announced.
   const [dismissed, setDismissed] = React.useState<Set<string>>(() =>
     loadDismissed(versionName),
   );
@@ -66,6 +76,29 @@ export function BundleProcessingPanel({
   const visible = jobs.filter(
     (job) => !(job.status === "FAILED" && dismissed.has(String(job.id))),
   );
+
+  // Record every failed id currently on display so the next visit skips it.
+  // Writes storage only - NOT the session state - so the row stays visible.
+  const failedVisibleKey = visible
+    .filter((job) => job.status === "FAILED")
+    .map((job) => job.id)
+    .join(",");
+  React.useEffect(() => {
+    if (failedVisibleKey === "") return;
+    const stored = loadDismissed(versionName);
+    const ids = failedVisibleKey.split(",");
+    if (ids.some((id) => !stored.has(id))) {
+      ids.forEach((id) => stored.add(id));
+      try {
+        localStorage.setItem(
+          storageKey(versionName),
+          JSON.stringify([...stored]),
+        );
+      } catch {
+        // storage unavailable - announcements will simply repeat
+      }
+    }
+  }, [failedVisibleKey, versionName]);
 
   // When an active job leaves the jobs list (it reached DONE), keep its row
   // around as "completing" so the bar can animate to 100% before the row and
@@ -134,12 +167,24 @@ export function BundleProcessingPanel({
   if (!hasJobs) return null;
 
   function dismiss(jobId: number) {
+    const id = String(jobId);
     setDismissed((prev) => {
       const next = new Set(prev);
-      next.add(String(jobId));
-      localStorage.setItem(storageKey(versionName), JSON.stringify([...next]));
+      next.add(id);
       return next;
     });
+    // Merge into whatever is stored (the mark-on-display effect may have
+    // recorded other failures this session that are not in session state).
+    try {
+      const stored = loadDismissed(versionName);
+      stored.add(id);
+      localStorage.setItem(
+        storageKey(versionName),
+        JSON.stringify([...stored]),
+      );
+    } catch {
+      // storage unavailable - dismissal only lasts for this session
+    }
   }
 
   const activeCount = visible.filter(
