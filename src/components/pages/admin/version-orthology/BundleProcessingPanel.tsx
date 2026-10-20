@@ -272,12 +272,13 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                               <Tooltip.Positioner
                                 side="top"
                                 sideOffset={6}
-                                // Portal is body-level, so scope the z to this
-                                // host: above the panel (z-90) but below the
-                                // toast stack (z-100) - tooltips outside a
-                                // toast must stay behind toasts. A tooltip
-                                // hosted *inside* a toast would use z-[110].
-                                className="z-[95]"
+                                // Two-tier rule: page-hosted tooltips stay at
+                                // z-50 (behind the fixed corner stack - panel
+                                // z-90, toasts z-100), while tooltips hosted
+                                // inside an overlay (this panel, or a toast)
+                                // rise above the whole stack. Portal renders
+                                // body-level, so this z competes directly.
+                                className="z-[110]"
                               >
                                 <Tooltip.Popup className="max-w-xs break-words rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white shadow-md outline-none">
                                   {row.error || "Processing failed"}
