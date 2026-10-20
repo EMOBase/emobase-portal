@@ -220,33 +220,38 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                   )}
                 </div>
 
-                {row.completed ? (
-                  <div className="mt-2">
-                    <ProgressBar
-                      progress={100}
-                      title=""
-                      theme="orange"
-                      size="sm"
-                      showComplete
-                    />
-                  </div>
-                ) : isFailed ? (
+                {/* Bar for every row shape: a witnessed failure keeps its
+                    element from the active state, so progress transitions to
+                    100% (red, ERROR label) exactly like a completion does. */}
+                <div className="mt-2">
+                  <ProgressBar
+                    progress={
+                      row.completed || isFailed
+                        ? 100
+                        : row.status === "RUNNING"
+                          ? 50
+                          : 10
+                    }
+                    title={
+                      row.completed || isFailed
+                        ? ""
+                        : row.description || "Extract orthology bundle"
+                    }
+                    theme={isFailed ? "red" : "orange"}
+                    size="sm"
+                    showComplete={row.completed}
+                    showError={isFailed}
+                  />
+                </div>
+
+                {isFailed ? (
                   <p
-                    className="mt-1 truncate text-xs text-red-500"
+                    className="mt-1.5 truncate text-xs text-red-500"
                     title={row.error || "Processing failed"}
                   >
                     {row.error || "Processing failed"}
                   </p>
-                ) : (
-                  <div className="mt-2">
-                    <ProgressBar
-                      progress={row.status === "RUNNING" ? 50 : 10}
-                      title={row.description || "Extract orthology bundle"}
-                      theme="orange"
-                      size="sm"
-                    />
-                  </div>
-                )}
+                ) : null}
               </div>
 
               {isFailed ? (
