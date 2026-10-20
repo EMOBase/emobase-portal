@@ -63,22 +63,30 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
   // An effect would be one commit too late - the row would unmount and
   // remount at 100%, and transitions never fire on a fresh element.
   const [completing, setCompleting] = React.useState<
-    Array<{ id: number; name: string }>
+    Array<{ id: number; name: string; position: number }>
   >([]);
   const [prevJobs, setPrevJobs] = React.useState<JobItem[] | null>(null);
 
   if (jobs !== prevJobs) {
     setPrevJobs(jobs);
-    const prevActive = new Map<number, string>();
-    (prevJobs ?? []).forEach((job) => {
+    // Positions in RENDER space (same filter as `visible` below), so a
+    // finishing row can later be spliced back into the exact slot it
+    // used to occupy instead of jumping to the bottom of the panel.
+    const prevVisible = (prevJobs ?? []).filter(
+      (job) =>
+        job.status !== "FAILED" ||
+        (seenActiveRef.current.has(job.id) && !dismissed.has(job.id)),
+    );
+    const prevActive = new Map<number, { name: string; position: number }>();
+    prevVisible.forEach((job, index) => {
       if (job.status === "PENDING" || job.status === "RUNNING") {
-        prevActive.set(job.id, bundleName(job));
+        prevActive.set(job.id, { name: bundleName(job), position: index });
       }
     });
     const currentIds = new Set(jobs.map((job) => job.id));
     const newlyDone = [...prevActive.entries()]
       .filter(([id]) => !currentIds.has(id))
-      .map(([id, name]) => ({ id, name }));
+      .map(([id, info]) => ({ id, ...info }));
     if (newlyDone.length > 0) {
       setCompleting((prev) => [
         ...prev,
@@ -156,21 +164,26 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
         description: string | undefined;
       }
     | { key: number; name: string; completed: true }
-  > = [
-    ...visible.map((job) => ({
-      key: job.id,
-      name: bundleName(job),
-      completed: false as const,
-      status: job.status,
-      error: job.error,
-      description: job.description,
-    })),
-    ...completing.map((row) => ({
-      key: row.id,
-      name: row.name,
-      completed: true as const,
-    })),
-  ];
+  > = visible.map((job) => ({
+    key: job.id,
+    name: bundleName(job),
+    completed: false as const,
+    status: job.status,
+    error: job.error,
+    description: job.description,
+  }));
+  // Splice finishing rows back at the position they occupied in the last
+  // snapshot (ascending, so multiple completions land correctly) instead of
+  // appending - otherwise a job reorders the panel the moment it is DONE.
+  [...completing]
+    .sort((a, b) => a.position - b.position)
+    .forEach((row) => {
+      rows.splice(Math.min(row.position, rows.length), 0, {
+        key: row.id,
+        name: row.name,
+        completed: true as const,
+      });
+    });
 
   return (
     <div
