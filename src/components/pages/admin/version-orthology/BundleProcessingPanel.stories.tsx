@@ -28,6 +28,67 @@ const makeJob = (overrides: Partial<JobItem> = {}): JobItem => ({
   ...overrides,
 });
 
+// Overview story: one job completes, one fails (witnessed), the queued and
+// extracting rows keep going - every row shape the panel can render.
+// COMPLETE is transient by design (departure detection + 1.6s linger), so
+// it shows up mid-demo at the 1.5s mark instead of sitting statically.
+function AllStatesDemo() {
+  const [jobs, setJobs] = React.useState<JobItem[]>([
+    makeJob({
+      id: 41,
+      status: "RUNNING",
+      payload: { file_path: "/data/uploads/fly_orthologs.zip" },
+    }),
+    makeJob({
+      id: 42,
+      status: "PENDING",
+      payload: { file_path: "/data/uploads/mouse_orthologs.zip" },
+    }),
+    makeJob({
+      id: 43,
+      status: "RUNNING",
+      payload: { file_path: "/data/uploads/corrupt.zip" },
+    }),
+    makeJob({
+      id: 44,
+      status: "RUNNING",
+      payload: { file_path: "/data/uploads/worm_orthologs.zip" },
+    }),
+  ]);
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setJobs((prev) =>
+        prev
+          .map((job) =>
+            job.id === 43
+              ? {
+                  ...job,
+                  // as const: contextual typing doesn't cross the
+                  // .map().filter() chain and would widen to string.
+                  status: "FAILED" as const,
+                  error: "gzip: unexpected end of file",
+                }
+              : job,
+          )
+          // Job 41 finishes: DONE jobs drop out of the list, which the
+          // panel witnesses as departure and animates to COMPLETE.
+          .filter((job) => job.id !== 41),
+      );
+    }, 1500);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return <BundleProcessingPanel jobs={jobs} />;
+}
+
+export const AllStates: Story = {
+  name: "All states — queued, extracting, failed, complete",
+  parameters: { controls: { disable: true } },
+  args: { jobs: [] },
+  render: () => <AllStatesDemo />,
+};
+
 export const Queued: Story = {
   name: "Queued — single pending job",
   args: {
@@ -118,34 +179,6 @@ export const Failed: Story = {
       failures={{
         21: "invalid manifest: missing orthology.tsv at bundle root",
       }}
-    />
-  ),
-};
-
-export const MixedStates: Story = {
-  name: "All states — queued, extracting, failed",
-  parameters: { controls: { disable: true } },
-  args: { jobs: [] },
-  render: () => (
-    <WitnessedFailureDemo
-      initialJobs={[
-        makeJob({
-          id: 41,
-          status: "RUNNING",
-          payload: { file_path: "/data/uploads/fly_orthologs.zip" },
-        }),
-        makeJob({
-          id: 42,
-          status: "PENDING",
-          payload: { file_path: "/data/uploads/mouse_orthologs.zip" },
-        }),
-        makeJob({
-          id: 43,
-          status: "RUNNING",
-          payload: { file_path: "/data/uploads/corrupt.zip" },
-        }),
-      ]}
-      failures={{ 43: "gzip: unexpected end of file" }}
     />
   ),
 };
