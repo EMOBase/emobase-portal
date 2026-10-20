@@ -79,9 +79,10 @@ type CreateAssemblyVersionResponse = {
   requestId: string;
 };
 
-type JobItem = {
-  id: string;
-  versionId: string;
+export type JobItem = {
+  id: number;
+  versionId: number;
+  fileId?: string | null;
   type:
     | "GENOMIC.FNA"
     | "GENOMIC.GFF"
@@ -89,8 +90,12 @@ type JobItem = {
     | "CDS.FNA"
     | "PROTEIN.FAA"
     | "ORTHOLOGY.TSV"
+    | "ORTHOLOGY.BUNDLE"
+    | "JBROWSE.TRACK.BUNDLE"
     | "SYNONYM";
+  description: string;
   status: "PENDING" | "RUNNING" | "DONE" | "FAILED";
+  payload?: any;
   error?: string;
 };
 

@@ -10,7 +10,11 @@ import {
   FileCard,
   type FileStatus,
 } from "@/components/pages/admin/version-assembly-upload/FileCard";
-import genomicsService, { type FileDetail } from "@/utils/services/genomics";
+import { FileCardBase } from "@/components/pages/admin/version-assembly-upload/FileCard/base";
+import genomicsService, {
+  type FileDetail,
+  type JobItem,
+} from "@/utils/services/genomics";
 import useAsyncData from "@/hooks/useAsyncData";
 import useService from "@/hooks/useService";
 import { formatBytes } from "@/utils/format";
@@ -64,7 +68,7 @@ export default function VersionOrthology({
 }: {
   versionName: string;
 }) {
-  const { fetchVersionDetail } = useService(genomicsService);
+  const { fetchVersionDetail, fetchJobs } = useService(genomicsService);
 
   const [refreshToken, setRefreshToken] = React.useState(0);
   const refresh = React.useCallback(() => setRefreshToken((n) => n + 1), []);
@@ -74,7 +78,27 @@ export default function VersionOrthology({
     [versionName, fetchVersionDetail, refreshToken],
   );
 
+  const { data: jobsData } = useAsyncData(
+    () => fetchJobs(versionName),
+    [versionName, fetchJobs, refreshToken],
+  );
+
   const versionStatus = data?.data.status;
+
+  // In-flight orthology bundle extractions: the bundle archive itself is not
+  // listed in orthologyTSV (bundle rows are audit records), so the jobs list
+  // is the only place the processing state is visible. PENDING/RUNNING jobs
+  // always show; a FAILED job only shows while it is the latest bundle job,
+  // so a successful re-upload supersedes the old failure.
+  const bundleJobs = React.useMemo<JobItem[]>(() => {
+    const jobs: JobItem[] = jobsData?.data ?? [];
+    const bundles = jobs.filter((j) => j.type === "ORTHOLOGY.BUNDLE");
+
+    return bundles.filter((j) => {
+      if (j.status !== "FAILED") return j.status !== "DONE";
+      return !bundles.some((other) => other.id > j.id);
+    });
+  }, [jobsData]);
 
   const orthologyFiles = React.useMemo<FileStatus[]>(() => {
     const files: FileDetail[] = data?.data.orthologyTSV ?? [];
@@ -129,6 +153,7 @@ export default function VersionOrthology({
   const needsPolling =
     versionStatus === "PROCESSING" ||
     orthologyFiles.some((f) => f.status === "PROCESSING") ||
+    bundleJobs.some((j) => j.status === "PENDING" || j.status === "RUNNING") ||
     uploads.length > 0;
 
   React.useEffect(() => {
@@ -184,6 +209,38 @@ export default function VersionOrthology({
           />
         ))}
 
+        {/* Bundles are extracted server-side after the upload finishes, before
+            their child orthology.tsv files exist. Show the archive's job as a
+            processing card until the children appear. */}
+        {bundleJobs.map((job) => {
+          const bundleName =
+            (job.payload?.file_path as string | undefined)?.split("/").pop() ||
+            "orthology bundle";
+          const isFailed = job.status === "FAILED";
+
+          return (
+            <FileCardBase
+              key={job.id}
+              file={{
+                id: String(job.id),
+                name: bundleName,
+                category: "Orthology Bundle",
+                icon: "zip",
+                status: isFailed ? "ERROR" : "PROCESSING",
+                progress: isFailed ? 100 : job.status === "RUNNING" ? 50 : 10,
+                progressTitle: isFailed
+                  ? ""
+                  : job.description || "PROCESSING DATA",
+                error: job.error ?? "",
+                theme: "orange",
+              }}
+              isUploading={false}
+              uploadProgress={0}
+              cardSize="sm"
+            />
+          );
+        })}
+
         {uploads.map((item) => (
           <OrthologyFileCard
             key={item.id}
@@ -199,7 +256,9 @@ export default function VersionOrthology({
           />
         ))}
 
-        {orthologyFiles.length === 0 && uploads.length === 0 ? (
+        {orthologyFiles.length === 0 &&
+        bundleJobs.length === 0 &&
+        uploads.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50/50">
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
               No orthology datasets yet
