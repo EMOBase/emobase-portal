@@ -48,7 +48,12 @@ export default function Toaster() {
   return (
     <Toast.Provider toastManager={toastManager}>
       <Toast.Portal>
-        <Toast.Viewport className="fixed bottom-4 right-4 z-[100] flex w-[22.5rem] max-w-[calc(100vw-2rem)] flex-col gap-2 outline-none">
+        {/* bottom is driven by --corner-stack-bottom so persistent corner
+            panels (e.g. BundleProcessingPanel) can reserve space below us */}
+        <Toast.Viewport
+          style={{ bottom: "var(--corner-stack-bottom, 1rem)" }}
+          className="fixed right-4 z-[100] flex w-[22.5rem] max-w-[calc(100vw-2rem)] flex-col gap-2 outline-none transition-[bottom] duration-200"
+        >
           <ToastList />
         </Toast.Viewport>
       </Toast.Portal>

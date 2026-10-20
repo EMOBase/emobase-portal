@@ -57,8 +57,28 @@ export function BundleProcessingPanel({
   const visible = jobs.filter(
     (job) => !(job.status === "FAILED" && dismissed.has(String(job.id))),
   );
+  const hasJobs = visible.length > 0;
 
-  if (visible.length === 0) return null;
+  // Publish our height so the toast viewport (toaster.tsx) can stack directly
+  // above this panel instead of covering it. Panel bottom is 1rem + 8px gap.
+  const rootRef = React.useRef<HTMLDivElement | null>(null);
+  React.useEffect(() => {
+    if (!hasJobs) return;
+    const el = rootRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const root = document.documentElement;
+    const observer = new ResizeObserver((entries) => {
+      const height = entries[0]?.contentRect.height ?? 0;
+      root.style.setProperty("--corner-stack-bottom", `${height + 24}px`);
+    });
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty("--corner-stack-bottom");
+    };
+  }, [hasJobs]);
+
+  if (!hasJobs) return null;
 
   function dismiss(jobId: number) {
     setDismissed((prev) => {
@@ -75,6 +95,7 @@ export function BundleProcessingPanel({
 
   return (
     <div
+      ref={rootRef}
       aria-live="polite"
       className="fixed bottom-4 right-4 z-[90] w-[22.5rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-orange-200 bg-white shadow-lg"
     >
