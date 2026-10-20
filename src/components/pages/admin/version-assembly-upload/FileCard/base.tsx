@@ -166,7 +166,9 @@ export const FileCardBase = ({
                   aria-label="Upload error"
                   className="relative shrink-0 cursor-help self-center text-red-500"
                 >
-                  <AlertCircle className="size-4" />
+                  <AlertCircle
+                    className={cardSize === "sm" ? "size-3.5" : "size-4"}
+                  />
                 </Tooltip.Trigger>
                 <Tooltip.Portal>
                   <Tooltip.Positioner
