@@ -176,28 +176,6 @@ export const FailedOnly: Story = {
   ),
 };
 
-export const UnwitnessedFailure: Story = {
-  name: "Unwitnessed failure — renders nothing (by design)",
-  parameters: { controls: { disable: true } },
-  args: { jobs: [] },
-  render: () => (
-    // A FAILED job that was never watched as active - e.g. it failed while
-    // the tab was closed, or days ago and still sits in the jobs table. The
-    // panel deliberately renders nothing: this is the rule that keeps stale
-    // failures off every device with zero client-side storage.
-    <BundleProcessingPanel
-      jobs={[
-        makeJob({
-          id: 71,
-          status: "FAILED",
-          error: "job failed 3 days ago",
-          payload: { file_path: "/data/uploads/old_failure.zip" },
-        }),
-      ]}
-    />
-  ),
-};
-
 function CompletionDemo() {
   const [jobs, setJobs] = React.useState<JobItem[]>([
     makeJob({
