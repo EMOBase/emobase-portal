@@ -39,6 +39,15 @@ function statusPill(status: JobItem["status"]) {
   );
 }
 
+function bundleName(job: JobItem) {
+  return (
+    (job.payload?.file_path as string | undefined)?.split("/").pop() ||
+    "orthology bundle"
+  );
+}
+
+const COMPLETE_LINGER_MS = 1600;
+
 export function BundleProcessingPanel({
   jobs,
   versionName,
@@ -57,7 +66,48 @@ export function BundleProcessingPanel({
   const visible = jobs.filter(
     (job) => !(job.status === "FAILED" && dismissed.has(String(job.id))),
   );
-  const hasJobs = visible.length > 0;
+
+  // When an active job leaves the jobs list (it reached DONE), keep its row
+  // around as "completing" so the bar can animate to 100% before the row and
+  // the panel close, instead of vanishing mid-progress.
+  const [completing, setCompleting] = React.useState<
+    Array<{ id: number; name: string }>
+  >([]);
+  const activeJobsRef = React.useRef<Map<number, string>>(new Map());
+
+  React.useEffect(() => {
+    const currentIds = new Set(jobs.map((job) => job.id));
+    const newlyDone: Array<{ id: number; name: string }> = [];
+    activeJobsRef.current.forEach((name, id) => {
+      if (!currentIds.has(id)) newlyDone.push({ id, name });
+    });
+    if (newlyDone.length > 0) {
+      setCompleting((prev) => [
+        ...prev,
+        ...newlyDone.filter((row) => !prev.some((p) => p.id === row.id)),
+      ]);
+    }
+    const next = new Map<number, string>();
+    jobs.forEach((job) => {
+      if (job.status === "PENDING" || job.status === "RUNNING") {
+        next.set(job.id, bundleName(job));
+      }
+    });
+    activeJobsRef.current = next;
+  }, [jobs]);
+
+  React.useEffect(() => {
+    if (completing.length === 0) return;
+    // 500ms of bar animation (ProgressBar transition) + ~1s of reading time.
+    const timer = window.setTimeout(() => {
+      setCompleting((prev) =>
+        prev.filter((row) => !completing.some((c) => c.id === row.id)),
+      );
+    }, COMPLETE_LINGER_MS);
+    return () => window.clearTimeout(timer);
+  }, [completing]);
+
+  const hasJobs = visible.length > 0 || completing.length > 0;
 
   // Publish our height so the toast viewport (toaster.tsx) can stack directly
   // above this panel instead of covering it. Panel bottom is 1rem + 8px gap.
@@ -110,19 +160,19 @@ export function BundleProcessingPanel({
           <div className="text-xs text-slate-500">
             {activeCount > 0
               ? `Extracting orthology bundles · ${activeCount} active`
-              : "Review failed bundle extractions"}
+              : completing.length > 0
+                ? "Finishing up"
+                : "Review failed bundle extractions"}
           </div>
         </div>
         <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-orange-600 shadow-sm">
-          {visible.length}
+          {visible.length + completing.length}
         </span>
       </header>
 
       <div className="divide-y divide-slate-100">
         {visible.map((job) => {
-          const bundleName =
-            (job.payload?.file_path as string | undefined)?.split("/").pop() ||
-            "orthology bundle";
+          const name = bundleName(job);
           const isFailed = job.status === "FAILED";
 
           return (
@@ -131,9 +181,9 @@ export function BundleProcessingPanel({
                 <div className="flex items-center gap-2">
                   <span
                     className="truncate text-sm font-semibold text-slate-800"
-                    title={bundleName}
+                    title={name}
                   >
-                    {bundleName}
+                    {name}
                   </span>
                   {statusPill(job.status)}
                 </div>
@@ -160,7 +210,7 @@ export function BundleProcessingPanel({
               {isFailed ? (
                 <button
                   type="button"
-                  aria-label={`Dismiss ${bundleName}`}
+                  aria-label={`Dismiss ${name}`}
                   onClick={() => dismiss(job.id)}
                   className="shrink-0 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                 >
@@ -170,6 +220,35 @@ export function BundleProcessingPanel({
             </div>
           );
         })}
+
+        {/* Same keyed elements as the live rows they came from, so the bar
+            transitions 50% -> 100% instead of remounting at full width. */}
+        {completing.map((row) => (
+          <div key={row.id} className="flex items-start gap-2 px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span
+                  className="truncate text-sm font-semibold text-slate-800"
+                  title={row.name}
+                >
+                  {row.name}
+                </span>
+                <span className="shrink-0 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-green-600">
+                  Complete
+                </span>
+              </div>
+              <div className="mt-2">
+                <ProgressBar
+                  progress={100}
+                  title=""
+                  theme="orange"
+                  size="sm"
+                  showComplete
+                />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
