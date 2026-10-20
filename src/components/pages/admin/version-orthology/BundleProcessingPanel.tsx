@@ -146,6 +146,37 @@ export function BundleProcessingPanel({
     (job) => job.status === "PENDING" || job.status === "RUNNING",
   ).length;
 
+  // One merged array for BOTH live and completing rows. Rendering them as two
+  // sibling .map() calls would make React treat them as two independent
+  // reconciliation slots - a finishing row moving from the live list to the
+  // completing list would unmount and remount even with matching keys, and
+  // the ProgressBar width transition would never run on a fresh element.
+  const rows: Array<
+    | {
+        key: number;
+        name: string;
+        completed: false;
+        status: JobItem["status"];
+        error: string | undefined;
+        description: string | undefined;
+      }
+    | { key: number; name: string; completed: true }
+  > = [
+    ...visible.map((job) => ({
+      key: job.id,
+      name: bundleName(job),
+      completed: false as const,
+      status: job.status,
+      error: job.error,
+      description: job.description,
+    })),
+    ...completing.map((row) => ({
+      key: row.id,
+      name: row.name,
+      completed: true as const,
+    })),
+  ];
+
   return (
     <div
       ref={rootRef}
@@ -169,40 +200,55 @@ export function BundleProcessingPanel({
           </div>
         </div>
         <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-orange-600 shadow-sm">
-          {visible.length + completing.length}
+          {rows.length}
         </span>
       </header>
 
       <div className="divide-y divide-slate-100">
-        {visible.map((job) => {
-          const name = bundleName(job);
-          const isFailed = job.status === "FAILED";
+        {rows.map((row) => {
+          const isFailed = !row.completed && row.status === "FAILED";
 
           return (
-            <div key={job.id} className="flex items-start gap-2 px-4 py-3">
+            <div key={row.key} className="flex items-start gap-2 px-4 py-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span
                     className="truncate text-sm font-semibold text-slate-800"
-                    title={name}
+                    title={row.name}
                   >
-                    {name}
+                    {row.name}
                   </span>
-                  {statusPill(job.status)}
+                  {row.completed ? (
+                    <span className="shrink-0 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-green-600">
+                      Complete
+                    </span>
+                  ) : (
+                    statusPill(row.status)
+                  )}
                 </div>
 
-                {isFailed ? (
+                {row.completed ? (
+                  <div className="mt-2">
+                    <ProgressBar
+                      progress={100}
+                      title=""
+                      theme="orange"
+                      size="sm"
+                      showComplete
+                    />
+                  </div>
+                ) : isFailed ? (
                   <p
                     className="mt-1 truncate text-xs text-red-500"
-                    title={job.error || "Processing failed"}
+                    title={row.error || "Processing failed"}
                   >
-                    {job.error || "Processing failed"}
+                    {row.error || "Processing failed"}
                   </p>
                 ) : (
                   <div className="mt-2">
                     <ProgressBar
-                      progress={job.status === "RUNNING" ? 50 : 10}
-                      title={job.description || "Extract orthology bundle"}
+                      progress={row.status === "RUNNING" ? 50 : 10}
+                      title={row.description || "Extract orthology bundle"}
                       theme="orange"
                       size="sm"
                     />
@@ -213,8 +259,8 @@ export function BundleProcessingPanel({
               {isFailed ? (
                 <button
                   type="button"
-                  aria-label={`Dismiss ${name}`}
-                  onClick={() => dismiss(job.id)}
+                  aria-label={`Dismiss ${row.name}`}
+                  onClick={() => dismiss(row.key)}
                   className="shrink-0 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                 >
                   <X className="size-4" />
@@ -223,35 +269,6 @@ export function BundleProcessingPanel({
             </div>
           );
         })}
-
-        {/* Same keyed elements as the live rows they came from, so the bar
-            transitions 50% -> 100% instead of remounting at full width. */}
-        {completing.map((row) => (
-          <div key={row.id} className="flex items-start gap-2 px-4 py-3">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span
-                  className="truncate text-sm font-semibold text-slate-800"
-                  title={row.name}
-                >
-                  {row.name}
-                </span>
-                <span className="shrink-0 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-green-600">
-                  Complete
-                </span>
-              </div>
-              <div className="mt-2">
-                <ProgressBar
-                  progress={100}
-                  title=""
-                  theme="orange"
-                  size="sm"
-                  showComplete
-                />
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
