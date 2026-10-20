@@ -1,5 +1,6 @@
 import * as React from "react";
-import { FileArchive, X } from "lucide-react";
+import { AlertCircle, FileArchive, X } from "lucide-react";
+import { Tooltip } from "@base-ui/react/tooltip";
 
 import { ProgressBar } from "@/components/pages/admin/version-assembly-upload/FileCard/ProgressBar";
 import { cn } from "@/utils/classname";
@@ -230,6 +231,33 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                   ) : (
                     statusPill(row.status)
                   )}
+                  {/* Job errors come from the backend error log and can be
+                      long - show an icon like FileCard does and keep the full
+                      message in a tooltip instead of an inline line. */}
+                  {isFailed ? (
+                    <Tooltip.Provider>
+                      <Tooltip.Root>
+                        <Tooltip.Trigger
+                          type="button"
+                          aria-label="Bundle extraction error"
+                          className="shrink-0 cursor-help text-red-500"
+                        >
+                          <AlertCircle className="size-4" />
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Positioner
+                            side="top"
+                            sideOffset={6}
+                            className="z-50"
+                          >
+                            <Tooltip.Popup className="max-w-xs break-words rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white shadow-md outline-none">
+                              {row.error || "Processing failed"}
+                            </Tooltip.Popup>
+                          </Tooltip.Positioner>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                    </Tooltip.Provider>
+                  ) : null}
                 </div>
 
                 {/* Bar for every row shape: a witnessed failure keeps its
@@ -255,15 +283,6 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                     showError={isFailed}
                   />
                 </div>
-
-                {isFailed ? (
-                  <p
-                    className="mt-1.5 truncate text-xs text-red-500"
-                    title={row.error || "Processing failed"}
-                  >
-                    {row.error || "Processing failed"}
-                  </p>
-                ) : null}
               </div>
 
               {isFailed ? (
