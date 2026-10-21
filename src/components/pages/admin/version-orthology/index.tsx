@@ -12,7 +12,7 @@ import { useBundleUploads } from "../_shared/useBundleUploads";
 import {
   FileCard,
   type FileStatus,
-} from "@/components/pages/admin/version-assembly-upload/FileCard";
+} from "@/components/pages/admin/_shared/FileCard";
 import genomicsService, { type FileDetail } from "@/utils/services/genomics";
 import useAsyncData from "@/hooks/useAsyncData";
 import useService from "@/hooks/useService";

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { FileCardBase, type FileStatus } from "./base";
+import { FileCardBase, type FileStatus } from "./FileCardBase";
 
 const meta = {
-  title: "Admin/Version Assembly Upload/FileCard",
+  title: "Admin/_shared/FileCard",
   component: FileCardBase,
   parameters: {
     layout: "padded",

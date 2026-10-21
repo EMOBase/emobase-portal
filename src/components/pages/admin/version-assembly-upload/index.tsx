@@ -3,14 +3,9 @@ import { ChevronRight, Plus } from "lucide-react";
 
 import AddJBrowseTrackButton from "./AddJBrowseTrackButton";
 import { JBrowseTrackBundleUpload } from "./JBrowseTrackBundleUpload";
-import {
-  FileCard,
-  GffFileCard,
-  JBrowseTrackFileCard,
-  SynonymFileCard,
-  type FileStatus,
-} from "./FileCard";
+import { GffFileCard, JBrowseTrackFileCard, SynonymFileCard } from "./FileCard";
 import { BundleProcessingPanel } from "../_shared/BundleProcessingPanel";
+import { FileCard, type FileStatus } from "../_shared/FileCard";
 import { useBundleUploads } from "../_shared/useBundleUploads";
 import genomicsService, {
   type FileDetail,

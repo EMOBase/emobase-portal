@@ -1,4 +1,4 @@
-import { ProgressBar } from "@/components/pages/admin/version-assembly-upload/FileCard/ProgressBar";
+import { ProgressBar } from "@/components/pages/admin/_shared/FileCard/ProgressBar";
 import { ErrorTooltip } from "./ErrorTooltip";
 import { PanelRow } from "./PanelRow";
 import { UploadPill } from "./StatusPills";

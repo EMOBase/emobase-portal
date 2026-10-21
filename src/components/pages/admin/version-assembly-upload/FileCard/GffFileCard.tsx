@@ -4,8 +4,11 @@ import useService from "@/hooks/useService";
 import useUpload from "@/hooks/useUpload";
 import genomicsService from "@/utils/services/genomics";
 import { toastManager } from "@/components/ui/toaster";
-import { ALLOWED_UPLOAD_FILE_TYPES, FileCardBase } from "./base";
-import type { FileStatus } from "./base";
+import {
+  ALLOWED_UPLOAD_FILE_TYPES,
+  FileCardBase,
+} from "@/components/pages/admin/_shared/FileCard/FileCardBase";
+import type { FileStatus } from "@/components/pages/admin/_shared/FileCard/FileCardBase";
 import GffUpload, { type GffMappingConfirmData } from "../GffUpload";
 
 export const GffFileCard = ({

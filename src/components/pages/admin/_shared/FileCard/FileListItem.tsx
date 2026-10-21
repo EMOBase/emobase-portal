@@ -1,21 +1,22 @@
 import { useEffect } from "react";
 
 import useUpload from "@/hooks/useUpload";
+import type { UploadInput } from "@/utils/upload";
 import { toastManager } from "@/components/ui/toaster";
-import { FileCardBase } from "./base";
+import { FileCardBase } from "./FileCardBase";
 
-export const SynonymFileCard = ({
+export const FileListItem = ({
   file,
-  versionName,
-  assemblyId,
-  species,
+  uploadArgs,
+  category,
+  icon,
   onComplete,
   size = "sm",
 }: {
   file: File;
-  versionName: string;
-  assemblyId: string | number;
-  species: string;
+  uploadArgs: Omit<UploadInput, "file" | "onProgress">;
+  category: string;
+  icon: string;
   onComplete: () => void;
   size?: "sm" | "md";
 }) => {
@@ -24,13 +25,7 @@ export const SynonymFileCard = ({
   useEffect(() => {
     let cancelled = false;
 
-    upload({
-      file,
-      version: versionName,
-      assembly: assemblyId,
-      fileType: "species.synonym",
-      species,
-    })
+    upload({ file, ...uploadArgs })
       .then(() => {
         if (!cancelled) {
           toastManager.add({
@@ -60,8 +55,8 @@ export const SynonymFileCard = ({
     <FileCardBase
       file={{
         name: file.name,
-        category: "Synonyms",
-        icon: "book-open",
+        category,
+        icon,
         status: error ? "ERROR" : "UPLOADING",
         progress,
         progressTitle: "IN TRANSIT",
