@@ -135,6 +135,12 @@ export default function VersionOrthology({
     }>
   >([]);
 
+  // The empty state reflects the page content only (the orthology.tsv list and
+  // any in-progress upload cards). The bundle processing panel is a floating
+  // overlay, so in-flight bundle extractions do not count as content: while a
+  // bundle is being extracted there is still no orthology on the page yet.
+  const showEmptyState = orthologyFiles.length === 0 && uploads.length === 0;
+
   function handleAdd(file: File, order: number, algorithm: string) {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     setUploads((prev) => [
@@ -228,9 +234,7 @@ export default function VersionOrthology({
           />
         ))}
 
-        {orthologyFiles.length === 0 &&
-        bundleJobs.length === 0 &&
-        uploads.length === 0 ? (
+        {showEmptyState ? (
           <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50/50">
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
               No orthology datasets yet
