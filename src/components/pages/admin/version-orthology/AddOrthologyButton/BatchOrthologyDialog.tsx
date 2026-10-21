@@ -77,33 +77,22 @@ export function BatchOrthologyDialog({
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-slate-900/40" />
         <Dialog.Popup
           ref={form.formRef}
-          className="fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-md border border-slate-200 bg-white p-6 shadow-lg outline-none"
+          className="fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-slate-200 bg-white p-8 shadow-lg outline-none"
         >
-          {/* The header and the action row carry a divider each, so the
-              dialog reads as a top and a bottom band around the recipe. */}
-          <div className="relative mb-4 border-b border-slate-100 pb-4 pr-8">
-            <Dialog.Title className="text-xl font-bold text-slate-900">
-              Add Orthology Batch
-            </Dialog.Title>
-            <Dialog.Description className="mt-1 text-sm leading-relaxed text-slate-500">
-              Upload one bundle archive (.zip or .tar.gz) holding every
-              orthology dataset for this version. The backend reads the per-file
-              metadata from a manifest.csv inside the archive, so the archive is
-              the only file to upload.
-            </Dialog.Description>
-            <Dialog.Close
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Close"
-                  className="absolute right-0 top-0"
-                >
-                  <X className="size-4" />
-                </Button>
-              }
-            />
-          </div>
+          <Dialog.Close className="absolute right-6 top-6 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600">
+            <X className="size-5" />
+            <span className="sr-only">Close</span>
+          </Dialog.Close>
+
+          <Dialog.Title className="font-display text-2xl font-bold text-slate-900">
+            Add Orthology Batch
+          </Dialog.Title>
+
+          <Dialog.Description className="mt-2 text-sm leading-relaxed text-slate-500">
+            Upload one bundle archive (.zip or .tar.gz) that contains multiple
+            orthology datasets for this version, along with a manifest.csv that
+            maps each orthology file to its metadata.
+          </Dialog.Description>
 
           <BundleRecipe
             onDownloadTemplate={handleDownloadTemplate}
@@ -111,18 +100,16 @@ export function BatchOrthologyDialog({
           />
 
           {downloadError ? (
-            <p className="-mt-2 mb-4 text-xs text-destructive">
-              {downloadError}
-            </p>
+            <p className="mt-4 text-xs text-destructive">{downloadError}</p>
           ) : null}
 
           {form.formError ? (
-            <p className="mb-2 text-sm text-destructive">{form.formError}</p>
+            <p className="mt-4 text-sm text-destructive">{form.formError}</p>
           ) : null}
 
           {/* The archive picker and the actions share one row: in a dialog this
               wide the file input does not need a row of its own. */}
-          <div className="flex flex-wrap items-end gap-3 border-t border-slate-100 pt-4">
+          <div className="mt-8 flex flex-wrap items-end justify-between gap-4 border-t border-slate-100 pt-6">
             <div className="min-w-[16rem] flex-1">
               <Field
                 label="Bundle Archive"
@@ -142,21 +129,19 @@ export function BatchOrthologyDialog({
                 />
               </Field>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <Button
-                variant="default"
-                onClick={handleConfirm}
-                disabled={form.submitting}
-              >
-                <CloudUpload className="h-4 w-4" />
-                Upload
-              </Button>
-            </div>
+            <Button
+              variant="default"
+              onClick={handleConfirm}
+              disabled={form.submitting}
+            >
+              <CloudUpload className="h-4 w-4" />
+              Upload
+            </Button>
           </div>
           {form.errors.bundle ? (
             <p
               id="orthology-bundle-error"
-              className="mt-1 text-sm text-destructive"
+              className="mt-2 text-sm text-destructive"
             >
               {form.errors.bundle}
             </p>

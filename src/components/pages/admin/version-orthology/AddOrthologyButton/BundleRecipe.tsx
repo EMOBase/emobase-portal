@@ -35,12 +35,8 @@ export function BundleRecipe({
   downloadingTemplate,
 }: BundleRecipeProps) {
   return (
-    <ol className="mb-4 space-y-3">
+    <ol className="mt-6 space-y-3">
       <Step n={1} title="Get the manifest template">
-        <p className="text-sm leading-relaxed text-slate-600">
-          One row per file you upload, with the metadata the backend needs for
-          it.
-        </p>
         <button
           type="button"
           onClick={onDownloadTemplate}
@@ -89,25 +85,22 @@ export function BundleRecipe({
             produced the mapping, e.g. OrthoFinder 2.0.
           </li>
         </ul>
+        <p className="mt-1 text-sm leading-relaxed text-slate-600">
+          Remember to list all the files in the folder in the manifest.csv. If
+          one is not listed there, the system will return an error.
+        </p>
       </Step>
 
       <Step n={4} title="Create the archive">
         <p className="text-sm leading-relaxed text-slate-600">
-          Run the command in the parent folder, so the files land at the top
-          level of the archive.
+          Run the command in the folder that holds{" "}
+          <code className="font-mono text-xs">orthologies</code>, so the files
+          land at the top level of the archive.
         </p>
-        <div className="mt-1.5 grid gap-2 sm:grid-cols-3">
+        <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
           <div>
             <p className="text-xs font-semibold text-slate-700">
               macOS / Linux
-            </p>
-            <code className="mt-0.5 block break-words rounded bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700">
-              COPYFILE_DISABLE=1 tar czf bundle.tar.gz -C orthologies .
-            </code>
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-slate-700">
-              macOS / Linux, for a .zip
             </p>
             <code className="mt-0.5 block break-words rounded bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700">
               zip -j bundle.zip orthologies/*
@@ -124,12 +117,7 @@ export function BundleRecipe({
         </div>
         <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-xs text-slate-500">
           <li>
-            COPYFILE_DISABLE=1 keeps macOS from adding hidden{" "}
-            <code className="font-mono text-xs">._*</code> files.
-          </li>
-          <li>
-            Never compress the folder itself - that nests it inside the archive,
-            which the backend rejects.
+            Compress the files inside the folder instead of the folder itself.
           </li>
         </ul>
       </Step>
