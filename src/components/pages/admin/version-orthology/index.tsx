@@ -158,7 +158,7 @@ export default function VersionOrthology({
     setSingleUploads((prev) => [...prev, { id, file, order, algorithm }]);
   }
 
-  function handleAddBundle(bundleFile: File, _metadataFile: File | null) {
+  function handleAddBundle(bundleFile: File) {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     setBundleUploads((prev) => [
       ...prev,
