@@ -14,6 +14,8 @@ import { Field } from "@/components/ui/field";
 import { FileInput } from "@/components/ui/file-input";
 import { Input } from "@/components/ui/input";
 import { useForm } from "@/hooks/useForm";
+import useService from "@/hooks/useService";
+import genomicsService from "@/utils/services/genomics";
 
 type OnConfirm = (file: File, order: number, algorithm: string) => void;
 
@@ -163,6 +165,9 @@ type OnBatchConfirm = (bundleFile: File, metadataFile: File | null) => void;
 
 function useOrthologyBundleDialog(onConfirm?: OnBatchConfirm) {
   const [open, setOpen] = React.useState(false);
+  const [downloadingTemplate, setDownloadingTemplate] = React.useState(false);
+  const [downloadError, setDownloadError] = React.useState<string | null>(null);
+  const { fetchManifestTemplate } = useService(genomicsService);
   const form = useForm<{ bundle: File | null; metadata: File | null }>({
     defaultValues: { bundle: null, metadata: null },
     validate: (values) => ({
@@ -179,6 +184,27 @@ function useOrthologyBundleDialog(onConfirm?: OnBatchConfirm) {
     if (await form.handleSubmit()) {
       setOpen(false);
       form.reset();
+    }
+  }
+
+  async function handleDownloadTemplate() {
+    setDownloadingTemplate(true);
+    setDownloadError(null);
+    try {
+      const blob = await fetchManifestTemplate("orthology.bundle");
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      // The backend matches the manifest by this exact name at the archive
+      // root, so it must be saved as manifest.csv - not the server's
+      // Content-Disposition filename.
+      anchor.download = "manifest.csv";
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setDownloadError("Could not download the template. Please try again.");
+    } finally {
+      setDownloadingTemplate(false);
     }
   }
 
@@ -202,8 +228,23 @@ function useOrthologyBundleDialog(onConfirm?: OnBatchConfirm) {
           <Dialog.Description className="text-sm text-slate-500 mb-6">
             Upload a bundle archive (.zip or .tar.gz) holding every orthology
             dataset for this version. Per-file metadata is read from the
-            manifest.csv inside the archive.
+            manifest.csv inside the archive.{" "}
+            <button
+              type="button"
+              onClick={handleDownloadTemplate}
+              disabled={downloadingTemplate}
+              className="font-semibold text-blue-600 underline underline-offset-2 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {downloadingTemplate
+                ? "Downloading…"
+                : "Download the manifest template (.csv)"}
+            </button>
           </Dialog.Description>
+          {downloadError ? (
+            <p className="-mt-4 mb-4 text-xs text-destructive">
+              {downloadError}
+            </p>
+          ) : null}
 
           <Field
             label="Bundle Archive"

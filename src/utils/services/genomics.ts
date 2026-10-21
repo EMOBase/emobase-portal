@@ -321,6 +321,16 @@ const genomicsService = (fetch: typeof apiFetch = apiFetch) => {
     });
   };
 
+  const fetchManifestTemplate = async (fileType: string) => {
+    return await fetch<Blob>(
+      "genomicsservice",
+      `/upload-files/templates/${fileType}`,
+      {
+        responseType: "blob",
+      },
+    );
+  };
+
   const fetchVersionDetail = async (version: string) => {
     return await fetch<FetchVersionDetailResponse>(
       "genomicsservice",
@@ -447,6 +457,7 @@ const genomicsService = (fetch: typeof apiFetch = apiFetch) => {
     setAssemblyVersionImage,
     deleteAssemblyVersionImage,
     fetchJobs,
+    fetchManifestTemplate,
     fetchVersionDetail,
     deleteUploadFile,
     deleteVersion,
