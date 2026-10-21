@@ -8,7 +8,7 @@ import { FileInput } from "@/components/ui/file-input";
 import { useForm } from "@/hooks/useForm";
 import useService from "@/hooks/useService";
 import genomicsService from "@/utils/services/genomics";
-import { BundleRecipe } from "@/components/pages/admin/BundleRecipe";
+import { BundleRecipe } from "@/components/pages/admin/_shared/BundleRecipe";
 
 import type { OnBatchConfirm } from "./types";
 

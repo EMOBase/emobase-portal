@@ -10,8 +10,8 @@ import {
   SynonymFileCard,
   type FileStatus,
 } from "./FileCard";
-import { BundleProcessingPanel } from "../BundleProcessingPanel";
-import { useBundleUploads } from "../useBundleUploads";
+import { BundleProcessingPanel } from "../_shared/BundleProcessingPanel";
+import { useBundleUploads } from "../_shared/useBundleUploads";
 import genomicsService, {
   type FileDetail,
   type VersionDetailFiles,

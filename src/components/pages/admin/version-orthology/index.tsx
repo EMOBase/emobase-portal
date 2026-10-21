@@ -7,8 +7,8 @@ import AddOrthologyButton, {
 } from "./AddOrthologyButton";
 import { OrthologyFileCard } from "./OrthologyFileCard";
 import { OrthologyBundleUpload } from "./OrthologyBundleUpload";
-import { BundleProcessingPanel } from "../BundleProcessingPanel";
-import { useBundleUploads } from "../useBundleUploads";
+import { BundleProcessingPanel } from "../_shared/BundleProcessingPanel";
+import { useBundleUploads } from "../_shared/useBundleUploads";
 import {
   FileCard,
   type FileStatus,

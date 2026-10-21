@@ -6,7 +6,7 @@ import type { BundleUploadItem } from "./types";
 import type { JobItem } from "@/utils/services/genomics";
 
 const meta = {
-  title: "Admin/BundleProcessingPanel",
+  title: "Admin/_shared/BundleProcessingPanel",
   component: BundleProcessingPanel,
   parameters: {
     layout: "fullscreen",
