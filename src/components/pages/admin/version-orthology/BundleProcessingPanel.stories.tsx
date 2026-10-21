@@ -174,6 +174,9 @@ export const UploadFailed: Story = {
       },
     ],
   },
+  // Static showcase: on the live page an ignored failure removes itself after
+  // a few seconds, which would empty this story.
+  render: (args) => <BundleProcessingPanel {...args} preview />,
 };
 
 export const Running: Story = {
@@ -216,7 +219,8 @@ export const MultipleActive: Story = {
 // The panel only shows a failure it WATCHED happen (the job was active in
 // this page instance first). These stories therefore start their failing
 // jobs active and flip them to FAILED after a beat, exactly like a real
-// poll would deliver the transition.
+// poll would deliver the transition. A failed row then removes itself after
+// a few seconds of not being touched - hovering it holds it in place.
 function WitnessedFailureDemo({
   initialJobs,
   failures,
@@ -244,7 +248,7 @@ function WitnessedFailureDemo({
 }
 
 export const Failed: Story = {
-  name: "Failed — fails live, then dismiss",
+  name: "Failed — fails live, then removes itself when ignored",
   parameters: { controls: { disable: true } },
   args: { jobs: [] },
   render: () => (

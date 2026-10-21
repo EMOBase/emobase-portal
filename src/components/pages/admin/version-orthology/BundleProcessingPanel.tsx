@@ -79,10 +79,18 @@ function bundleName(job: JobItem) {
   );
 }
 
-function ErrorTooltip({ label, message }: { label: string; message?: string }) {
+function ErrorTooltip({
+  label,
+  message,
+  onOpenChange,
+}: {
+  label: string;
+  message?: string;
+  onOpenChange?: (open: boolean) => void;
+}) {
   return (
     <Tooltip.Provider>
-      <Tooltip.Root>
+      <Tooltip.Root onOpenChange={onOpenChange}>
         <Tooltip.Trigger
           type="button"
           aria-label={label}
@@ -115,6 +123,116 @@ function ErrorTooltip({ label, message }: { label: string; message?: string }) {
 }
 
 const COMPLETE_LINGER_MS = 1600;
+// How long a failed row stays on screen when the user does not touch it:
+// long enough to read the reason (and to hover the row and read it a moment
+// later), short enough that the panel does not keep every old failure
+// around.
+const ERROR_LINGER_MS = 5000;
+// How often the panel looks for rows whose time is up.
+const ERROR_CHECK_MS = 250;
+
+/**
+ * Removes error rows that nobody is looking at.
+ *
+ * Every failed row (a failed upload, a failed extraction) gets
+ * ERROR_LINGER_MS to live. Touching a row - the pointer on it, or its error
+ * tooltip open - holds its countdown, so a row never disappears while the
+ * reason is being read. Once the user is done with it, the row gets a fresh
+ * window and then leaves on its own.
+ *
+ * `activeKeys` are the error rows currently on screen, `onExpire` is called
+ * with the key of the row that timed out.
+ */
+function useErrorLinger(
+  activeKeys: string[],
+  onExpire: (key: string) => void,
+  enabled = true,
+) {
+  // Rows the user is engaged with (the pointer is on the row, or its error
+  // tooltip is open): their countdown is on hold. A ref, not state: the
+  // checker below reads it on every tick, and holding a row must not cost a
+  // render.
+  const heldRef = React.useRef<Set<string>>(new Set());
+  // Hold reasons per row. The pointer and the tooltip can hold the same row
+  // at the same time, so the reasons have to be balanced.
+  const holdsRef = React.useRef<Map<string, number>>(new Map());
+  // When each row may leave, in epoch ms.
+  const deadlinesRef = React.useRef<Map<string, number>>(new Map());
+  // Rows that already left on their own: they get no new deadline while
+  // they are still on screen.
+  const expiredRef = React.useRef<Set<string>>(new Set());
+  const onExpireRef = React.useRef(onExpire);
+
+  // The joined key identifies the set: `activeKeys` is rebuilt on every
+  // render, but its contents only change when a row appears or leaves.
+  const key = activeKeys.join("|");
+  const hasErrors = key.length > 0;
+
+  React.useEffect(() => {
+    onExpireRef.current = onExpire;
+  });
+
+  React.useEffect(() => {
+    const deadlines = deadlinesRef.current;
+    const active = new Set(key ? key.split("|") : []);
+    const now = Date.now();
+    for (const k of [...deadlines.keys()]) {
+      if (active.has(k)) continue;
+      // The row is gone: forget everything about it, so a later row with the
+      // same key starts from scratch.
+      deadlines.delete(k);
+      expiredRef.current.delete(k);
+      heldRef.current.delete(k);
+      holdsRef.current.delete(k);
+    }
+    for (const k of active) {
+      if (expiredRef.current.has(k)) continue;
+      if (!deadlines.has(k)) deadlines.set(k, now + ERROR_LINGER_MS);
+    }
+  }, [key]);
+
+  React.useEffect(() => {
+    if (!enabled || !hasErrors) return;
+    // A ticker, not one timeout per row: a row that leaves does not have to
+    // re-arm the timer for the other rows.
+    const timer = window.setInterval(() => {
+      const now = Date.now();
+      for (const [k, deadline] of deadlinesRef.current) {
+        if (heldRef.current.has(k) || deadline > now) continue;
+        expiredRef.current.add(k);
+        deadlinesRef.current.delete(k);
+        onExpireRef.current(k);
+      }
+    }, ERROR_CHECK_MS);
+    return () => window.clearInterval(timer);
+  }, [enabled, hasErrors]);
+
+  function hold(k: string) {
+    holdsRef.current.set(k, (holdsRef.current.get(k) ?? 0) + 1);
+    heldRef.current.add(k);
+  }
+
+  function release(k: string) {
+    const count = (holdsRef.current.get(k) ?? 0) - 1;
+    if (count > 0) {
+      holdsRef.current.set(k, count);
+      return;
+    }
+    holdsRef.current.delete(k);
+    heldRef.current.delete(k);
+    // The user is done with it: a fresh window before it leaves.
+    if (!expiredRef.current.has(k)) {
+      deadlinesRef.current.set(k, Date.now() + ERROR_LINGER_MS);
+    }
+  }
+
+  function touch(k: string) {
+    if (expiredRef.current.has(k)) return;
+    deadlinesRef.current.set(k, Date.now() + ERROR_LINGER_MS);
+  }
+
+  return { hold, release, touch };
+}
 
 export function BundleProcessingPanel({
   jobs,
@@ -126,9 +244,11 @@ export function BundleProcessingPanel({
   uploads?: BundleUploadItem[];
   onDismissUpload?: (uploadId: string) => void;
   /** Static showcase mode (Storybook): every row shape is rendered at once -
-      failures are not hidden by the witness rule and a job that is already
-      DONE shows up as a completed row. The live page never sets this: it
-      filters DONE jobs out and only ever shows failures it witnessed. */
+      failures are not hidden by the witness rule, a job that is already
+      DONE shows up as a completed row, and the failed rows do not remove
+      themselves. The live page never sets this: it filters DONE jobs out,
+      only ever shows failures it witnessed, and lets an ignored failure
+      disappear again. */
   preview?: boolean;
 }) {
   // Job ids this page instance has watched in an active state (PENDING or
@@ -211,6 +331,47 @@ export function BundleProcessingPanel({
   const hasRows =
     uploads.length > 0 || visible.length > 0 || completing.length > 0;
 
+  const dismissJob = React.useCallback((jobId: number) => {
+    setDismissed((prev) => {
+      const next = new Set(prev);
+      next.add(jobId);
+      return next;
+    });
+  }, []);
+
+  // The error rows that may remove themselves once the user has had time to
+  // read them. Both kinds of failure count: a failed upload and a failed
+  // extraction.
+  const errorKeys = [
+    ...uploads
+      .filter((upload) => upload.status === "FAILED")
+      .map((upload) => `upload:${upload.id}`),
+    ...visible
+      .filter((job) => job.status === "FAILED")
+      .map((job) => `job:${job.id}`),
+  ];
+
+  const handleErrorExpire = React.useCallback(
+    (key: string) => {
+      if (key.startsWith("upload:")) {
+        onDismissUpload?.(key.slice("upload:".length));
+        return;
+      }
+      if (key.startsWith("job:")) {
+        dismissJob(Number(key.slice("job:".length)));
+      }
+    },
+    [onDismissUpload, dismissJob],
+  );
+
+  // The static showcase keeps its failure rows: a story that removed its own
+  // error rows would show an empty panel.
+  const { hold, release, touch } = useErrorLinger(
+    errorKeys,
+    handleErrorExpire,
+    !preview,
+  );
+
   // Publish our height so the toast viewport (toaster.tsx) can stack directly
   // above this panel instead of covering it. Panel bottom is 1rem + 8px gap.
   const rootRef = React.useRef<HTMLDivElement | null>(null);
@@ -231,14 +392,6 @@ export function BundleProcessingPanel({
   }, [hasRows]);
 
   if (!hasRows) return null;
-
-  function dismiss(jobId: number) {
-    setDismissed((prev) => {
-      const next = new Set(prev);
-      next.add(jobId);
-      return next;
-    });
-  }
 
   const activeJobCount = visible.filter(
     (job) => job.status === "PENDING" || job.status === "RUNNING",
@@ -388,11 +541,17 @@ export function BundleProcessingPanel({
       <div className="divide-y divide-slate-100">
         {uploads.map((upload) => {
           const isFailed = upload.status === "FAILED";
+          const errorKey = `upload:${upload.id}`;
 
           return (
             <div
               key={`upload-${upload.id}`}
               className="relative flex items-start gap-2 px-4 py-3"
+              // A failure the user is not looking at removes itself; hovering
+              // it (or opening its tooltip) holds it in place.
+              onMouseEnter={isFailed ? () => hold(errorKey) : undefined}
+              onMouseLeave={isFailed ? () => release(errorKey) : undefined}
+              onClick={isFailed ? () => touch(errorKey) : undefined}
             >
               <div className="min-w-0 flex-1">
                 <div
@@ -430,6 +589,9 @@ export function BundleProcessingPanel({
                         <ErrorTooltip
                           label="Bundle upload error"
                           message={upload.error || "Upload failed"}
+                          onOpenChange={(open) =>
+                            open ? hold(errorKey) : release(errorKey)
+                          }
                         />
                       ) : undefined
                     }
@@ -453,11 +615,17 @@ export function BundleProcessingPanel({
 
         {rows.map((row) => {
           const isFailed = !row.completed && row.status === "FAILED";
+          const errorKey = `job:${row.key}`;
 
           return (
             <div
               key={row.key}
               className="relative flex items-start gap-2 px-4 py-3"
+              // A failure the user is not looking at removes itself; hovering
+              // it (or opening its tooltip) holds it in place.
+              onMouseEnter={isFailed ? () => hold(errorKey) : undefined}
+              onMouseLeave={isFailed ? () => release(errorKey) : undefined}
+              onClick={isFailed ? () => touch(errorKey) : undefined}
             >
               <div className="min-w-0 flex-1">
                 <div
@@ -515,6 +683,9 @@ export function BundleProcessingPanel({
                         <ErrorTooltip
                           label="Bundle extraction error"
                           message={row.error || "Processing failed"}
+                          onOpenChange={(open) =>
+                            open ? hold(errorKey) : release(errorKey)
+                          }
                         />
                       ) : undefined
                     }
@@ -526,7 +697,7 @@ export function BundleProcessingPanel({
                 <button
                   type="button"
                   aria-label={`Dismiss ${row.name}`}
-                  onClick={() => dismiss(row.key)}
+                  onClick={() => dismissJob(row.key)}
                   className="absolute right-2 top-2 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                 >
                   <X className="size-4" />
