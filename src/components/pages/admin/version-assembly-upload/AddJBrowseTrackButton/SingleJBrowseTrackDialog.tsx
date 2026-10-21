@@ -1,6 +1,5 @@
-import * as React from "react";
 import { Dialog } from "@base-ui/react/dialog";
-import { CloudUpload, Plus } from "lucide-react";
+import { CloudUpload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
@@ -8,17 +7,19 @@ import { FileInput } from "@/components/ui/file-input";
 import { Input } from "@/components/ui/input";
 import { useForm } from "@/hooks/useForm";
 
-export default function AddJBrowseTrackButton({
+import type { OnConfirm } from "./types";
+
+type SingleJBrowseTrackDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm?: OnConfirm;
+};
+
+export function SingleJBrowseTrackDialog({
+  open,
+  onOpenChange,
   onConfirm,
-}: {
-  onConfirm?: (
-    file: File,
-    trackName: string,
-    category?: string,
-    selectInDefaultSession?: boolean,
-  ) => void;
-}) {
-  const [open, setOpen] = React.useState(false);
+}: SingleJBrowseTrackDialogProps) {
   const form = useForm<{
     file: File | null;
     trackName: string;
@@ -45,30 +46,19 @@ export default function AddJBrowseTrackButton({
   });
 
   function handleOpenChange(next: boolean) {
-    setOpen(next);
     if (!next) form.reset();
+    onOpenChange(next);
   }
 
   async function handleConfirm() {
     if (await form.handleSubmit()) {
-      setOpen(false);
       form.reset();
+      onOpenChange(false);
     }
   }
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
-      <Dialog.Trigger
-        render={
-          <button
-            type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-          >
-            <Plus className="size-4" strokeWidth={2.5} />
-            Add Track
-          </button>
-        }
-      />
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-slate-900/40" />
         <Dialog.Popup

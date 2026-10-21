@@ -2,6 +2,7 @@ import * as React from "react";
 import { ChevronRight, Plus } from "lucide-react";
 
 import AddJBrowseTrackButton from "./AddJBrowseTrackButton";
+import { JBrowseTrackBundleUpload } from "./JBrowseTrackBundleUpload";
 import {
   FileCard,
   GffFileCard,
@@ -9,6 +10,8 @@ import {
   SynonymFileCard,
   type FileStatus,
 } from "./FileCard";
+import { BundleProcessingPanel } from "../BundleProcessingPanel";
+import { useBundleUploads } from "../useBundleUploads";
 import genomicsService, {
   type FileDetail,
   type VersionDetailFiles,
@@ -106,6 +109,22 @@ export default function VersionAssemblyUpload({
     [versionName, assemblyId, fetchAssemblyVersionDetail, refreshToken],
   );
 
+  // The bundle archives and their extraction jobs live in the floating
+  // processing panel, not in the page: the panel owns the whole lifecycle of
+  // an archive, from the first byte to its extraction.
+  const {
+    jobs: bundleJobs,
+    uploads: bundleUploads,
+    pendingUploads: pendingBundleUploads,
+    addBundle: handleAddBundle,
+    updateBundle: updateBundleUpload,
+    dismissUpload: dismissBundleUpload,
+  } = useBundleUploads({
+    versionName,
+    jobType: "JBROWSE.TRACK.BUNDLE",
+    refreshToken,
+  });
+
   const assemblyName = data?.data.name ?? assemblyId;
   const species = data?.data.species ?? "";
   const versionFiles: VersionDetailFiles = data?.data.files ?? {};
@@ -192,7 +211,9 @@ export default function VersionAssemblyUpload({
     data?.data.status === "PROCESSING" ||
     [...mainFiles, ...jbrowseTrackFiles, ...synonymFiles].some(
       (f) => f.status === "PROCESSING",
-    );
+    ) ||
+    bundleJobs.some((j) => j.status === "PENDING" || j.status === "RUNNING") ||
+    bundleUploads.some((upload) => upload.status !== "FAILED");
 
   React.useEffect(() => {
     if (!needsPolling) return;
@@ -291,7 +312,10 @@ export default function VersionAssemblyUpload({
               Visualisation tracks for the JBrowse2 genome browser.
             </p>
           </div>
-          <AddJBrowseTrackButton onConfirm={handleAddTrack} />
+          <AddJBrowseTrackButton
+            onConfirm={handleAddTrack}
+            onBatchConfirm={handleAddBundle}
+          />
         </div>
 
         <div className="grid gap-4">
@@ -396,6 +420,42 @@ export default function VersionAssemblyUpload({
           ) : null}
         </div>
       </div>
+
+      {/* Hidden tus uploaders. Bundle archives never render an inline
+          FileCard: from the first byte to extraction they belong to the
+          floating panel. */}
+      {bundleUploads.map((upload) => (
+        <JBrowseTrackBundleUpload
+          key={upload.id}
+          file={upload.file}
+          versionName={versionName}
+          assemblyId={assemblyId}
+          onProgress={(progress) => updateBundleUpload(upload.id, { progress })}
+          onUploaded={(fileId) => {
+            updateBundleUpload(upload.id, {
+              fileId,
+              status: "UPLOADED",
+              progress: 100,
+            });
+            refresh();
+          }}
+          onFailed={(error) =>
+            updateBundleUpload(upload.id, { status: "FAILED", error })
+          }
+        />
+      ))}
+
+      <BundleProcessingPanel
+        jobs={bundleJobs}
+        uploads={pendingBundleUploads.map((upload) => ({
+          id: upload.id,
+          name: upload.file.name,
+          progress: upload.progress,
+          status: upload.status,
+          error: upload.error,
+        }))}
+        onDismissUpload={dismissBundleUpload}
+      />
     </div>
   );
 }

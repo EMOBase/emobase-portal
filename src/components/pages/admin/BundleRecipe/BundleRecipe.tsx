@@ -23,17 +23,38 @@ function Step({ n, title, children }: StepProps) {
   );
 }
 
-type BundleRecipeProps = {
-  onDownloadTemplate: () => void;
-  downloadingTemplate: boolean;
+export type BundleRecipeColumn = {
+  /** The column header in manifest.csv, e.g. "fileName". */
+  name: string;
+  /** What goes into it, in one sentence. */
+  hint: string;
 };
 
-// The recipe that tells the user how to assemble a bundle archive the backend
-// accepts: flat files, a manifest at the root, one archive.
+/**
+ * The recipe that tells the user how to assemble a bundle archive the system
+ * accepts: flat files, a manifest at the root, one archive. The orthology
+ * and the JBrowse2 track bundles differ only in their files and their
+ * manifest columns, so the steps live here and each caller supplies its own.
+ */
 export function BundleRecipe({
   onDownloadTemplate,
   downloadingTemplate,
-}: BundleRecipeProps) {
+  folderName,
+  itemLabel,
+  fileTypesHint,
+  columns,
+}: {
+  onDownloadTemplate: () => void;
+  downloadingTemplate: boolean;
+  /** The folder the files are collected in, e.g. "orthologies". */
+  folderName: string;
+  /** What one file is called, e.g. "orthology file". */
+  itemLabel: string;
+  /** Which file types the items may use. */
+  fileTypesHint: string;
+  /** The manifest columns, in the order the template lists them. */
+  columns: BundleRecipeColumn[];
+}) {
   return (
     <ol className="mt-6 space-y-3">
       <Step n={1} title="Get the manifest template">
@@ -51,39 +72,37 @@ export function BundleRecipe({
 
       <Step n={2} title="Collect the files in one folder">
         <p className="text-sm leading-relaxed text-slate-600">
-          Put every orthology file you want to upload into one folder (e.g.{" "}
-          <code className="font-mono text-xs">orthologies</code>), together with
-          the downloaded manifest.csv.
+          Put every {itemLabel} you want to upload into one folder (e.g.{" "}
+          <code className="font-mono text-xs">{folderName}</code>), together
+          with the downloaded manifest.csv.
         </p>
         <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-slate-500">
           <li>
             Every file must end up at the top level of the archive, no folders -
             manifest.csv included.
           </li>
-          <li>Data files may be plain or already gzipped.</li>
+          <li>{fileTypesHint}</li>
         </ul>
       </Step>
 
       <Step n={3} title="Fill in the manifest">
         <p className="text-sm leading-relaxed text-slate-600">
           One row per data file, with the columns{" "}
-          <code className="font-mono text-xs">fileName</code>,{" "}
-          <code className="font-mono text-xs">order</code>,{" "}
-          <code className="font-mono text-xs">algorithm</code>.
+          {columns.map((column, index) => (
+            <React.Fragment key={column.name}>
+              {index > 0 ? ", " : ""}
+              <code className="font-mono text-xs">{column.name}</code>
+            </React.Fragment>
+          ))}
+          .
         </p>
         <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-slate-500">
-          <li>
-            <code className="font-mono text-xs">fileName</code> - the name of
-            the file inside the archive, spelled exactly like it.
-          </li>
-          <li>
-            <code className="font-mono text-xs">order</code> - the display order
-            of the dataset, an integer (1, 2, 3...).
-          </li>
-          <li>
-            <code className="font-mono text-xs">algorithm</code> - the tool that
-            produced the mapping, e.g. OrthoFinder 2.0.
-          </li>
+          {columns.map((column) => (
+            <li key={column.name}>
+              <code className="font-mono text-xs">{column.name}</code> -{" "}
+              {column.hint}
+            </li>
+          ))}
         </ul>
         <p className="mt-1 text-sm leading-relaxed text-slate-600">
           Remember to list all the files in the folder in the manifest.csv. If
@@ -94,7 +113,7 @@ export function BundleRecipe({
       <Step n={4} title="Create the archive">
         <p className="text-sm leading-relaxed text-slate-600">
           Run the command in the folder that holds{" "}
-          <code className="font-mono text-xs">orthologies</code>, so the files
+          <code className="font-mono text-xs">{folderName}</code>, so the files
           land at the top level of the archive.
         </p>
         <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
@@ -103,7 +122,7 @@ export function BundleRecipe({
               macOS / Linux
             </p>
             <code className="mt-0.5 block break-words rounded bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700">
-              zip -j bundle.zip orthologies/*
+              zip -j bundle.zip {folderName}/*
             </code>
           </div>
           <div>
@@ -111,7 +130,8 @@ export function BundleRecipe({
               Windows (PowerShell)
             </p>
             <code className="mt-0.5 block break-words rounded bg-slate-50 px-2 py-1 font-mono text-xs text-slate-700">
-              Compress-Archive -Path .\orthologies\* -DestinationPath bundle.zip
+              Compress-Archive -Path .\{folderName}\* -DestinationPath
+              bundle.zip
             </code>
           </div>
         </div>

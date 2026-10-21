@@ -7,15 +7,13 @@ import AddOrthologyButton, {
 } from "./AddOrthologyButton";
 import { OrthologyFileCard } from "./OrthologyFileCard";
 import { OrthologyBundleUpload } from "./OrthologyBundleUpload";
-import { BundleProcessingPanel } from "./BundleProcessingPanel";
+import { BundleProcessingPanel } from "../BundleProcessingPanel";
+import { useBundleUploads } from "../useBundleUploads";
 import {
   FileCard,
   type FileStatus,
 } from "@/components/pages/admin/version-assembly-upload/FileCard";
-import genomicsService, {
-  type FileDetail,
-  type JobItem,
-} from "@/utils/services/genomics";
+import genomicsService, { type FileDetail } from "@/utils/services/genomics";
 import useAsyncData from "@/hooks/useAsyncData";
 import useService from "@/hooks/useService";
 import { formatBytes } from "@/utils/format";
@@ -64,21 +62,12 @@ function computeFileStatus(fileDetail: FileDetail): {
   return { status, progress, progressTitle, error };
 }
 
-type BundleUploadState = {
-  id: string;
-  file: File;
-  progress: number;
-  status: "UPLOADING" | "UPLOADED" | "FAILED";
-  error?: string;
-  fileId?: string | null;
-};
-
 export default function VersionOrthology({
   versionName,
 }: {
   versionName: string;
 }) {
-  const { fetchVersionDetail, fetchJobs } = useService(genomicsService);
+  const { fetchVersionDetail } = useService(genomicsService);
 
   const [refreshToken, setRefreshToken] = React.useState(0);
   const refresh = React.useCallback(() => setRefreshToken((n) => n + 1), []);
@@ -88,28 +77,23 @@ export default function VersionOrthology({
     [versionName, fetchVersionDetail, refreshToken],
   );
 
-  const { data: jobsData } = useAsyncData(
-    () => fetchJobs(versionName),
-    [versionName, fetchJobs, refreshToken],
-  );
-
   const versionStatus = data?.data.status;
 
-  // In-flight orthology bundle extractions: the bundle archive itself is not
-  // listed in orthologyTSV (bundle rows are audit records), so the jobs list
-  // is the only place the processing state is visible. DONE jobs drop out
-  // here so the panel can watch a job leave the list (its completion
-  // animation); everything else - including all historical FAILED rows, which
-  // live in the database forever - is passed through for the panel to decide.
-  // The panel only ever shows a failure it watched happen (the job was active
-  // in this page instance first), so stale failures never surface, on any
-  // device, with no client-side storage involved.
-  const bundleJobs = React.useMemo<JobItem[]>(() => {
-    const jobs: JobItem[] = jobsData?.data ?? [];
-    return jobs.filter(
-      (j) => j.type === "ORTHOLOGY.BUNDLE" && j.status !== "DONE",
-    );
-  }, [jobsData]);
+  // The bundle archives and their extraction jobs live in the floating
+  // processing panel, not in the page: the panel owns the whole lifecycle of
+  // an archive, from the first byte to its extraction.
+  const {
+    jobs: bundleJobs,
+    uploads: bundleUploads,
+    pendingUploads: pendingBundleUploads,
+    addBundle: handleAddBundle,
+    updateBundle: updateBundleUpload,
+    dismissUpload: dismissBundleUpload,
+  } = useBundleUploads({
+    versionName,
+    jobType: "ORTHOLOGY.BUNDLE",
+    refreshToken,
+  });
 
   const orthologyFiles = React.useMemo<FileStatus[]>(() => {
     const files: FileDetail[] = data?.data.orthologyTSV ?? [];
@@ -143,10 +127,6 @@ export default function VersionOrthology({
     }>
   >([]);
 
-  const [bundleUploads, setBundleUploads] = React.useState<BundleUploadState[]>(
-    [],
-  );
-
   // A bundle's tus upload is shown inside the floating processing panel, so it
   // is not page content. The empty state therefore only considers the
   // orthology.tsv list and inline single-file uploads.
@@ -157,60 +137,6 @@ export default function VersionOrthology({
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     setSingleUploads((prev) => [...prev, { id, file, order, algorithm }]);
   }
-
-  function handleAddBundle(bundleFile: File) {
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    setBundleUploads((prev) => [
-      ...prev,
-      { id, file: bundleFile, progress: 0, status: "UPLOADING" },
-    ]);
-  }
-
-  function updateBundleUpload(
-    id: string,
-    patch: Partial<Omit<BundleUploadState, "id" | "file">>,
-  ) {
-    setBundleUploads((prev) =>
-      prev.map((upload) =>
-        upload.id === id ? { ...upload, ...patch } : upload,
-      ),
-    );
-  }
-
-  // The backend creates the extraction job before tus reports the upload as
-  // successful, so its fileId lets us hand the row over from "uploading" to
-  // "extracting" without a gap (and without name guessing).
-  const bundleJobFileIds = React.useMemo(() => {
-    const ids = new Set<string>();
-    for (const job of jobsData?.data ?? []) {
-      if (job.type === "ORTHOLOGY.BUNDLE" && job.fileId) ids.add(job.fileId);
-    }
-    return ids;
-  }, [jobsData]);
-
-  const pendingBundleUploads = React.useMemo(
-    () =>
-      bundleUploads.filter(
-        (upload) =>
-          !upload.fileId ||
-          upload.status !== "UPLOADED" ||
-          !bundleJobFileIds.has(upload.fileId),
-      ),
-    [bundleUploads, bundleJobFileIds],
-  );
-
-  React.useEffect(() => {
-    if (bundleJobFileIds.size === 0) return;
-    setBundleUploads((prev) => {
-      const next = prev.filter(
-        (upload) =>
-          !upload.fileId ||
-          upload.status !== "UPLOADED" ||
-          !bundleJobFileIds.has(upload.fileId),
-      );
-      return next.length === prev.length ? prev : next;
-    });
-  }, [bundleJobFileIds, bundleUploads]);
 
   const needsPolling =
     versionStatus === "PROCESSING" ||
@@ -337,11 +263,7 @@ export default function VersionOrthology({
           status: upload.status,
           error: upload.error,
         }))}
-        onDismissUpload={(uploadId) =>
-          setBundleUploads((prev) =>
-            prev.filter((upload) => upload.id !== uploadId),
-          )
-        }
+        onDismissUpload={dismissBundleUpload}
       />
     </div>
   );

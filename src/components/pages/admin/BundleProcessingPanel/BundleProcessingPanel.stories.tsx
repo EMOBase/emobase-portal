@@ -1,14 +1,12 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import {
-  BundleProcessingPanel,
-  type BundleUploadItem,
-} from "./BundleProcessingPanel";
+import { BundleProcessingPanel } from "./BundleProcessingPanel";
+import type { BundleUploadItem } from "./types";
 import type { JobItem } from "@/utils/services/genomics";
 
 const meta = {
-  title: "Admin/Version Orthology/BundleProcessingPanel",
+  title: "Admin/BundleProcessingPanel",
   component: BundleProcessingPanel,
   parameters: {
     layout: "fullscreen",

@@ -9,7 +9,8 @@ import { useForm } from "@/hooks/useForm";
 import useService from "@/hooks/useService";
 import genomicsService from "@/utils/services/genomics";
 
-import { BundleRecipe } from "./BundleRecipe";
+import { BundleRecipe } from "@/components/pages/admin/BundleRecipe";
+
 import type { OnBatchConfirm } from "./types";
 
 type BatchOrthologyDialogProps = {
@@ -17,6 +18,22 @@ type BatchOrthologyDialogProps = {
   onOpenChange: (open: boolean) => void;
   onConfirm?: OnBatchConfirm;
 };
+
+// The columns the manifest template of an orthology bundle has.
+const ORTHOLOGY_MANIFEST_COLUMNS = [
+  {
+    name: "fileName",
+    hint: "the name of the file inside the archive, spelled exactly like it.",
+  },
+  {
+    name: "order",
+    hint: "the display order of the dataset, an integer (1, 2, 3...).",
+  },
+  {
+    name: "algorithm",
+    hint: "the tool that produced the mapping, e.g. OrthoFinder 2.0.",
+  },
+];
 
 export function BatchOrthologyDialog({
   open,
@@ -85,7 +102,7 @@ export function BatchOrthologyDialog({
           </Dialog.Close>
 
           <Dialog.Title className="font-display text-2xl font-bold text-slate-900">
-            Add Orthology Batch
+            Batch upload Orthology
           </Dialog.Title>
 
           <Dialog.Description className="mt-2 text-sm leading-relaxed text-slate-500">
@@ -97,6 +114,10 @@ export function BatchOrthologyDialog({
           <BundleRecipe
             onDownloadTemplate={handleDownloadTemplate}
             downloadingTemplate={downloadingTemplate}
+            folderName="orthologies"
+            itemLabel="orthology file"
+            fileTypesHint="Data files may be plain or already gzipped."
+            columns={ORTHOLOGY_MANIFEST_COLUMNS}
           />
 
           {downloadError ? (
