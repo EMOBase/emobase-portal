@@ -4,7 +4,7 @@ import {
   InputGroupInput,
   InputGroupButton,
 } from "@/components/ui/input-group";
-import { Search, ArrowRight, ExternalLink } from "lucide-react";
+import { Search, ExternalLink } from "lucide-react";
 
 import triboliumImage from "@/assets/species/500px-Tribolium_castaneum.jpg?url";
 import spiderImage from "@/assets/species/Common_House_Spider.jpg?url";
@@ -132,19 +132,26 @@ export default function HomePage() {
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
-              <div className="p-6 flex flex-col flex-grow">
+              <div className="flex flex-grow flex-col">
+                <div className="flex-grow p-6">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    {card.name}
+                  </h3>
+                  <p className="text-slate-500 italic">{card.common}</p>
+                </div>
                 <a
                   href={card.siteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group/title inline-flex items-center gap-1.5 w-fit"
+                  className="group/link relative flex items-center justify-between gap-2 px-6 pt-4 pb-6 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
                 >
-                  <h3 className="text-xl font-bold text-gray-900 group-hover/title:text-blue-700 transition-colors">
-                    {card.name}
-                  </h3>
-                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover/title:text-blue-600 transition-colors" />
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-6 top-0 h-px bg-slate-200 transition-all duration-200 group-hover/link:inset-x-0"
+                  />
+                  Visit site
+                  <ExternalLink className="size-4" />
                 </a>
-                <p className="text-slate-500 italic">{card.common}</p>
               </div>
             </div>
           ))}
