@@ -7,7 +7,6 @@ import { FileCardBase } from "@/components/pages/admin/version-assembly-upload/F
 export const OrthologyFileCard = ({
   file,
   versionName,
-  fileType = "orthology.tsv",
   order,
   algorithm,
   onComplete,
@@ -15,14 +14,12 @@ export const OrthologyFileCard = ({
 }: {
   file: File;
   versionName: string;
-  fileType?: "orthology.tsv" | "orthology.bundle";
   order?: number;
   algorithm?: string;
   onComplete: () => void;
   size?: "sm" | "md";
 }) => {
   const { upload, progress, isUploading, error } = useUpload();
-  const isBundle = fileType === "orthology.bundle";
 
   useEffect(() => {
     let cancelled = false;
@@ -30,20 +27,16 @@ export const OrthologyFileCard = ({
     upload({
       file,
       version: versionName,
-      fileType,
+      fileType: "orthology.tsv",
       order,
       algorithm,
     })
       .then(() => {
         if (!cancelled) {
-          // For bundles, the floating processing panel appearing is the
-          // success signal — a toast would be redundant noise on top of it.
-          if (!isBundle) {
-            toastManager.add({
-              type: "success",
-              title: `Uploaded ${file.name}`,
-            });
-          }
+          toastManager.add({
+            type: "success",
+            title: `Uploaded ${file.name}`,
+          });
           onComplete();
         }
       })
@@ -67,8 +60,8 @@ export const OrthologyFileCard = ({
     <FileCardBase
       file={{
         name: file.name,
-        category: isBundle ? "Orthology Bundle" : "Orthology Mapping",
-        icon: isBundle ? "zip" : "tsv",
+        category: "Orthology Mapping",
+        icon: "tsv",
         status: error ? "ERROR" : "UPLOADING",
         progress,
         progressTitle: "IN TRANSIT",

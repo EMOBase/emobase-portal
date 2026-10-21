@@ -6,6 +6,22 @@ import { ProgressBar } from "@/components/pages/admin/version-assembly-upload/Fi
 import { cn } from "@/utils/classname";
 import type { JobItem } from "@/utils/services/genomics";
 
+export type BundleUploadItem = {
+  id: string;
+  name: string;
+  progress: number;
+  /**
+   * UPLOADING - the archive is on the wire (client-side work).
+   * UPLOADED  - the client-side upload is done, but the extraction job has
+   *             not been listed by the next /jobs poll yet. A hand-off buffer
+   *             that closes as soon as the job shows up - it is not a job row
+   *             and must not read like one.
+   * FAILED    - the upload itself failed; no extraction job will ever exist.
+   */
+  status: "UPLOADING" | "UPLOADED" | "FAILED";
+  error?: string;
+};
+
 function statusPill(status: JobItem["status"]) {
   if (status === "FAILED") {
     return (
@@ -28,6 +44,34 @@ function statusPill(status: JobItem["status"]) {
   );
 }
 
+function uploadPill(status: BundleUploadItem["status"]) {
+  if (status === "UPLOADING") {
+    // Client-side state: same slate treatment the FileCard gives an upload in
+    // transit, so "still on my machine" never looks like server processing.
+    return (
+      <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+        Uploading
+      </span>
+    );
+  }
+  if (status === "UPLOADED") {
+    // Hand-off state: the archive has landed, but its extraction job has not
+    // been listed by the backend yet. It deliberately does not say "Queued" -
+    // that word belongs to the backend's own PENDING job row, and two rows
+    // must never look like the same thing.
+    return (
+      <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+        Uploaded
+      </span>
+    );
+  }
+  return (
+    <span className="shrink-0 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-red-600">
+      Failed
+    </span>
+  );
+}
+
 function bundleName(job: JobItem) {
   return (
     (job.payload?.file_path as string | undefined)?.split("/").pop() ||
@@ -35,9 +79,58 @@ function bundleName(job: JobItem) {
   );
 }
 
+function ErrorTooltip({ label, message }: { label: string; message?: string }) {
+  return (
+    <Tooltip.Provider>
+      <Tooltip.Root>
+        <Tooltip.Trigger
+          type="button"
+          aria-label={label}
+          className="flex cursor-help items-center text-red-500"
+        >
+          {/* No padding: the 14px icon must fit inside the label line's
+              15px box (10px * lh 1.5) or the row grows when the state
+              changes. */}
+          <AlertCircle className="size-3.5" />
+        </Tooltip.Trigger>
+        <Tooltip.Portal>
+          <Tooltip.Positioner
+            side="top"
+            sideOffset={6}
+            // Two-tier rule: page-hosted tooltips stay at z-50 (behind the
+            // fixed corner stack - panel z-90, toasts z-100), while tooltips
+            // hosted inside an overlay (this panel, or a toast) rise above
+            // the whole stack. Portal renders body-level, so this z competes
+            // directly.
+            className="z-[110]"
+          >
+            <Tooltip.Popup className="max-w-xs break-words rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white shadow-md outline-none">
+              {message}
+            </Tooltip.Popup>
+          </Tooltip.Positioner>
+        </Tooltip.Portal>
+      </Tooltip.Root>
+    </Tooltip.Provider>
+  );
+}
+
 const COMPLETE_LINGER_MS = 1600;
 
-export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
+export function BundleProcessingPanel({
+  jobs,
+  uploads = [],
+  onDismissUpload,
+  preview = false,
+}: {
+  jobs: JobItem[];
+  uploads?: BundleUploadItem[];
+  onDismissUpload?: (uploadId: string) => void;
+  /** Static showcase mode (Storybook): every row shape is rendered at once -
+      failures are not hidden by the witness rule and a job that is already
+      DONE shows up as a completed row. The live page never sets this: it
+      filters DONE jobs out and only ever shows failures it witnessed. */
+  preview?: boolean;
+}) {
   // Job ids this page instance has watched in an active state (PENDING or
   // RUNNING). FAILED rows live in the database forever, but the panel only
   // shows a failure it actually watched happen - a reload (or another
@@ -52,6 +145,7 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
 
   const visible = jobs.filter((job) => {
     if (job.status !== "FAILED") return true;
+    if (preview) return !dismissed.has(job.id);
     return seenActiveRef.current.has(job.id) && !dismissed.has(job.id);
   });
 
@@ -114,13 +208,14 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
     return () => window.clearTimeout(timer);
   }, [completing]);
 
-  const hasJobs = visible.length > 0 || completing.length > 0;
+  const hasRows =
+    uploads.length > 0 || visible.length > 0 || completing.length > 0;
 
   // Publish our height so the toast viewport (toaster.tsx) can stack directly
   // above this panel instead of covering it. Panel bottom is 1rem + 8px gap.
   const rootRef = React.useRef<HTMLDivElement | null>(null);
   React.useEffect(() => {
-    if (!hasJobs) return;
+    if (!hasRows) return;
     const el = rootRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
     const root = document.documentElement;
@@ -133,9 +228,9 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
       observer.disconnect();
       root.style.removeProperty("--corner-stack-bottom");
     };
-  }, [hasJobs]);
+  }, [hasRows]);
 
-  if (!hasJobs) return null;
+  if (!hasRows) return null;
 
   function dismiss(jobId: number) {
     setDismissed((prev) => {
@@ -145,27 +240,51 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
     });
   }
 
-  const activeCount = visible.filter(
+  const activeJobCount = visible.filter(
     (job) => job.status === "PENDING" || job.status === "RUNNING",
   ).length;
+  // A bundle still on the wire is client-side work (same as the FileCard's IN
+  // TRANSIT state), and so is the hand-off wait for its job to be listed:
+  // orange only starts once the backend has a job row of its own.
+  const uploadingCount = uploads.filter(
+    (upload) => upload.status === "UPLOADING",
+  ).length;
+  const queuedCount = uploads.filter(
+    (upload) => upload.status === "UPLOADED",
+  ).length;
+  const clientActiveCount = uploadingCount + queuedCount;
+  const serverActiveCount = activeJobCount;
+  const activeCount = serverActiveCount + clientActiveCount;
 
   // Panel theme follows the dominant state, priority processing > error >
   // complete: while anything is in flight the panel stays orange (it is the
   // processing panel), otherwise green when every visible row is completing
   // (no failures alongside), red when failures are on screen. Fully
   // class-mapped (no dynamic Tailwind names) so the JIT keeps the classes.
-  const anyFailed = visible.some((job) => job.status === "FAILED");
+  const anyFailed =
+    visible.some((job) => job.status === "FAILED") ||
+    uploads.some((upload) => upload.status === "FAILED");
+  // While the only thing in flight is a client-side upload (or the hand-off
+  // wait for its job), the panel stays gray: only work the backend does is
+  // orange.
   const theme =
-    activeCount > 0
+    serverActiveCount > 0
       ? "orange"
-      : completing.length > 0 && !anyFailed
-        ? "green"
-        : "red";
+      : clientActiveCount > 0
+        ? "gray"
+        : completing.length > 0 && !anyFailed
+          ? "green"
+          : "red";
   const themeClasses = {
     orange: {
       root: "border-orange-200",
       header: "border-orange-100 bg-orange-50/70",
       icon: "bg-orange-100 text-orange-600",
+    },
+    gray: {
+      root: "border-slate-200",
+      header: "border-slate-200 bg-slate-50",
+      icon: "bg-slate-100 text-slate-500",
     },
     red: {
       root: "border-red-200",
@@ -197,14 +316,21 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
         description: string | undefined;
       }
     | { key: number; name: string; completed: true }
-  > = visible.map((job) => ({
-    key: job.id,
-    name: bundleName(job),
-    completed: false as const,
-    status: job.status,
-    error: job.error,
-    description: job.description,
-  }));
+  > = visible.map((job) =>
+    // A job that is already DONE renders as a completed row. The live page
+    // filters DONE jobs out (the panel animates the handover instead), so
+    // this only shows up in the static showcase.
+    job.status === "DONE"
+      ? { key: job.id, name: bundleName(job), completed: true as const }
+      : {
+          key: job.id,
+          name: bundleName(job),
+          completed: false as const,
+          status: job.status,
+          error: job.error,
+          description: job.description,
+        },
+  );
   // Splice finishing rows back at the position they occupied in the last
   // snapshot (ascending, so multiple completions land correctly) instead of
   // appending - otherwise a job reorders the panel the moment it is DONE.
@@ -241,19 +367,90 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
             Bundle processing
           </div>
           <div className="text-xs text-slate-500">
-            {activeCount > 0
-              ? `Extracting orthology bundles · ${activeCount} active`
-              : completing.length > 0
-                ? "Finishing up"
-                : "Review failed bundle extractions"}
+            {serverActiveCount > 0 && clientActiveCount > 0
+              ? `Uploading & extracting orthology bundles · ${activeCount} active`
+              : serverActiveCount > 0
+                ? `Extracting orthology bundles · ${serverActiveCount} active`
+                : clientActiveCount > 0
+                  ? `Uploading orthology bundles · ${clientActiveCount} active`
+                  : completing.length > 0
+                    ? "Finishing up"
+                    : uploads.some((upload) => upload.status === "FAILED")
+                      ? "Review failed bundle uploads"
+                      : "Review failed bundle extractions"}
           </div>
         </div>
         <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-slate-500 shadow-sm">
-          {rows.length}
+          {rows.length + uploads.length}
         </span>
       </header>
 
       <div className="divide-y divide-slate-100">
+        {uploads.map((upload) => {
+          const isFailed = upload.status === "FAILED";
+
+          return (
+            <div
+              key={`upload-${upload.id}`}
+              className="relative flex items-start gap-2 px-4 py-3"
+            >
+              <div className="min-w-0 flex-1">
+                <div
+                  className={cn("flex items-center gap-2", isFailed && "pr-7")}
+                >
+                  <span
+                    className="truncate text-sm font-semibold text-slate-800"
+                    title={upload.name}
+                  >
+                    {upload.name}
+                  </span>
+                  {uploadPill(upload.status)}
+                </div>
+
+                <div className="mt-2">
+                  <ProgressBar
+                    progress={
+                      upload.status === "UPLOADING" ? upload.progress : 100
+                    }
+                    title={
+                      upload.status === "UPLOADING"
+                        ? "Upload orthology bundle"
+                        : upload.status === "UPLOADED"
+                          ? "Waiting for extraction"
+                          : ""
+                    }
+                    // Gray for every client-side state (in transit, or waiting
+                    // for the job to be listed); the orange bar belongs to
+                    // the backend's own job rows.
+                    theme={isFailed ? "red" : "gray"}
+                    size="sm"
+                    showError={isFailed}
+                    leftSlot={
+                      isFailed ? (
+                        <ErrorTooltip
+                          label="Bundle upload error"
+                          message={upload.error || "Upload failed"}
+                        />
+                      ) : undefined
+                    }
+                  />
+                </div>
+              </div>
+
+              {isFailed ? (
+                <button
+                  type="button"
+                  aria-label={`Dismiss ${upload.name}`}
+                  onClick={() => onDismissUpload?.(upload.id)}
+                  className="absolute right-2 top-2 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                >
+                  <X className="size-4" />
+                </button>
+              ) : null}
+            </div>
+          );
+        })}
+
         {rows.map((row) => {
           const isFailed = !row.completed && row.status === "FAILED";
 
@@ -315,37 +512,10 @@ export function BundleProcessingPanel({ jobs }: { jobs: JobItem[] }) {
                     // left label slot and keep the full message in a tooltip.
                     leftSlot={
                       isFailed ? (
-                        <Tooltip.Provider>
-                          <Tooltip.Root>
-                            <Tooltip.Trigger
-                              type="button"
-                              aria-label="Bundle extraction error"
-                              className="flex cursor-help items-center text-red-500"
-                            >
-                              {/* No padding: the 14px icon must fit inside the
-                                  label line's 15px box (10px * lh 1.5) or the
-                                  row grows when PROCESSING -> ERROR. */}
-                              <AlertCircle className="size-3.5" />
-                            </Tooltip.Trigger>
-                            <Tooltip.Portal>
-                              <Tooltip.Positioner
-                                side="top"
-                                sideOffset={6}
-                                // Two-tier rule: page-hosted tooltips stay at
-                                // z-50 (behind the fixed corner stack - panel
-                                // z-90, toasts z-100), while tooltips hosted
-                                // inside an overlay (this panel, or a toast)
-                                // rise above the whole stack. Portal renders
-                                // body-level, so this z competes directly.
-                                className="z-[110]"
-                              >
-                                <Tooltip.Popup className="max-w-xs break-words rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white shadow-md outline-none">
-                                  {row.error || "Processing failed"}
-                                </Tooltip.Popup>
-                              </Tooltip.Positioner>
-                            </Tooltip.Portal>
-                          </Tooltip.Root>
-                        </Tooltip.Provider>
+                        <ErrorTooltip
+                          label="Bundle extraction error"
+                          message={row.error || "Processing failed"}
+                        />
                       ) : undefined
                     }
                   />

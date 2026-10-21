@@ -6,6 +6,7 @@ import AddOrthologyButton, {
   AddSingleOrthologyButton,
 } from "./AddOrthologyButton";
 import { OrthologyFileCard } from "./OrthologyFileCard";
+import { OrthologyBundleUpload } from "./OrthologyBundleUpload";
 import { BundleProcessingPanel } from "./BundleProcessingPanel";
 import {
   FileCard,
@@ -62,6 +63,15 @@ function computeFileStatus(fileDetail: FileDetail): {
 
   return { status, progress, progressTitle, error };
 }
+
+type BundleUploadState = {
+  id: string;
+  file: File;
+  progress: number;
+  status: "UPLOADING" | "UPLOADED" | "FAILED";
+  error?: string;
+  fileId?: string | null;
+};
 
 export default function VersionOrthology({
   versionName,
@@ -124,44 +134,90 @@ export default function VersionOrthology({
     });
   }, [data]);
 
-  const [uploads, setUploads] = React.useState<
+  const [singleUploads, setSingleUploads] = React.useState<
     Array<{
       id: string;
       file: File;
-      fileType: "orthology.tsv" | "orthology.bundle";
       order?: number;
       algorithm?: string;
-      metadataFile?: File | null;
     }>
   >([]);
 
-  // The empty state reflects the page content only (the orthology.tsv list and
-  // any in-progress upload cards). The bundle processing panel is a floating
-  // overlay, so in-flight bundle extractions do not count as content: while a
-  // bundle is being extracted there is still no orthology on the page yet.
-  const showEmptyState = orthologyFiles.length === 0 && uploads.length === 0;
+  const [bundleUploads, setBundleUploads] = React.useState<BundleUploadState[]>(
+    [],
+  );
+
+  // A bundle's tus upload is shown inside the floating processing panel, so it
+  // is not page content. The empty state therefore only considers the
+  // orthology.tsv list and inline single-file uploads.
+  const showEmptyState =
+    orthologyFiles.length === 0 && singleUploads.length === 0;
 
   function handleAdd(file: File, order: number, algorithm: string) {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    setUploads((prev) => [
+    setSingleUploads((prev) => [...prev, { id, file, order, algorithm }]);
+  }
+
+  function handleAddBundle(bundleFile: File, _metadataFile: File | null) {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    setBundleUploads((prev) => [
       ...prev,
-      { id, file, fileType: "orthology.tsv", order, algorithm },
+      { id, file: bundleFile, progress: 0, status: "UPLOADING" },
     ]);
   }
 
-  function handleAddBundle(bundleFile: File, metadataFile: File | null) {
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    setUploads((prev) => [
-      ...prev,
-      { id, file: bundleFile, fileType: "orthology.bundle", metadataFile },
-    ]);
+  function updateBundleUpload(
+    id: string,
+    patch: Partial<Omit<BundleUploadState, "id" | "file">>,
+  ) {
+    setBundleUploads((prev) =>
+      prev.map((upload) =>
+        upload.id === id ? { ...upload, ...patch } : upload,
+      ),
+    );
   }
+
+  // The backend creates the extraction job before tus reports the upload as
+  // successful, so its fileId lets us hand the row over from "uploading" to
+  // "extracting" without a gap (and without name guessing).
+  const bundleJobFileIds = React.useMemo(() => {
+    const ids = new Set<string>();
+    for (const job of jobsData?.data ?? []) {
+      if (job.type === "ORTHOLOGY.BUNDLE" && job.fileId) ids.add(job.fileId);
+    }
+    return ids;
+  }, [jobsData]);
+
+  const pendingBundleUploads = React.useMemo(
+    () =>
+      bundleUploads.filter(
+        (upload) =>
+          !upload.fileId ||
+          upload.status !== "UPLOADED" ||
+          !bundleJobFileIds.has(upload.fileId),
+      ),
+    [bundleUploads, bundleJobFileIds],
+  );
+
+  React.useEffect(() => {
+    if (bundleJobFileIds.size === 0) return;
+    setBundleUploads((prev) => {
+      const next = prev.filter(
+        (upload) =>
+          !upload.fileId ||
+          upload.status !== "UPLOADED" ||
+          !bundleJobFileIds.has(upload.fileId),
+      );
+      return next.length === prev.length ? prev : next;
+    });
+  }, [bundleJobFileIds, bundleUploads]);
 
   const needsPolling =
     versionStatus === "PROCESSING" ||
     orthologyFiles.some((f) => f.status === "PROCESSING") ||
     bundleJobs.some((j) => j.status === "PENDING" || j.status === "RUNNING") ||
-    uploads.length > 0;
+    singleUploads.length > 0 ||
+    bundleUploads.some((upload) => upload.status !== "FAILED");
 
   React.useEffect(() => {
     if (!needsPolling) return;
@@ -216,19 +272,17 @@ export default function VersionOrthology({
           />
         ))}
 
-        {/* Bundles are extracted server-side after the upload finishes, before
-            their child orthology.tsv files exist. The archive is not a file in
-            this list, so its extraction shows in the floating panel instead. */}
-        {uploads.map((item) => (
+        {singleUploads.map((item) => (
           <OrthologyFileCard
             key={item.id}
             file={item.file}
             versionName={versionName}
-            fileType={item.fileType}
             order={item.order}
             algorithm={item.algorithm}
             onComplete={() => {
-              setUploads((prev) => prev.filter((u) => u.id !== item.id));
+              setSingleUploads((prev) =>
+                prev.filter((upload) => upload.id !== item.id),
+              );
               refresh();
             }}
           />
@@ -251,7 +305,44 @@ export default function VersionOrthology({
         ) : null}
       </div>
 
-      <BundleProcessingPanel jobs={bundleJobs} />
+      {/* Hidden tus uploaders. Bundle archives never render an inline
+          FileCard: from the first byte to extraction they belong to the
+          floating panel. */}
+      {bundleUploads.map((upload) => (
+        <OrthologyBundleUpload
+          key={upload.id}
+          file={upload.file}
+          versionName={versionName}
+          onProgress={(progress) => updateBundleUpload(upload.id, { progress })}
+          onUploaded={(fileId) => {
+            updateBundleUpload(upload.id, {
+              fileId,
+              status: "UPLOADED",
+              progress: 100,
+            });
+            refresh();
+          }}
+          onFailed={(error) =>
+            updateBundleUpload(upload.id, { status: "FAILED", error })
+          }
+        />
+      ))}
+
+      <BundleProcessingPanel
+        jobs={bundleJobs}
+        uploads={pendingBundleUploads.map((upload) => ({
+          id: upload.id,
+          name: upload.file.name,
+          progress: upload.progress,
+          status: upload.status,
+          error: upload.error,
+        }))}
+        onDismissUpload={(uploadId) =>
+          setBundleUploads((prev) =>
+            prev.filter((upload) => upload.id !== uploadId),
+          )
+        }
+      />
     </div>
   );
 }

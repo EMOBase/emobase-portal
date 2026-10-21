@@ -1,7 +1,10 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { BundleProcessingPanel } from "./BundleProcessingPanel";
+import {
+  BundleProcessingPanel,
+  type BundleUploadItem,
+} from "./BundleProcessingPanel";
 import type { JobItem } from "@/utils/services/genomics";
 
 const meta = {
@@ -12,6 +15,7 @@ const meta = {
   },
   argTypes: {
     jobs: { control: false },
+    uploads: { control: false },
   },
 } satisfies Meta<typeof BundleProcessingPanel>;
 
@@ -28,71 +32,147 @@ const makeJob = (overrides: Partial<JobItem> = {}): JobItem => ({
   ...overrides,
 });
 
-// Overview story: one job completes, one fails (witnessed), the queued and
-// extracting rows keep going - every row shape the panel can render.
-// COMPLETE is transient by design (departure detection + 1.6s linger), so
-// it shows up mid-demo at the 1.5s mark instead of sitting statically.
-function AllStatesDemo() {
-  const [jobs, setJobs] = React.useState<JobItem[]>([
-    makeJob({
-      id: 41,
-      status: "RUNNING",
-      payload: { file_path: "/data/uploads/fly_orthologs.zip" },
-    }),
-    makeJob({
-      id: 42,
-      status: "PENDING",
-      payload: { file_path: "/data/uploads/mouse_orthologs.zip" },
-    }),
-    makeJob({
-      id: 43,
-      status: "RUNNING",
-      payload: { file_path: "/data/uploads/corrupt.zip" },
-    }),
-    makeJob({
-      id: 44,
-      status: "RUNNING",
-      payload: { file_path: "/data/uploads/worm_orthologs.zip" },
-    }),
-  ]);
-
-  React.useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setJobs((prev) =>
-        prev
-          .map((job) =>
-            job.id === 43
-              ? {
-                  ...job,
-                  // as const: contextual typing doesn't cross the
-                  // .map().filter() chain and would widen to string.
-                  status: "FAILED" as const,
-                  error: "gzip: unexpected end of file",
-                }
-              : job,
-          )
-          // Job 41 finishes: DONE jobs drop out of the list, which the
-          // panel witnesses as departure and animates to COMPLETE.
-          .filter((job) => job.id !== 41),
-      );
-    }, 1500);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  return <BundleProcessingPanel jobs={jobs} />;
-}
-
+// Overview story: a static snapshot of every row shape the panel can render,
+// so all of them can be reviewed side by side. Nothing animates here - the
+// per-case stories below cover the transitions (completion handover, live
+// failure). The upload rows cover the client-side half of the lifecycle: one
+// archive still in transit (gray), one whose upload is done but whose job is
+// not listed yet (also gray) and one that failed on the way.
 export const AllStates: Story = {
-  name: "All states — queued, extracting, failed, complete",
+  name: "All states — uploading, queued, extracting, failed, complete",
   parameters: { controls: { disable: true } },
-  args: { jobs: [] },
-  render: () => <AllStatesDemo />,
+  args: {
+    jobs: [
+      makeJob({
+        id: 41,
+        status: "RUNNING",
+        payload: { file_path: "/data/uploads/fly_orthologs.zip" },
+      }),
+      makeJob({
+        id: 42,
+        status: "PENDING",
+        payload: { file_path: "/data/uploads/mouse_orthologs.zip" },
+      }),
+      makeJob({
+        id: 43,
+        status: "FAILED",
+        error: "gzip: unexpected end of file",
+        payload: { file_path: "/data/uploads/corrupt.zip" },
+      }),
+      makeJob({
+        id: 44,
+        status: "DONE",
+        payload: { file_path: "/data/uploads/worm_orthologs.zip" },
+      }),
+    ],
+    uploads: [
+      {
+        id: "upload-1",
+        name: "beetle_orthologs.zip",
+        progress: 35,
+        status: "UPLOADING",
+      },
+      {
+        id: "upload-2",
+        name: "zebra_orthologs.tar.gz",
+        progress: 100,
+        status: "UPLOADED",
+      },
+      {
+        id: "upload-3",
+        name: "shark_orthologs.zip",
+        progress: 100,
+        status: "FAILED",
+        error: "Network error while uploading the bundle",
+      },
+    ],
+  },
+  // preview: show the failure and the completed row that the live page
+  // (which filters DONE jobs and hides unwitnessed failures) never shows.
+  render: (args) => <BundleProcessingPanel {...args} preview />,
 };
 
 export const Queued: Story = {
   name: "Queued — single pending job",
   args: {
     jobs: [makeJob()],
+  },
+};
+
+// The client-side phase in one story: the archive fills the gray bar from
+// 0% to 100% and then flips to the hand-off state ("Uploaded"), which is
+// exactly what the row looks like in the live page.
+function UploadingDemo() {
+  const [uploads, setUploads] = React.useState<BundleUploadItem[]>([
+    {
+      id: "upload-1",
+      name: "dmel_orthologs.zip",
+      progress: 0,
+      status: "UPLOADING",
+    },
+  ]);
+
+  React.useEffect(() => {
+    const timer = window.setInterval(() => {
+      setUploads((prev) =>
+        prev.map((upload) => {
+          if (upload.status !== "UPLOADING") return upload;
+          const progress = Math.min(100, upload.progress + 5);
+          return {
+            ...upload,
+            progress,
+            status: progress === 100 ? "UPLOADED" : "UPLOADING",
+          };
+        }),
+      );
+    }, 200);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return <BundleProcessingPanel jobs={[]} uploads={uploads} />;
+}
+
+export const Uploading: Story = {
+  name: "Uploading — archive in transit, 0% → 100% then hand-off (gray)",
+  parameters: { controls: { disable: true } },
+  args: { jobs: [] },
+  render: () => <UploadingDemo />,
+};
+
+export const Mixed: Story = {
+  name: "Mixed — uploading (gray) next to extracting (orange)",
+  args: {
+    jobs: [
+      makeJob({
+        id: 21,
+        status: "RUNNING",
+        payload: { file_path: "/data/uploads/fly_orthologs.zip" },
+      }),
+    ],
+    uploads: [
+      {
+        id: "upload-4",
+        name: "worm_orthologs.zip",
+        progress: 63,
+        status: "UPLOADING",
+      },
+    ],
+  },
+};
+
+export const UploadFailed: Story = {
+  name: "Upload failed — archive rejected before extraction",
+  args: {
+    jobs: [],
+    uploads: [
+      {
+        id: "upload-3",
+        name: "broken_bundle.zip",
+        progress: 100,
+        status: "FAILED",
+        error: "Network error while uploading the bundle",
+      },
+    ],
   },
 };
 
