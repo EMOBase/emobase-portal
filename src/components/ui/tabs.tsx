@@ -39,7 +39,7 @@ function TabsTrigger({
   return (
     <TabsPrimitive.Tab
       className={cn(
-        "group/trigger whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 cursor-pointer transition-all border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 data-[selected]:border-blue-700 data-[selected]:text-blue-700",
+        "group/trigger whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 cursor-pointer transition-all border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 data-[active]:border-blue-700 data-[active]:text-blue-700",
         className,
       )}
       {...props}
@@ -48,7 +48,7 @@ function TabsTrigger({
       {badge !== undefined && (
         <span
           className={
-            "py-0.5 px-2.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 group-data-[selected]/trigger:bg-blue-100 group-data-[selected]/trigger:text-blue-700"
+            "py-0.5 px-2.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 group-data-[active]/trigger:bg-blue-100 group-data-[active]/trigger:text-blue-700"
           }
         >
           {badge}
