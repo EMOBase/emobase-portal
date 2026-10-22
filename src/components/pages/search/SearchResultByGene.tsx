@@ -1,4 +1,3 @@
-import type { GeneSearchResult } from "@/utils/services/genomics";
 import type { AssemblyVersionDetail } from "@/utils/services/genomics";
 import ExternalGeneLink from "@/components/common/ExternalGeneLink";
 
@@ -11,15 +10,42 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
   genes,
   assemblies = [],
 }) => {
-  // For genes found in main/primary species, link to their respective species sites
-  // Use the first assembly with infoUrl or all assemblies
-  const getAssemblyInfoUrl = () => {
-    // Prefer assemblies that have infoUrl
-    const assemblyWithUrl = assemblies.find((a) => a.infoUrl);
-    return assemblyWithUrl?.infoUrl || assemblies[0]?.infoUrl || undefined;
+  const getAssemblyForGene = (gene: string) => {
+    // Try to find matching assembly based on gene patterns
+    // Default to first assembly or try to match
+    if (gene.startsWith("TC") || gene.toLowerCase().includes("tcas")) {
+      return (
+        assemblies.find((a) =>
+          a.species?.toLowerCase().includes("tribolium"),
+        ) || assemblies[0]
+      );
+    }
+    if (
+      gene.startsWith("Ptep") ||
+      gene.toLowerCase().includes("parasteatoda")
+    ) {
+      return (
+        assemblies.find((a) =>
+          a.species?.toLowerCase().includes("parasteatoda"),
+        ) || assemblies.find((a) => a.name?.includes("Ptep"))
+      );
+    }
+    if (gene.startsWith("Lyst") || gene.toLowerCase().includes("lymnaea")) {
+      return (
+        assemblies.find((a) => a.species?.toLowerCase().includes("lymnaea")) ||
+        assemblies.find((a) => a.name?.includes("Lyst"))
+      );
+    }
+    if (gene.startsWith("FBgn") || gene.toLowerCase().includes("dmel")) {
+      return (
+        assemblies.find((a) =>
+          a.species?.toLowerCase().includes("drosophila"),
+        ) || assemblies.find((a) => a.name?.includes("Dmel"))
+      );
+    }
+    // Default to first assembly
+    return assemblies[0];
   };
-
-  const infoUrl = getAssemblyInfoUrl();
 
   if (genes.length === 0) {
     return (
@@ -36,20 +62,44 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
           Found {genes.length} gene{genes.length !== 1 ? "s" : ""}
         </p>
       </div>
-      <div className="divide-y divide-slate-100">
-        {genes.map((gene) => (
-          <div
-            key={gene}
-            className="px-6 py-4 hover:bg-slate-50/50 transition-colors flex items-center justify-between"
-          >
-            <ExternalGeneLink gene={gene} assemblyInfoUrl={infoUrl} />
-            {infoUrl && (
-              <span className="text-xs text-slate-400">
-                Links to species site
-              </span>
-            )}
-          </div>
-        ))}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-slate-200">
+          <thead className="bg-slate-50/50">
+            <tr>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Gene
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Species
+              </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Assembly
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-slate-100">
+            {genes.map((gene) => {
+              const assembly = getAssemblyForGene(gene);
+              const infoUrl = assembly?.infoUrl || undefined;
+              return (
+                <tr
+                  key={gene}
+                  className="hover:bg-slate-50/50 transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <ExternalGeneLink gene={gene} assemblyInfoUrl={infoUrl} />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
+                    {assembly?.species || "-"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
+                    {assembly?.name || "-"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );

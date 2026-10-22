@@ -1,3 +1,5 @@
+import { ExternalLink } from "lucide-react";
+
 type ExternalGeneLinkProps = {
   gene: string;
   species?: string;
@@ -9,37 +11,28 @@ const ExternalGeneLink: React.FC<ExternalGeneLinkProps> = ({
   species,
   assemblyInfoUrl,
 }) => {
-  // If we have infoUrl from assembly, link to that species site
-  // Try to construct gene details URL pattern or use assembly site
-  if (assemblyInfoUrl) {
-    try {
-      const url = new URL(assemblyInfoUrl);
-      // Common patterns - try to link to gene details if possible
-      // Otherwise just link to the species site
-      url.pathname = `/details/${gene}`;
-      return (
-        <a
-          href={url.toString()}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-700 hover:text-blue-800 font-medium hover:underline decoration-blue-700 decoration-2 underline-offset-2 cursor-pointer"
-        >
-          {gene}
-        </a>
-      );
-    } catch {
-      // fallback
+  const getHref = () => {
+    if (assemblyInfoUrl) {
+      try {
+        const url = new URL(assemblyInfoUrl);
+        url.pathname = `/details/${gene}`;
+        return url.toString();
+      } catch {
+        return `${assemblyInfoUrl.replace(/\/$/, "")}/details/${gene}`;
+      }
     }
-  }
+    return "#";
+  };
 
   return (
     <a
-      href={assemblyInfoUrl ? `${assemblyInfoUrl.replace(/\/$/, "")}/details/${gene}` : "#"}
+      href={getHref()}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-blue-700 hover:text-blue-800 font-medium hover:underline decoration-blue-700 decoration-2 underline-offset-2 cursor-pointer"
+      className="group inline-flex items-center gap-1 text-blue-700 hover:text-blue-800 font-medium hover:underline decoration-blue-700 decoration-2 underline-offset-2 cursor-pointer"
     >
       {gene}
+      <ExternalLink className="size-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
     </a>
   );
 };

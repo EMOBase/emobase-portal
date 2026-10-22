@@ -71,13 +71,13 @@ const SearchResultByOrthology: React.FC<SearchResultByOrthologyProps> = ({
                   const infoUrl = getAssemblyInfoUrl(species);
 
                   return (
-                    <td
-                      key={species}
-                      className="px-6 py-5 whitespace-nowrap text-sm"
-                    >
-                      <div className="grid xl:grid-cols-2 gap-x-4 gap-y-2 w-fit">
+                    <td key={species} className="px-6 py-5 text-sm">
+                      <div className="flex flex-col gap-2">
                         {genes.map(({ gene, synonyms }) => (
-                          <div key={gene} className="flex items-center gap-1">
+                          <div
+                            key={gene}
+                            className="flex items-center gap-1 flex-wrap"
+                          >
                             <ExternalGeneLink
                               gene={gene}
                               species={species}

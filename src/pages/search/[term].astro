@@ -5,43 +5,114 @@ import genomicsService from "@/utils/services/genomics";
 
 const { term = "" } = Astro.params;
 
+const mock = true;
+
 const { search, fetchPublicVersions, fetchVersionDetail } = genomicsService();
 
 let searchData: any = {};
 let assemblies: any[] = [];
 
-try {
-  searchData = await search(term);
-} catch (e) {
-  console.error("Search failed:", e);
-  searchData = {};
-}
-
-try {
-  const versions = await fetchPublicVersions();
-  const defaultVersion =
-    versions.find((v: any) => v.isDefault && v.status === "READY") ||
-    versions.find((v: any) => v.status === "READY") ||
-    versions[0];
-  if (defaultVersion) {
-    const detail = await fetchVersionDetail(defaultVersion.name);
-    assemblies = detail.data.assemblies || [];
+if (mock) {
+  searchData = {
+    genes: ["TC006123", "TC006456"],
+    orthologies: [
+      {
+        group: "OG0001234",
+        source: "OrthoMCL",
+        orthologs: [
+          {
+            species: "Tribolium castaneum",
+            genes: [
+              { gene: "TC006123", synonyms: ["LOC660123"] },
+              { gene: "TC006456", synonyms: [] },
+            ],
+          },
+          {
+            species: "Parasteatoda tepidariorum",
+            genes: [{ gene: "Ptep_000123", synonyms: ["pt123"] }],
+          },
+          {
+            species: "Lymnaea stagnalis",
+            genes: [{ gene: "Lyst_12345", synonyms: [] }],
+          },
+          {
+            species: "Drosophila melanogaster",
+            genes: [{ gene: "FBgn0001234", synonyms: ["CG1234"] }],
+          },
+        ],
+      },
+    ],
+  };
+  assemblies = [
+    {
+      id: 1,
+      name: "Tcas 5.2",
+      species: "Tribolium castaneum",
+      infoUrl: "https://ibeetle-base.uni-goettingen.de/",
+    },
+    {
+      id: 2,
+      name: "Ptep 1.0",
+      species: "Parasteatoda tepidariorum",
+      infoUrl: "https://ptep.emobase.uni-goettingen.de/",
+    },
+    {
+      id: 3,
+      name: "Lyst 1.0",
+      species: "Lymnaea stagnalis",
+      infoUrl: "https://ibb-test.vm19002.virt.gwdg.de/",
+    },
+    {
+      id: 4,
+      name: "Dmel r6.59",
+      species: "Drosophila melanogaster",
+      infoUrl: "https://dmel.emobase.uni-goettingen.de/",
+    },
+  ];
+} else {
+  try {
+    searchData = await search(term);
+  } catch (e) {
+    console.error("Search failed:", e);
+    searchData = {};
   }
-} catch (e) {
-  console.error("Failed to fetch assemblies:", e);
-  assemblies = [];
+
+  try {
+    const versions = await fetchPublicVersions();
+    const defaultVersion =
+      versions.find((v: any) => v.isDefault && v.status === "READY") ||
+      versions.find((v: any) => v.status === "READY") ||
+      versions[0];
+    if (defaultVersion) {
+      const detail = await fetchVersionDetail(defaultVersion.name);
+      assemblies = detail.data.assemblies || [];
+    }
+  } catch (e) {
+    console.error("Failed to fetch assemblies:", e);
+    assemblies = [];
+  }
 }
 ---
+
 <Layout title={`Search: ${term} - EMOBase`}>
-  <div class="max-w-7xl mx-auto px-4 py-8 flex flex-col gap-8">
+  <div class="w-full max-w-7xl mx-auto px-4 py-8 flex flex-col gap-8">
     <div class="flex flex-col gap-8 animate-in fade-in duration-500">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <p class="text-sm font-medium text-slate-500 mb-1">Search results for:</p>
-          <h1 class="text-3xl font-display font-bold text-slate-900">{term}</h1>
+          <p class="text-sm font-medium text-slate-500 mb-1">
+            Search results for:
+          </p>
+          <h1 class="text-3xl font-display font-bold text-slate-900">
+            {term}
+          </h1>
         </div>
       </div>
-      <SearchResult term={term} searchData={searchData} assemblies={assemblies} client:load />
+      <SearchResult
+        term={term}
+        searchData={searchData}
+        assemblies={assemblies}
+        client:load
+      />
     </div>
   </div>
 </Layout>
