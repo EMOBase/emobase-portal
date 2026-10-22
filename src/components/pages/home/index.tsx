@@ -1,10 +1,5 @@
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  InputGroupButton,
-} from "@/components/ui/input-group";
-import { Search, ExternalLink } from "lucide-react";
+import SearchBar from "./SearchBar";
+import { ExternalLink } from "lucide-react";
 
 import triboliumImage from "@/assets/species/500px-Tribolium_castaneum.jpg?url";
 import spiderImage from "@/assets/species/Common_House_Spider.jpg?url";
@@ -88,27 +83,7 @@ export default function HomePage() {
         </p>
 
         {/* Large Search Bar */}
-        <div className="max-w-3xl mx-auto">
-          <InputGroup className="h-16 rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow px-3">
-            <InputGroupAddon align="inline-start">
-              <Search className="h-6 w-6 ml-2 text-slate-500" />
-            </InputGroupAddon>
-            <InputGroupInput
-              type="text"
-              className="text-lg font-medium pl-2 h-full placeholder:text-slate-500 mx-2"
-              placeholder="e.g., GCA_000003055.4, Tribolium castaneum, Tc-Abda..."
-            />
-            <InputGroupAddon align="inline-end">
-              <InputGroupButton
-                type="submit"
-                variant="default"
-                className="h-12 px-8 font-semibold rounded-lg shadow-sm text-base"
-              >
-                Search
-              </InputGroupButton>
-            </InputGroupAddon>
-          </InputGroup>
-        </div>
+        <SearchBar />
       </div>
 
       <div className="max-w-6xl mx-auto px-4 pb-24">
