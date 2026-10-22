@@ -11,8 +11,6 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
   assemblies = [],
 }) => {
   const getAssemblyForGene = (gene: string) => {
-    // Try to find matching assembly based on gene patterns
-    // Default to first assembly or try to match
     if (gene.startsWith("TC") || gene.toLowerCase().includes("tcas")) {
       return (
         assemblies.find((a) =>
@@ -43,7 +41,6 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
         ) || assemblies.find((a) => a.name?.includes("Dmel"))
       );
     }
-    // Default to first assembly
     return assemblies[0];
   };
 
@@ -57,11 +54,6 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
-      <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/50">
-        <p className="text-sm font-medium text-slate-700">
-          Found {genes.length} gene{genes.length !== 1 ? "s" : ""}
-        </p>
-      </div>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50/50">
@@ -100,6 +92,12 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
             })}
           </tbody>
         </table>
+      </div>
+      <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 flex items-center justify-between">
+        <span className="text-xs text-slate-500">
+          Showing {genes.length} gene{genes.length !== 1 ? "s" : ""} based on
+          gene search.
+        </span>
       </div>
     </div>
   );
