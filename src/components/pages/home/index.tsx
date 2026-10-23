@@ -78,8 +78,8 @@ export default function HomePage() {
         </h1>
         <p className="max-w-2xl text-slate-500 mx-auto mb-10 leading-relaxed">
           A centralized repository for specific model organism genome
-          assemblies. Search by species or accessions, browse chromosomal
-          structures, and download high-quality genomic data.
+          assemblies. Search for genes and their orthologs across species, and
+          download high-quality genomic data.
         </p>
 
         {/* Large Search Bar */}

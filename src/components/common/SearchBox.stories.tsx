@@ -26,10 +26,9 @@ const SUGGESTIONS = [
   "TC016177",
   "TC016178",
   "TC016179",
-  "Tcas 5.2",
-  "Tribolium castaneum",
-  "GCA_000003055.4",
-  "Drosophila melanogaster",
+  "TC016180",
+  "TC016181",
+  "TC016182",
 ];
 
 const SUGGEST_DELAY_MS = 800;

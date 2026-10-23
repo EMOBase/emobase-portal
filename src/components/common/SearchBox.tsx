@@ -27,6 +27,7 @@ type SearchBoxProps = {
 };
 
 const SUGGEST_DEBOUNCE_MS = 250;
+const DEFAULT_PLACEHOLDER = "Search by gene ID (e.g. TC006123)";
 
 export default function SearchBox({
   variant = "hero",
@@ -186,12 +187,7 @@ export default function SearchBox({
                 : "text-lg font-medium pl-2 h-full placeholder:text-slate-500 mx-2",
               inputClassName,
             )}
-            placeholder={
-              placeholder ??
-              (isTopbar
-                ? "Search by species name, NCBI accession (GCA_/GCF_), or gene identifier..."
-                : "e.g., GCA_000003055.4, Tribolium castaneum, gene identifier...")
-            }
+            placeholder={placeholder ?? DEFAULT_PLACEHOLDER}
           />
           {!isTopbar && (
             <InputGroupAddon align="inline-end">
