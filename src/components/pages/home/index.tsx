@@ -1,4 +1,4 @@
-import SearchBar from "./SearchBar";
+import SearchBox from "@/components/common/SearchBox";
 import { ExternalLink } from "lucide-react";
 
 import triboliumImage from "@/assets/species/500px-Tribolium_castaneum.jpg?url";
@@ -83,7 +83,7 @@ export default function HomePage() {
         </p>
 
         {/* Large Search Bar */}
-        <SearchBar />
+        <SearchBox />
       </div>
 
       <div className="max-w-6xl mx-auto px-4 pb-24">

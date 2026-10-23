@@ -1,7 +1,11 @@
 import AvatarMenu from "@/components/layouts/Topbar/AvatarMenu";
-import SearchBox from "@/components/layouts/Topbar/SearchBox";
+import SearchBox from "@/components/common/SearchBox";
 
-export default function Topbar({ user }: { user: { email: string; name: string } | null }) {
+export default function Topbar({
+  user,
+}: {
+  user: { email: string; name: string } | null;
+}) {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -16,7 +20,7 @@ export default function Topbar({ user }: { user: { email: string; name: string }
         </a>
 
         {/* Header Search */}
-        <SearchBox />
+        <SearchBox variant="topbar" />
 
         {user ? <AvatarMenu email={user.email} name={user.name} /> : null}
       </div>

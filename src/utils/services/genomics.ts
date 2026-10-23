@@ -403,14 +403,14 @@ const genomicsService = (fetch: typeof apiFetch = apiFetch) => {
     return res.data;
   };
 
-  const suggest = async (query: string) => {
+  const suggest = async (query: string, signal?: AbortSignal) => {
     const version = await resolveVersion();
     let url = `/search/_suggest?query=${encodeURIComponent(query)}`;
     if (version) url += `&version=${encodeURIComponent(version)}`;
     const res = await fetch<{
       data: string[];
       requestId: string;
-    }>("genomicsservice", url);
+    }>("genomicsservice", url, { signal });
     return res.data;
   };
 

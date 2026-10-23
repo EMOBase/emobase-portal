@@ -110,3 +110,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes search-loading-line {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
