@@ -1,6 +1,7 @@
 import { CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export type VersionStatus =
   "DRAFT" | "PROCESSING" | "READY" | "ERROR" | "MISSING_REQUIRED_FILE";
@@ -39,19 +40,30 @@ export default function VersionActionButton({
   return (
     <div className="flex shrink-0 items-center gap-2">
       {showRelease && (
-        <Button
-          variant="outline"
-          onClick={onRelease}
-          disabled={pending !== null}
-          className="gap-2"
-        >
-          {pending === "release" ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            <CheckCircle2 />
-          )}
-          Set as Default
-        </Button>
+        <ConfirmDialog
+          trigger={
+            <Button
+              variant="outline"
+              disabled={pending !== null}
+              className="gap-2"
+            >
+              {pending === "release" ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <CheckCircle2 />
+              )}
+              Set as Default
+            </Button>
+          }
+          title="Set as Default"
+          description={
+            <>
+              Are you sure you want to set this version to be the default
+              version?
+            </>
+          }
+          onConfirm={onRelease}
+        />
       )}
 
       {showSync && (

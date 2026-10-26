@@ -11,7 +11,7 @@ type ConfirmDialogProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   destructive?: boolean;
-  onConfirm: () => Promise<unknown> | void;
+  onConfirm?: () => void | Promise<unknown>;
 };
 
 function ConfirmDialog({
@@ -37,7 +37,7 @@ function ConfirmDialog({
     setSubmitting(true);
     setError(null);
     try {
-      await onConfirm();
+      await onConfirm?.();
       setOpen(false);
       setSubmitting(false);
     } catch (err) {

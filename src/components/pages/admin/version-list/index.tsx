@@ -217,21 +217,34 @@ export default function VersionsManager() {
                           <>
                             {version.status === "READY" &&
                               !version.isDefault && (
-                                <button
-                                  onClick={() =>
-                                    void run(
-                                      () => releaseVersion(version.name),
-                                      version.name,
-                                    )
+                                <ConfirmDialog
+                                  trigger={
+                                    <button
+                                      disabled={pendingName === version.name}
+                                      className="rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-500 disabled:opacity-50"
+                                      aria-label="Set as default"
+                                    >
+                                      <CheckCircle2 className="size-4" />
+                                    </button>
                                   }
-                                  disabled={pendingName === version.name}
-                                  className="rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-500 disabled:opacity-50"
-                                  aria-label="Set as default"
-                                >
-                                  <CheckCircle2 className="size-4" />
-                                </button>
+                                  title="Set as Default"
+                                  description={
+                                    <>
+                                      Are you sure you want to set version{" "}
+                                      <span className="font-semibold text-slate-700">
+                                        {version.name}
+                                      </span>{" "}
+                                      to be the default version?
+                                    </>
+                                  }
+                                  onConfirm={async () => {
+                                    await releaseVersion(version.name);
+                                    refresh();
+                                  }}
+                                />
                               )}
                             <a
+                              target="_blank"
                               className="rounded-lg p-2 text-slate-300 transition-colors hover:text-blue-700"
                               aria-label="Download files"
                               href={downloadUrl(
