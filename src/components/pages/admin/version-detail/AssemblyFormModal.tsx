@@ -36,7 +36,7 @@ export default function AssemblyFormModal({
   const form = useForm<AssemblyFormValues>({
     defaultValues: {
       name: defaultValues?.name ?? "",
-      speciesName: defaultValues?.speciesName ?? defaultValues?.species ?? "",
+      speciesName: defaultValues?.speciesName ?? "",
       infoUrl: defaultValues?.infoUrl ?? "",
     },
     validate: (values) => {
@@ -105,15 +105,15 @@ export default function AssemblyFormModal({
           <Field
             label="Species"
             htmlFor="assembly-species"
-            error={(form.errors as any).speciesName || (form.errors as any).species}
+            error={form.errors.speciesName}
           >
             <Input
               id="assembly-species"
-              value={(form.values as any).speciesName}
-              onChange={(e) => form.setField("speciesName" as any, e.target.value)}
+              value={form.values.speciesName}
+              onChange={(e) => form.setField("speciesName", e.target.value)}
               placeholder="e.g. Tribolium castaneum"
               disabled={form.submitting || lockSpecies}
-              aria-invalid={Boolean((form.errors as any).speciesName || (form.errors as any).species)}
+              aria-invalid={Boolean(form.errors.speciesName)}
             />
           </Field>
 

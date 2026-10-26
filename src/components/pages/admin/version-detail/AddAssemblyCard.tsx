@@ -33,10 +33,10 @@ export default function AddAssemblyCard({
       title="Add new Assembly"
       description={`Add a new assembly to version ${versionName}.`}
       submitLabel="Create"
-      onSubmit={async ({ name, species, infoUrl }) => {
+      onSubmit={async ({ name, speciesName, infoUrl }) => {
         const res = await createAssemblyVersion(versionName, {
           name,
-          species,
+          speciesName,
           infoUrl: infoUrl || undefined,
         });
         onCreated?.(res.data);
