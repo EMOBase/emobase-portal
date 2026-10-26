@@ -27,19 +27,18 @@ export default function VersionActionButton({
   status,
   isDefault = false,
   pending = null,
-  error = null,
   onRelease,
   onSync,
 }: VersionActionButtonProps) {
   const showRelease = status === "READY" && !isDefault;
   const showSync = isDefault;
 
-  if (!showRelease && !showSync && !error) {
+  if (!showRelease && !showSync) {
     return null;
   }
 
   return (
-    <div className="flex shrink-0 flex-col items-end gap-2">
+    <div className="flex shrink-0 items-center gap-2">
       {showRelease && (
         <Button
           variant="outline"
@@ -71,10 +70,6 @@ export default function VersionActionButton({
           Sync
         </Button>
       )}
-
-      {error ? (
-        <p className="text-sm font-medium text-destructive">{error}</p>
-      ) : null}
     </div>
   );
 }

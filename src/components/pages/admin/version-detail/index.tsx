@@ -53,7 +53,6 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
 
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [action, setAction] = React.useState<"release" | "sync" | null>(null);
-  const [actionError, setActionError] = React.useState<string | null>(null);
 
   const { data } = useAsyncData(
     () => fetchVersionDetail(versionName),
@@ -65,16 +64,15 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
 
   async function handleAction(kind: "release" | "sync") {
     setAction(kind);
-    setActionError(null);
     try {
       await releaseVersion(versionName);
       setRefreshKey((prev) => prev + 1);
     } catch (err) {
-      setActionError(
-        err instanceof Error
-          ? err.message
-          : `Failed to ${kind === "sync" ? "sync" : "release"} version ${versionName}`,
-      );
+      toastManager.add({
+        type: "error",
+        title: `Failed to ${kind === "sync" ? "sync" : "set as default"} ${versionName}`,
+        description: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setAction(null);
     }
@@ -181,7 +179,6 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
           status={versionData?.status}
           isDefault={versionData?.isDefault}
           pending={action}
-          error={actionError}
           onRelease={() => void handleAction("release")}
           onSync={() => void handleAction("sync")}
         />

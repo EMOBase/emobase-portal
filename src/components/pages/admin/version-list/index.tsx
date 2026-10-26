@@ -6,6 +6,7 @@ import { cn } from "@/utils/classname";
 import { formatDate } from "./utils";
 import { formatBytes } from "@/utils/format";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { toastManager } from "@/components/ui/toaster";
 import genomicsService, { type VersionItem } from "@/utils/services/genomics";
 import { downloadUrl } from "@/utils/url";
 import useService from "@/hooks/useService";
@@ -48,7 +49,6 @@ export default function VersionsManager() {
 
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [pendingName, setPendingName] = React.useState<string | null>(null);
-  const [actionError, setActionError] = React.useState<string | null>(null);
 
   const { data, loading, error } = useAsyncData(
     () => fetchVersions({ page: 1, pageSize: PAGE_SIZE }),
@@ -57,22 +57,25 @@ export default function VersionsManager() {
 
   const versions = data?.data.versions ?? [];
   const total = data?.data.total ?? 0;
-  const errorMessage =
-    actionError ??
-    (error ? (error instanceof Error ? error.message : String(error)) : null);
+  const errorMessage = error
+    ? error instanceof Error
+      ? error.message
+      : String(error)
+    : null;
 
   const refresh = () => setRefreshKey((prev) => prev + 1);
 
   async function run(action: () => Promise<unknown>, name: string) {
     setPendingName(name);
-    setActionError(null);
     try {
       await action();
       refresh();
     } catch (err) {
-      setActionError(
-        err instanceof Error ? err.message : `Version ${name} failed`,
-      );
+      toastManager.add({
+        type: "error",
+        title: `Failed to set version ${name} as default`,
+        description: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setPendingName(null);
     }
