@@ -11,7 +11,6 @@ export type VersionActionButtonProps = {
   status?: VersionStatus;
   isDefault?: boolean;
   pending?: VersionActionKind | null;
-  error?: string | null;
   onRelease?: () => void;
   onSync?: () => void;
 };

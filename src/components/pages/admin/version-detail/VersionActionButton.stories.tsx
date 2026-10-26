@@ -12,7 +12,6 @@ const meta = {
     status: "READY",
     isDefault: false,
     pending: null,
-    error: null,
     onRelease: () => {},
     onSync: () => {},
   },
@@ -54,9 +53,4 @@ export const Releasing: Story = {
 export const Syncing: Story = {
   name: "Syncing (pending)",
   args: { isDefault: true, pending: "sync" },
-};
-
-export const WithError: Story = {
-  name: "With error",
-  args: { error: "Failed to release version v0.0.2" },
 };
