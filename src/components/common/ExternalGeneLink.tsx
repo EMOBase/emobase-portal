@@ -12,6 +12,9 @@ const ExternalGeneLink: React.FC<ExternalGeneLinkProps> = ({
   assemblyInfoUrl,
 }) => {
   const getHref = () => {
+    if (species === "Dmel") {
+      return `https://flybase.org/reports/${gene}.html`;
+    }
     if (assemblyInfoUrl) {
       try {
         const url = new URL(assemblyInfoUrl);
