@@ -54,7 +54,8 @@ export type AssemblyVersion = {
   id: number;
   versionId: number;
   name: string;
-  species: string;
+  speciesCode: string;
+  speciesName: string;
   imagePath?: string | null;
   infoUrl?: string | null;
   createdAt: string;
@@ -65,7 +66,7 @@ export type AssemblyVersion = {
 
 type CreateAssemblyVersionInput = {
   name: string;
-  species: string;
+  speciesName: string;
   infoUrl?: string;
 };
 

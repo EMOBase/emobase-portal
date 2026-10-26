@@ -74,7 +74,7 @@ const SearchResult: React.FC<SearchResultProps> = ({
             <div className="flex flex-wrap items-center gap-3">
               {otherGenes.map(({ gene, species }) => {
                 const assembly = assemblies.find(
-                  (a) => a.species === species || a.name === species,
+                  (a) => (a.speciesCode || a.speciesName) === species || a.name === species,
                 );
                 return (
                   <ExternalGeneLink

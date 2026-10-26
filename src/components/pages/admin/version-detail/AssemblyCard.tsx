@@ -12,7 +12,8 @@ import placeholderImage from "@/assets/species/placeholder.svg?url";
 export type AssemblyCardItem = {
   id: string | number;
   name: string;
-  species: string;
+  speciesCode: string;
+  speciesName: string;
   image?: string;
   size?: string;
   infoUrl?: string | null;
@@ -55,7 +56,7 @@ export default function AssemblyCard({
       <div className="relative h-52 overflow-hidden border-b border-slate-200 bg-slate-100">
         <img
           src={species.image ?? placeholderImage}
-          alt={species.species}
+          alt={species.speciesName}
           className="absolute inset-0 h-full w-full object-cover"
         />
 
@@ -90,7 +91,7 @@ export default function AssemblyCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="text-xl font-bold text-gray-900">{species.name}</h3>
-            <p className="italic text-slate-500">{species.species}</p>
+            <p className="italic text-slate-500">{species.speciesName || species.species}</p>
           </div>
 
           <div className="-mr-1 flex shrink-0 items-center gap-1">
@@ -111,7 +112,7 @@ export default function AssemblyCard({
                   submitLabel="Save"
                   defaultValues={{
                     name: species.name,
-                    species: species.species,
+                    speciesName: species.speciesName,
                     infoUrl: species.infoUrl ?? "",
                   }}
                   lockSpecies

@@ -22,7 +22,7 @@ type MainFileConfig = {
 };
 
 const getMainFileConfigs = (
-  species: string,
+  speciesCode: string,
 ): Record<string, MainFileConfig> => {
   const configs: Record<string, MainFileConfig> = {
     "genomic.fna": { category: "Genome Sequence", icon: "file-text" },
@@ -32,7 +32,7 @@ const getMainFileConfigs = (
     "protein.faa": { category: "Protein Sequences", icon: "dna" },
   };
 
-  if (isBeetleSpecies(species)) {
+  if (isBeetleSpecies(speciesCode)) {
     configs["dsrna.csv"] = { category: "dsRNA Silencing", icon: "syringe" };
   }
 
@@ -120,12 +120,12 @@ export default function VersionAssemblyUpload({
     refreshToken,
   });
 
-  const assemblyName = data?.data.name ?? assemblyId;
-  const species = data?.data.species ?? "";
-  const versionFiles: VersionDetailFiles = data?.data.files ?? {};
+  const assemblyName = data?.data?.name ?? assemblyId;
+  const speciesCode = data?.data?.speciesCode ?? "";
+  const versionFiles: VersionDetailFiles = data?.data?.files ?? {};
 
   const mainFiles = React.useMemo<FileStatus[]>(() => {
-    return Object.entries(getMainFileConfigs(species)).map(
+    return Object.entries(getMainFileConfigs(speciesCode)).map(
       ([fileName, config]) => {
         const fileDetail = versionFiles[
           fileName as keyof VersionDetailFiles
@@ -147,7 +147,7 @@ export default function VersionAssemblyUpload({
         };
       },
     );
-  }, [versionFiles, species]);
+  }, [versionFiles, speciesCode]);
 
   const jbrowseTrackFiles = React.useMemo<FileStatus[]>(() => {
     const files: FileDetail[] = versionFiles["jbrowse.track"] || [];
@@ -173,13 +173,7 @@ export default function VersionAssemblyUpload({
   }, [versionFiles]);
 
   const synonymFiles = React.useMemo<FileStatus[]>(() => {
-    const files: FileDetail[] = (versionFiles["species.synonym"] || []).filter(
-      (fileDetail) => {
-        const fileSpecies = fileDetail.jobs?.find((j) => j.payload?.species)
-          ?.payload?.species;
-        return !fileSpecies || fileSpecies === species;
-      },
-    );
+    const files: FileDetail[] = versionFiles["species.synonym"] || [];
 
     return files.map((fileDetail) => {
       const { status, progress, progressTitle, error } =
@@ -200,10 +194,10 @@ export default function VersionAssemblyUpload({
         theme: status === "READY" ? "blue" : "orange",
       };
     });
-  }, [versionFiles, species]);
+  }, [versionFiles]);
 
   const needsPolling =
-    data?.data.status === "PROCESSING" ||
+    data?.data?.status === "PROCESSING" ||
     [...mainFiles, ...jbrowseTrackFiles, ...synonymFiles].some(
       (f) => f.status === "PROCESSING",
     ) ||
@@ -398,7 +392,7 @@ export default function VersionAssemblyUpload({
               file={item.file}
               versionName={versionName}
               assemblyId={assemblyId}
-              species={species}
+              species={speciesCode}
               onComplete={() => {
                 setSynonymUploads((prev) =>
                   prev.filter((u) => u.id !== item.id),

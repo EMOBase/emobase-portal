@@ -9,7 +9,7 @@ import { useForm } from "@/hooks/useForm";
 
 export type AssemblyFormValues = {
   name: string;
-  species: string;
+  speciesName: string;
   infoUrl: string;
 };
 
@@ -36,16 +36,16 @@ export default function AssemblyFormModal({
   const form = useForm<AssemblyFormValues>({
     defaultValues: {
       name: defaultValues?.name ?? "",
-      species: defaultValues?.species ?? "",
+      speciesName: defaultValues?.speciesName ?? defaultValues?.species ?? "",
       infoUrl: defaultValues?.infoUrl ?? "",
     },
     validate: (values) => {
       const name = values.name.trim();
-      const species = values.species.trim();
+      const speciesName = values.speciesName.trim();
       const infoUrl = values.infoUrl.trim();
       return {
         name: name ? undefined : "Assembly name is required",
-        species: species ? undefined : "Species is required",
+        speciesName: speciesName ? undefined : "Species is required",
         infoUrl:
           infoUrl && !/^https?:\/\/.+/i.test(infoUrl)
             ? "Link must be an absolute http or https URL"
@@ -55,7 +55,7 @@ export default function AssemblyFormModal({
     onSubmit: (values) =>
       onSubmit({
         name: values.name.trim(),
-        species: values.species.trim(),
+        speciesName: values.speciesName.trim(),
         infoUrl: values.infoUrl.trim(),
       }),
   });
@@ -105,15 +105,15 @@ export default function AssemblyFormModal({
           <Field
             label="Species"
             htmlFor="assembly-species"
-            error={form.errors.species}
+            error={(form.errors as any).speciesName || (form.errors as any).species}
           >
             <Input
               id="assembly-species"
-              value={form.values.species}
-              onChange={(e) => form.setField("species", e.target.value)}
+              value={(form.values as any).speciesName}
+              onChange={(e) => form.setField("speciesName" as any, e.target.value)}
               placeholder="e.g. Tribolium castaneum"
               disabled={form.submitting || lockSpecies}
-              aria-invalid={Boolean(form.errors.species)}
+              aria-invalid={Boolean((form.errors as any).speciesName || (form.errors as any).species)}
             />
           </Field>
 

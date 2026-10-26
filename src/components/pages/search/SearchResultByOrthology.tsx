@@ -16,21 +16,21 @@ const SearchResultByOrthology: React.FC<SearchResultByOrthologyProps> = ({
 }) => {
   // Get all unique species from orthologs
   const allSpecies = Array.from(
-    new Set(orthologies.flatMap((o) => o.orthologs.map((og) => og.species))),
+    new Set(orthologies.flatMap((o) => o.orthologs.map((og) => (og.speciesCode || og.speciesName || (og as any).species)))),
   ).sort();
 
   const getAssemblyInfoUrl = (species: string) => {
     const assembly = assemblies.find(
-      (a) => a.species === species || a.name === species,
+      (a) => (a.speciesCode || a.speciesName) === species || a.name === species,
     );
     return assembly?.infoUrl || undefined;
   };
 
   const getSpeciesDisplayName = (species: string) => {
     const assembly = assemblies.find(
-      (a) => a.species === species || a.name === species,
+      (a) => (a.speciesCode || a.speciesName) === species || a.name === species,
     );
-    if (assembly?.species) return assembly.species;
+    if ((assembly?.speciesCode || assembly?.speciesName)) return (assembly.speciesCode || assembly.speciesName);
     return species;
   };
 
@@ -66,7 +66,7 @@ const SearchResultByOrthology: React.FC<SearchResultByOrthologyProps> = ({
                   {source}
                 </td>
                 {allSpecies.map((species) => {
-                  const ortholog = orthologs.find((o) => o.species === species);
+                  const ortholog = orthologs.find((o) => (o.speciesCode || o.speciesName || (o as any).species) === species);
                   const genes = ortholog?.genes || [];
                   const infoUrl = getAssemblyInfoUrl(species);
 

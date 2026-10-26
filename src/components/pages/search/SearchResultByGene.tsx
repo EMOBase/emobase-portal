@@ -14,7 +14,7 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
     if (gene.startsWith("TC") || gene.toLowerCase().includes("tcas")) {
       return (
         assemblies.find((a) =>
-          a.species?.toLowerCase().includes("tribolium"),
+          (a.speciesCode || a.speciesName)?.toLowerCase().includes("tribolium"),
         ) || assemblies[0]
       );
     }
@@ -24,20 +24,20 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
     ) {
       return (
         assemblies.find((a) =>
-          a.species?.toLowerCase().includes("parasteatoda"),
+          (a.speciesCode || a.speciesName)?.toLowerCase().includes("parasteatoda"),
         ) || assemblies.find((a) => a.name?.includes("Ptep"))
       );
     }
     if (gene.startsWith("Lyst") || gene.toLowerCase().includes("lymnaea")) {
       return (
-        assemblies.find((a) => a.species?.toLowerCase().includes("lymnaea")) ||
+        assemblies.find((a) => (a.speciesCode || a.speciesName)?.toLowerCase().includes("lymnaea")) ||
         assemblies.find((a) => a.name?.includes("Lyst"))
       );
     }
     if (gene.startsWith("FBgn") || gene.toLowerCase().includes("dmel")) {
       return (
         assemblies.find((a) =>
-          a.species?.toLowerCase().includes("drosophila"),
+          (a.speciesCode || a.speciesName)?.toLowerCase().includes("drosophila"),
         ) || assemblies.find((a) => a.name?.includes("Dmel"))
       );
     }
@@ -82,7 +82,7 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
                     <ExternalGeneLink gene={gene} assemblyInfoUrl={infoUrl} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
-                    {assembly?.species || "-"}
+                    {(assembly?.speciesCode || assembly?.speciesName) || "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
                     {assembly?.name || "-"}

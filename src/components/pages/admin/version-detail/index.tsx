@@ -213,7 +213,8 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
               species={{
                 id: assembly.id,
                 name: assembly.name,
-                species: assembly.species,
+                speciesCode: (assembly as any).speciesCode,
+                speciesName: (assembly as any).speciesName,
                 size: formatBytes(assemblySize(assembly.files)),
                 infoUrl: assembly.infoUrl,
                 image: assemblyImageUrl(assembly.imagePath),

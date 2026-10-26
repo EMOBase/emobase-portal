@@ -1,2 +1,2 @@
-export const isBeetleSpecies = (species: string) =>
-  species === "Tcas" || /tribolium\s+castaneum/i.test(species);
+export const isBeetleSpecies = (speciesCode?: string | null) =>
+  typeof speciesCode === "string" && speciesCode === "Tcas";
