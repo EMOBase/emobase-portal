@@ -20,28 +20,28 @@ export type AssemblyCardItem = {
 };
 
 export default function AssemblyCard({
-  species,
+  assembly,
   href,
   onSubmit,
   onDelete,
   onImageUpload,
   onImageRemove,
 }: {
-  species: AssemblyCardItem;
+  assembly: AssemblyCardItem;
   href?: string;
   onSubmit?: (values: AssemblyFormValues) => Promise<unknown> | void;
   onDelete?: () => Promise<unknown> | void;
   onImageUpload?: (file: File) => Promise<unknown> | void;
   onImageRemove?: () => Promise<unknown> | void;
 }) {
-  const hasImage = Boolean(species.image);
+  const hasImage = Boolean(assembly.image);
 
   return (
     <article className="relative isolate flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
       {href ? (
         <a
           href={href}
-          aria-label={`Manage assembly data for ${species.name}`}
+          aria-label={`Manage assembly data for ${assembly.name}`}
           className="group/anchor absolute inset-0 z-10"
         >
           <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center opacity-0 transition-opacity duration-200 group-hover/anchor:opacity-100">
@@ -55,8 +55,8 @@ export default function AssemblyCard({
 
       <div className="relative h-52 overflow-hidden border-b border-slate-200 bg-slate-100">
         <img
-          src={species.image ?? placeholderImage}
-          alt={species.speciesName}
+          src={assembly.image ?? placeholderImage}
+          alt={assembly.speciesName}
           className="absolute inset-0 h-full w-full object-cover"
         />
 
@@ -64,7 +64,7 @@ export default function AssemblyCard({
           trigger={
             <button
               type="button"
-              aria-label={`${hasImage ? "Replace" : "Upload"} image for ${species.name}`}
+              aria-label={`${hasImage ? "Replace" : "Upload"} image for ${assembly.name}`}
               className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1.5 rounded-full bg-slate-900/70 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-slate-900"
             >
               {hasImage ? (
@@ -78,10 +78,10 @@ export default function AssemblyCard({
           title={hasImage ? "Replace Assembly Image" : "Upload Assembly Image"}
           description={
             hasImage
-              ? `Replace or remove the image shown for ${species.name}.`
-              : `Upload an image to show for ${species.name}.`
+              ? `Replace or remove the image shown for ${assembly.name}.`
+              : `Upload an image to show for ${assembly.name}.`
           }
-          currentImageUrl={species.image}
+          currentImageUrl={assembly.image}
           onSubmit={onImageUpload ?? (() => {})}
           onRemove={onImageRemove}
         />
@@ -90,8 +90,8 @@ export default function AssemblyCard({
       <div className="flex flex-grow flex-col p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="text-xl font-bold text-gray-900">{species.name}</h3>
-            <p className="italic text-slate-500">{species.speciesName || species.species}</p>
+            <h3 className="text-xl font-bold text-gray-900">{assembly.name}</h3>
+            <p className="italic text-slate-500">{assembly.speciesName}</p>
           </div>
 
           <div className="-mr-1 flex shrink-0 items-center gap-1">
@@ -101,19 +101,19 @@ export default function AssemblyCard({
                   trigger={
                     <Tooltip.Trigger
                       type="button"
-                      aria-label={`Edit ${species.name}`}
+                      aria-label={`Edit ${assembly.name}`}
                       className="relative z-20 rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
                     >
                       <Pencil className="size-4" />
                     </Tooltip.Trigger>
                   }
                   title="Update Assembly"
-                  description={`Update the details for ${species.name}.`}
+                  description={`Update the details for ${assembly.name}.`}
                   submitLabel="Save"
                   defaultValues={{
-                    name: species.name,
-                    speciesName: species.speciesName,
-                    infoUrl: species.infoUrl ?? "",
+                    name: assembly.name,
+                    speciesName: assembly.speciesName,
+                    infoUrl: assembly.infoUrl ?? "",
                   }}
                   lockSpecies
                   onSubmit={onSubmit ?? (() => {})}
@@ -134,14 +134,14 @@ export default function AssemblyCard({
                   trigger={
                     <Tooltip.Trigger
                       type="button"
-                      aria-label={`Delete ${species.name}`}
+                      aria-label={`Delete ${assembly.name}`}
                       className="relative z-20 rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
                     >
                       <Trash2 className="size-4" />
                     </Tooltip.Trigger>
                   }
                   title="Delete assembly"
-                  description={`Are you sure you want to delete ${species.name}? This action cannot be undone.`}
+                  description={`Are you sure you want to delete ${assembly.name}? This action cannot be undone.`}
                   confirmLabel="Delete"
                   destructive
                   onConfirm={onDelete ?? (() => {})}
@@ -162,7 +162,7 @@ export default function AssemblyCard({
           <div className="flex min-w-0 gap-1.5">
             <dt className="shrink-0">Size:</dt>
             <dd className="truncate font-medium text-slate-800">
-              {species.size || "0 B"}
+              {assembly.size || "0 B"}
             </dd>
           </div>
           <div className="flex min-w-0 gap-1.5">
@@ -170,20 +170,20 @@ export default function AssemblyCard({
             <dd
               className={cn(
                 "font-medium",
-                species.infoUrl
+                assembly.infoUrl
                   ? "truncate text-slate-800"
                   : "italic font-normal text-slate-400",
               )}
-              title={species.infoUrl || undefined}
+              title={assembly.infoUrl || undefined}
             >
-              {species.infoUrl ? (
+              {assembly.infoUrl ? (
                 <a
-                  href={species.infoUrl}
+                  href={assembly.infoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="relative z-20 hover:underline"
                 >
-                  {species.infoUrl}
+                  {assembly.infoUrl}
                 </a>
               ) : (
                 "Not set"

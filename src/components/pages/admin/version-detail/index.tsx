@@ -207,11 +207,11 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
           {assemblies.map((assembly) => (
             <AssemblyCard
               key={assembly.id}
-              species={{
+              assembly={{
                 id: assembly.id,
                 name: assembly.name,
-                speciesCode: (assembly as any).speciesCode,
-                speciesName: (assembly as any).speciesName,
+                speciesCode: assembly.speciesCode,
+                speciesName: assembly.speciesName,
                 size: formatBytes(assemblySize(assembly.files)),
                 infoUrl: assembly.infoUrl,
                 image: assemblyImageUrl(assembly.imagePath),

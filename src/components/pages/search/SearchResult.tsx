@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type GeneSearchResult } from "@/utils/services/genomics";
@@ -32,9 +32,7 @@ const SearchResult: React.FC<SearchResultProps> = ({
   const otherGenes = searchData.otherGenes;
   const genes = searchData.genes;
 
-  const orthologyBadge =
-    (orthologies?.length || 0) +
-    (otherGenes?.length || 0);
+  const orthologyBadge = (orthologies?.length || 0) + (otherGenes?.length || 0);
   const geneBadge = genes?.length || 0;
 
   if (geneBadge === 0 && orthologyBadge === 0) {
@@ -74,7 +72,9 @@ const SearchResult: React.FC<SearchResultProps> = ({
             <div className="flex flex-wrap items-center gap-3">
               {otherGenes.map(({ gene, species }) => {
                 const assembly = assemblies.find(
-                  (a) => (a.speciesCode || a.speciesName) === species || a.name === species,
+                  (a) =>
+                    (a.speciesCode || a.speciesName) === species ||
+                    a.name === species,
                 );
                 return (
                   <ExternalGeneLink
