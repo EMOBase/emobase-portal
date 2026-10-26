@@ -171,9 +171,16 @@ export default function VersionDetail({ versionName }: VersionDetailProps) {
       </nav>
 
       <div className="mb-8 flex items-start justify-between gap-6">
-        <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900">
-          Version {versionName}
-        </h1>
+        <div className="flex items-center gap-4">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900">
+            Version {versionName}
+          </h1>
+          {versionData?.isDefault && (
+            <span className="px-2 py-1 rounded-sm text-xs font-bold uppercase tracking-wider bg-primary-light/20 text-blue-700 bg-blue-100">
+              DEFAULT
+            </span>
+          )}
+        </div>
 
         <VersionActionButton
           status={versionData?.status}

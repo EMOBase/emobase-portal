@@ -163,8 +163,8 @@ export default function VersionsManager() {
                           {version.name}
                         </a>
                         {version.isDefault && (
-                          <span className="rounded-sm bg-blue-50 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-blue-700">
-                            CURRENT
+                          <span className="rounded-sm bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+                            DEFAULT
                           </span>
                         )}
                       </div>
