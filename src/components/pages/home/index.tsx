@@ -1,39 +1,14 @@
 import SearchBox from "@/components/common/SearchBox";
 import { ExternalLink } from "lucide-react";
 import type { AssemblyVersionDetail } from "@/utils/services/genomics";
-
-import triboliumImage from "@/assets/species/500px-Tribolium_castaneum.jpg?url";
-import spiderImage from "@/assets/species/Common_House_Spider.jpg?url";
-import lymnaeaImage from "@/assets/species/Lymnaea-stagnalis.jpg?url";
 import placeholderImage from "@/assets/species/placeholder.svg?url";
 
 type AssemblyCardData = {
-  image?: string;
+  image?: string | null;
   alt: string;
-  tag: string;
   name: string;
   common: string;
-  genomeSize?: string;
-  gcContent?: string;
-  assemblyLevel?: string;
-  siteUrl?: string;
-};
-
-const getImageForSpecies = (speciesCode?: string, speciesName?: string) => {
-  const key = (speciesCode || speciesName || "").toLowerCase();
-  if (key.includes("tcas") || key.includes("tribolium")) return triboliumImage;
-  if (key.includes("ptep") || key.includes("parasteatoda")) return spiderImage;
-  if (key.includes("lyst") || key.includes("lymnaea")) return lymnaeaImage;
-  return undefined;
-};
-
-const getTagForSpecies = (speciesCode?: string, speciesName?: string) => {
-  const key = (speciesCode || speciesName || "").toLowerCase();
-  if (key.includes("tcas") || key.includes("tribolium")) return "Beetles";
-  if (key.includes("ptep") || key.includes("parasteatoda")) return "Spiders";
-  if (key.includes("lyst") || key.includes("lymnaea")) return "Snails";
-  if (key.includes("dmel") || key.includes("drosophila")) return "Flies";
-  return "Species";
+  siteUrl?: string | null;
 };
 
 type HomePageProps = {
@@ -42,12 +17,11 @@ type HomePageProps = {
 
 export default function HomePage({ assemblies = [] }: HomePageProps) {
   const assemblyCards: AssemblyCardData[] = assemblies.map((assembly) => ({
-    image: getImageForSpecies(assembly.speciesCode, assembly.speciesName),
+    image: assembly.imagePath,
     alt: assembly.speciesName || assembly.speciesCode || assembly.name,
-    tag: getTagForSpecies(assembly.speciesCode, assembly.speciesName),
     name: assembly.name,
     common: assembly.speciesName || assembly.speciesCode || "",
-    siteUrl: assembly.infoUrl || undefined,
+    siteUrl: assembly.infoUrl,
   }));
   return (
     <main className="flex-grow">
