@@ -1,8 +1,29 @@
 ---
 import Layout from "../layouts/default.astro";
 import HomePage from "../components/pages/home/index.tsx";
+import genomicsService from "@/utils/services/genomics";
+
+const { fetchPublicVersions, fetchVersionDetail } = genomicsService();
+
+let assemblies: any[] = [];
+
+try {
+  const versions = await fetchPublicVersions();
+  const defaultVersion =
+    versions.find((v: any) => v.isDefault && v.status === "READY") ||
+    versions.find((v: any) => v.status === "READY") ||
+    versions[0];
+
+  if (defaultVersion) {
+    const detail = await fetchVersionDetail(defaultVersion.name);
+    assemblies = detail.data.assemblies || [];
+  }
+} catch (e) {
+  console.error("Failed to fetch assemblies:", e);
+  assemblies = [];
+}
 ---
 
 <Layout title="EMOBase - Discover the Blueprint of Life">
-  <HomePage client:load />
+  <HomePage assemblies={assemblies} client:load />
 </Layout>

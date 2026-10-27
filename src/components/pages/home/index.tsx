@@ -1,5 +1,6 @@
 import SearchBox from "@/components/common/SearchBox";
 import { ExternalLink } from "lucide-react";
+import type { AssemblyVersionDetail } from "@/utils/services/genomics";
 
 import triboliumImage from "@/assets/species/500px-Tribolium_castaneum.jpg?url";
 import spiderImage from "@/assets/species/Common_House_Spider.jpg?url";
@@ -12,59 +13,42 @@ type AssemblyCardData = {
   tag: string;
   name: string;
   common: string;
-  genomeSize: string;
-  gcContent: string;
-  assemblyLevel: string;
-  siteUrl: string;
+  genomeSize?: string;
+  gcContent?: string;
+  assemblyLevel?: string;
+  siteUrl?: string;
 };
 
-const assemblyCards: AssemblyCardData[] = [
-  {
-    image: triboliumImage,
-    alt: "Beetle",
-    tag: "Beetles",
-    name: "Tcas 5.2",
-    common: "Tribolium castaneum",
-    genomeSize: "241.8 Mb",
-    gcContent: "31.5%",
-    assemblyLevel: "Chromosome (92%)",
-    siteUrl: "https://ibeetle-base.uni-goettingen.de/",
-  },
-  {
-    image: spiderImage,
-    alt: "Spider",
-    tag: "Spiders",
-    name: "Ptep 1.0",
-    common: "Parasteatoda tepidariorum",
-    genomeSize: "1.1 Gb",
-    gcContent: "29.5%",
-    assemblyLevel: "Scaffold",
-    siteUrl: "https://ptep.emobase.uni-goettingen.de/",
-  },
-  {
-    image: lymnaeaImage,
-    alt: "Snail",
-    tag: "Snails",
-    name: "Lyst 1.0",
-    common: "Lymnaea stagnalis",
-    genomeSize: "943.0 Mb",
-    gcContent: "37.55%",
-    assemblyLevel: "Scaffold",
-    siteUrl: "https://ibb-test.vm19002.virt.gwdg.de/",
-  },
-  {
-    alt: "Fruit fly",
-    tag: "Flies",
-    name: "Dmel r6.59",
-    common: "Drosophila melanogaster",
-    genomeSize: "143.7 Mb",
-    gcContent: "42.1%",
-    assemblyLevel: "Chromosome",
-    siteUrl: "https://dmel.emobase.uni-goettingen.de/",
-  },
-];
+const getImageForSpecies = (speciesCode?: string, speciesName?: string) => {
+  const key = (speciesCode || speciesName || "").toLowerCase();
+  if (key.includes("tcas") || key.includes("tribolium")) return triboliumImage;
+  if (key.includes("ptep") || key.includes("parasteatoda")) return spiderImage;
+  if (key.includes("lyst") || key.includes("lymnaea")) return lymnaeaImage;
+  return undefined;
+};
 
-export default function HomePage() {
+const getTagForSpecies = (speciesCode?: string, speciesName?: string) => {
+  const key = (speciesCode || speciesName || "").toLowerCase();
+  if (key.includes("tcas") || key.includes("tribolium")) return "Beetles";
+  if (key.includes("ptep") || key.includes("parasteatoda")) return "Spiders";
+  if (key.includes("lyst") || key.includes("lymnaea")) return "Snails";
+  if (key.includes("dmel") || key.includes("drosophila")) return "Flies";
+  return "Species";
+};
+
+type HomePageProps = {
+  assemblies?: AssemblyVersionDetail[];
+};
+
+export default function HomePage({ assemblies = [] }: HomePageProps) {
+  const assemblyCards: AssemblyCardData[] = assemblies.map((assembly) => ({
+    image: getImageForSpecies(assembly.speciesCode, assembly.speciesName),
+    alt: assembly.speciesName || assembly.speciesCode || assembly.name,
+    tag: getTagForSpecies(assembly.speciesCode, assembly.speciesName),
+    name: assembly.name,
+    common: assembly.speciesName || assembly.speciesCode || "",
+    siteUrl: assembly.infoUrl || undefined,
+  }));
   return (
     <main className="flex-grow">
       {/* Hero Section */}
