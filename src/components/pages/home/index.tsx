@@ -45,52 +45,54 @@ export default function HomePage({ assemblies = [] }: HomePageProps) {
         <SearchBox />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 pb-24">
-        <div className="flex items-end justify-between mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-            Assemblies
-          </h2>
-        </div>
+      {assemblyCards.length > 0 && (
+        <div className="max-w-6xl mx-auto px-4 pb-24">
+          <div className="flex items-end justify-between mb-6">
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+              Assemblies
+            </h2>
+          </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {assemblyCards.map((card) => (
-            <div
-              key={card.name}
-              className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col"
-            >
-              <div className="relative h-52 overflow-hidden bg-slate-100 border-b border-slate-200">
-                <img
-                  src={card.image ?? placeholderImage}
-                  alt={card.alt}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="flex flex-grow flex-col">
-                <div className="flex-grow p-6">
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {card.name}
-                  </h3>
-                  <p className="text-slate-500 italic">{card.common}</p>
-                </div>
-                <a
-                  href={card.siteUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group/link relative flex items-center justify-between gap-2 px-6 pt-4 pb-6 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-x-6 top-0 h-px bg-slate-200 transition-all duration-200 group-hover/link:inset-x-0"
+          {/* Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {assemblyCards.map((card) => (
+              <div
+                key={card.name}
+                className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col"
+              >
+                <div className="relative h-52 overflow-hidden bg-slate-100 border-b border-slate-200">
+                  <img
+                    src={card.image ?? placeholderImage}
+                    alt={card.alt}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  Visit site
-                  <ExternalLink className="size-4" />
-                </a>
+                </div>
+                <div className="flex flex-grow flex-col">
+                  <div className="flex-grow p-6">
+                    <h3 className="text-xl font-bold text-gray-900">
+                      {card.name}
+                    </h3>
+                    <p className="text-slate-500 italic">{card.common}</p>
+                  </div>
+                  <a
+                    href={card.siteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group/link relative flex items-center justify-between gap-2 px-6 pt-4 pb-6 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-x-6 top-0 h-px bg-slate-200 transition-all duration-200 group-hover/link:inset-x-0"
+                    />
+                    Visit site
+                    <ExternalLink className="size-4" />
+                  </a>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }
