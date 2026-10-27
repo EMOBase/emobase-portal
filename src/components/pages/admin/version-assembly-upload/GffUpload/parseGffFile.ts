@@ -18,7 +18,8 @@ export async function parseAllGeneLinesFromGffGz(
   const decoder = new TextDecoder("utf-8");
 
   let buffer = "";
-  const geneLines: string[] = [];
+  const attributesMap = new Map<string, Set<string>>();
+  let geneCount = 0;
 
   try {
     while (true) {
@@ -28,14 +29,49 @@ export async function parseAllGeneLinesFromGffGz(
         const lines = buffer.split(/\r?\n/);
         buffer = lines.pop() || "";
 
-        for (const line of lines) {
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
           const trimmed = line.trim();
           if (!trimmed || trimmed.startsWith("#")) {
             continue;
           }
           const cols = trimmed.split("\t");
-          if (cols.length >= 9 && cols[2].toLowerCase() === "gene") {
-            geneLines.push(trimmed);
+          if (cols.length < 9) {
+            continue;
+          }
+          if (cols[2].toLowerCase() !== "gene") {
+            continue;
+          }
+
+          geneCount++;
+          const attributesStr = cols[8];
+          const attrPairs = attributesStr.split(";");
+
+          for (let j = 0; j < attrPairs.length; j++) {
+            const pair = attrPairs[j];
+            const trimmedPair = pair.trim();
+            if (!trimmedPair) continue;
+            const eqIdx = trimmedPair.indexOf("=");
+            if (eqIdx === -1) continue;
+            const key = trimmedPair.substring(0, eqIdx).trim();
+            const valStr = trimmedPair.substring(eqIdx + 1).trim();
+            if (!key || !valStr) continue;
+
+            const values = valStr.split(",");
+            if (!attributesMap.has(key)) {
+              attributesMap.set(key, new Set<string>());
+            }
+            const valueSet = attributesMap.get(key)!;
+            for (let k = 0; k < values.length; k++) {
+              const v = values[k].trim();
+              if (v) {
+                valueSet.add(v);
+              }
+            }
+          }
+
+          if (geneCount % 5000 === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 0));
           }
         }
       }
@@ -51,52 +87,30 @@ export async function parseAllGeneLinesFromGffGz(
     }
   }
 
-  if (geneLines.length === 0) {
+  if (geneCount === 0 || attributesMap.size === 0) {
     return null;
   }
 
   const attributes: Record<string, string[]> = {};
-
-  for (const geneLine of geneLines) {
-    const cols = geneLine.split("\t");
-    const attributesStr = cols[8];
-
-    const attrPairs = attributesStr.split(";");
-    for (const pair of attrPairs) {
-      const trimmedPair = pair.trim();
-      if (!trimmedPair) continue;
-      const eqIdx = trimmedPair.indexOf("=");
-      if (eqIdx !== -1) {
-        const key = trimmedPair.substring(0, eqIdx).trim();
-        const valStr = trimmedPair.substring(eqIdx + 1).trim();
-        const values = valStr.split(",").map((v) => v.trim());
-        if (attributes[key]) {
-          for (const val of values) {
-            if (!attributes[key].includes(val)) {
-              attributes[key].push(val);
-            }
-          }
-        } else {
-          attributes[key] = values;
-        }
-      }
-    }
+  for (const [key, valueSet] of attributesMap.entries()) {
+    attributes[key] = Array.from(valueSet);
   }
 
   const subAttributesMap: Record<string, string[]> = {};
   for (const [key, values] of Object.entries(attributes)) {
-    const subs: string[] = [];
-    for (const val of values) {
+    const subsSet = new Set<string>();
+    for (let i = 0; i < values.length; i++) {
+      const val = values[i];
       const colonIdx = val.indexOf(":");
       if (colonIdx !== -1) {
         const subName = val.substring(0, colonIdx).trim();
-        if (subName && !subs.includes(subName)) {
-          subs.push(subName);
+        if (subName) {
+          subsSet.add(subName);
         }
       }
     }
-    if (subs.length > 0) {
-      subAttributesMap[key] = subs;
+    if (subsSet.size > 0) {
+      subAttributesMap[key] = Array.from(subsSet);
     }
   }
 
