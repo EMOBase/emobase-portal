@@ -17,6 +17,11 @@ const preview: Preview = {
         { name: "white", value: "#ffffff" },
       ],
     },
+    options: {
+      storySort: {
+        order: ["Home", "Admin", "Search", "Common", "UI"],
+      },
+    },
   },
 };
 
