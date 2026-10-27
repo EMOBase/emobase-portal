@@ -106,7 +106,7 @@ const SearchResultByOrthology: React.FC<SearchResultByOrthologyProps> = ({
               </div>
               {source.toLowerCase() === "eggnog6" ? (
                 <a
-                  href={`https://eggnogdb.org/og/${group}`}
+                  href={`http://eggnog6.embl.de/search/ogs/${group}/`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1 font-medium"
