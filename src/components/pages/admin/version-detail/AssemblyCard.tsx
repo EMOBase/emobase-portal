@@ -7,7 +7,7 @@ import AssemblyFormModal, {
 import AssemblyImageModal from "./AssemblyImageModal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/utils/classname";
-import placeholderImage from "@/assets/species/placeholder.svg?url";
+import placeholderImage from "@/assets/placeholder.svg?url";
 
 export type AssemblyCardItem = {
   id: string | number;

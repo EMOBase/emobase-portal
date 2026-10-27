@@ -4,7 +4,7 @@ import { Loader2, Trash2, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { FileInput } from "@/components/ui/file-input";
-import placeholderImage from "@/assets/species/placeholder.svg?url";
+import placeholderImage from "@/assets/placeholder.svg?url";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
