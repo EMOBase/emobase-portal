@@ -45,10 +45,10 @@ const SearchResult: React.FC<SearchResultProps> = ({
   return (
     <Tabs defaultValue={defaultTab}>
       <TabsList>
-        <TabsTrigger value="gene" badge={geneBadge || undefined}>
+        <TabsTrigger value="gene" badge={geneBadge}>
           Search by Gene
         </TabsTrigger>
-        <TabsTrigger value="orthology" badge={orthologyBadge || undefined}>
+        <TabsTrigger value="orthology" badge={orthologyBadge}>
           Search by Orthology
         </TabsTrigger>
       </TabsList>

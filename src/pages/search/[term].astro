@@ -18,7 +18,7 @@ if (mock) {
     orthologies: [
       {
         group: "OG0001234",
-        source: "OrthoMCL",
+        source: "eggnog6",
         orthologs: [
           {
             species: "Tcas",
@@ -38,6 +38,34 @@ if (mock) {
           {
             species: "Dmel",
             genes: [{ gene: "FBgn0001234", synonyms: ["CG1234"] }],
+          },
+        ],
+      },
+      {
+        group: "OG0005678",
+        source: "OrthoMCL",
+        orthologs: [
+          {
+            species: "Tcas",
+            genes: [{ gene: "TC007890", synonyms: ["LOC660789"] }],
+          },
+          {
+            species: "Dmel",
+            genes: [{ gene: "FBgn0023456", synonyms: ["CG2345"] }],
+          },
+        ],
+      },
+      {
+        group: "OG0009012",
+        source: "eggnog6",
+        orthologs: [
+          {
+            species: "Ptep",
+            genes: [{ gene: "Ptep_001234", synonyms: ["pt1234"] }],
+          },
+          {
+            species: "Lsta",
+            genes: [{ gene: "Lyst_54321", synonyms: ["Ls54321"] }],
           },
         ],
       },

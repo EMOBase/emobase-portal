@@ -82,7 +82,7 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
                     <ExternalGeneLink gene={gene} assemblyInfoUrl={infoUrl} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
-                    {(assembly?.speciesCode || assembly?.speciesName) || "-"}
+                    {assembly?.speciesName || assembly?.speciesCode || "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
                     {assembly?.name || "-"}
