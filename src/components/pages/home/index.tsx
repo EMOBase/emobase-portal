@@ -8,7 +8,7 @@ type AssemblyCardData = {
   alt: string;
   name: string;
   common: string;
-  siteUrl?: string | null;
+  siteUrl?: string;
 };
 
 type HomePageProps = {
@@ -21,7 +21,7 @@ export default function HomePage({ assemblies = [] }: HomePageProps) {
     alt: assembly.speciesName || assembly.speciesCode || assembly.name,
     name: assembly.name,
     common: assembly.speciesName || assembly.speciesCode || "",
-    siteUrl: assembly.infoUrl,
+    siteUrl: assembly.infoUrl || undefined,
   }));
   return (
     <main className="flex-grow">
