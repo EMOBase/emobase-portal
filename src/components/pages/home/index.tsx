@@ -1,10 +1,11 @@
 import SearchBox from "@/components/common/SearchBox";
 import { ExternalLink } from "lucide-react";
 import type { AssemblyVersionDetail } from "@/utils/services/genomics";
+import { assemblyImageUrl } from "@/utils/url";
 import placeholderImage from "@/assets/placeholder.svg?url";
 
 type AssemblyCardData = {
-  image?: string | null;
+  image?: string;
   alt: string;
   name: string;
   common: string;
@@ -17,7 +18,7 @@ type HomePageProps = {
 
 export default function HomePage({ assemblies = [] }: HomePageProps) {
   const assemblyCards: AssemblyCardData[] = assemblies.map((assembly) => ({
-    image: assembly.imagePath,
+    image: assemblyImageUrl(assembly.imagePath),
     alt: assembly.speciesName || assembly.speciesCode || assembly.name,
     name: assembly.name,
     common: assembly.speciesName || assembly.speciesCode || "",
