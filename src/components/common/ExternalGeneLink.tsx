@@ -32,7 +32,7 @@ const ExternalGeneLink: React.FC<ExternalGeneLinkProps> = ({
       href={getHref()}
       target="_blank"
       rel="noopener noreferrer"
-      className="group inline-flex items-center gap-1 text-blue-700 hover:text-blue-800 font-medium hover:underline decoration-blue-700 decoration-2 underline-offset-2 cursor-pointer"
+      className="group inline-flex items-center gap-1 text-blue-700 hover:text-blue-800 text-sm font-medium hover:underline decoration-blue-700 decoration-2 underline-offset-2 cursor-pointer"
     >
       {gene}
       <ExternalLink className="size-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />

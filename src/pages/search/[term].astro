@@ -5,7 +5,7 @@ import genomicsService from "@/utils/services/genomics";
 
 const { term = "" } = Astro.params;
 
-const mock = true;
+const mock = false;
 
 const { search, fetchPublicVersions, fetchVersionDetail } = genomicsService();
 
