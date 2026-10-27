@@ -1,7 +1,7 @@
 import SearchBox from "@/components/common/SearchBox";
 import { ExternalLink } from "lucide-react";
 import type { AssemblyVersionDetail } from "@/utils/services/genomics";
-import placeholderImage from "@/assets/species/placeholder.svg?url";
+import placeholderImage from "@/assets/placeholder.svg?url";
 
 type AssemblyCardData = {
   image?: string | null;
