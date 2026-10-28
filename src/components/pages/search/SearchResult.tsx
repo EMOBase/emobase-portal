@@ -21,12 +21,14 @@ type SearchResultProps = {
   term: string;
   searchData: GeneSearchResult;
   assemblies?: AssemblyVersionDetail[];
+  version?: string;
 };
 
 const SearchResult: React.FC<SearchResultProps> = ({
   term,
   searchData,
   assemblies = [],
+  version,
 }) => {
   const orthologies = searchData.orthologies;
   const otherGenes = searchData.otherGenes;
@@ -55,7 +57,11 @@ const SearchResult: React.FC<SearchResultProps> = ({
 
       <TabsContent value="gene">
         {genes && genes.length > 0 ? (
-          <SearchResultByGene genes={genes} assemblies={assemblies} />
+          <SearchResultByGene
+            genes={genes}
+            assemblies={assemblies}
+            version={version}
+          />
         ) : (
           <EmptyContent>No results found searching by gene</EmptyContent>
         )}
@@ -65,6 +71,7 @@ const SearchResult: React.FC<SearchResultProps> = ({
           <SearchResultByOrthology
             orthologies={orthologies}
             assemblies={assemblies}
+            version={version}
           />
         ) : otherGenes && otherGenes.length ? (
           <div className="flex flex-col gap-3 text-slate-700 bg-white rounded-xl p-6 border border-slate-200">
@@ -82,6 +89,7 @@ const SearchResult: React.FC<SearchResultProps> = ({
                     gene={gene}
                     species={species}
                     assemblyInfoUrl={assembly?.infoUrl || undefined}
+                    version={version}
                   />
                 );
               })}

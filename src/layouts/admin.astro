@@ -15,13 +15,13 @@ const { user, session } = Astro.locals;
 
 {
   user && session && !session.error ? (
-    <Layout title={title}>
+    <Layout title={title} showVersionSelector={false}>
       <script is:inline define:vars={{ session }}>
         window.__SESSION__ = session;
       </script>
       <SessionManager client:load />
       <slot />
-      <div class="h-8" aria-hidden="true"></div>
+      <div class="h-8" aria-hidden="true" />
       <Toaster client:load />
     </Layout>
   ) : (

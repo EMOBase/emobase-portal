@@ -4,12 +4,14 @@ type ExternalGeneLinkProps = {
   gene: string;
   species?: string;
   assemblyInfoUrl?: string;
+  version?: string;
 };
 
 const ExternalGeneLink: React.FC<ExternalGeneLinkProps> = ({
   gene,
   species,
   assemblyInfoUrl,
+  version,
 }) => {
   const getHref = () => {
     if (species === "Dmel") {
@@ -19,9 +21,13 @@ const ExternalGeneLink: React.FC<ExternalGeneLinkProps> = ({
       try {
         const url = new URL(assemblyInfoUrl);
         url.pathname = `/details/${gene}`;
+        if (version) url.searchParams.set("version", version);
         return url.toString();
       } catch {
-        return `${assemblyInfoUrl.replace(/\/$/, "")}/details/${gene}`;
+        const href = `${assemblyInfoUrl.replace(/\/$/, "")}/details/${gene}`;
+        return version
+          ? `${href}?version=${encodeURIComponent(version)}`
+          : href;
       }
     }
     return "#";

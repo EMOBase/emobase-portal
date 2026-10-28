@@ -4,11 +4,13 @@ import ExternalGeneLink from "@/components/common/ExternalGeneLink";
 type SearchResultByGeneProps = {
   genes: string[];
   assemblies?: AssemblyVersionDetail[];
+  version?: string;
 };
 
 const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
   genes,
   assemblies = [],
+  version,
 }) => {
   const getAssemblyForGene = (gene: string) => {
     if (gene.startsWith("TC") || gene.toLowerCase().includes("tcas")) {
@@ -24,20 +26,25 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
     ) {
       return (
         assemblies.find((a) =>
-          (a.speciesCode || a.speciesName)?.toLowerCase().includes("parasteatoda"),
+          (a.speciesCode || a.speciesName)
+            ?.toLowerCase()
+            .includes("parasteatoda"),
         ) || assemblies.find((a) => a.name?.includes("Ptep"))
       );
     }
     if (gene.startsWith("Lyst") || gene.toLowerCase().includes("lymnaea")) {
       return (
-        assemblies.find((a) => (a.speciesCode || a.speciesName)?.toLowerCase().includes("lymnaea")) ||
-        assemblies.find((a) => a.name?.includes("Lyst"))
+        assemblies.find((a) =>
+          (a.speciesCode || a.speciesName)?.toLowerCase().includes("lymnaea"),
+        ) || assemblies.find((a) => a.name?.includes("Lyst"))
       );
     }
     if (gene.startsWith("FBgn") || gene.toLowerCase().includes("dmel")) {
       return (
         assemblies.find((a) =>
-          (a.speciesCode || a.speciesName)?.toLowerCase().includes("drosophila"),
+          (a.speciesCode || a.speciesName)
+            ?.toLowerCase()
+            .includes("drosophila"),
         ) || assemblies.find((a) => a.name?.includes("Dmel"))
       );
     }
@@ -79,7 +86,11 @@ const SearchResultByGene: React.FC<SearchResultByGeneProps> = ({
                   className="hover:bg-slate-50/50 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <ExternalGeneLink gene={gene} assemblyInfoUrl={infoUrl} />
+                    <ExternalGeneLink
+                      gene={gene}
+                      assemblyInfoUrl={infoUrl}
+                      version={version}
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">
                     {assembly?.speciesName || assembly?.speciesCode || "-"}

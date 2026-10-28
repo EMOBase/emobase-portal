@@ -8,11 +8,13 @@ type OrthologyList = Exclude<GeneSearchResult["orthologies"], undefined>;
 type SearchResultByOrthologyProps = {
   orthologies: OrthologyList;
   assemblies?: AssemblyVersionDetail[];
+  version?: string;
 };
 
 const SearchResultByOrthology: React.FC<SearchResultByOrthologyProps> = ({
   orthologies,
   assemblies = [],
+  version,
 }) => {
   const getAssemblyInfoUrl = (species: string) => {
     const assembly = assemblies.find(
@@ -60,16 +62,21 @@ const SearchResultByOrthology: React.FC<SearchResultByOrthologyProps> = ({
       const indexA = preferredOrder.findIndex(
         (p) =>
           p === a.species ||
-          assemblies.find((asm) => asm.speciesCode === a.species)?.speciesName === p ||
-          assemblies.find((asm) => asm.speciesName === a.species)?.speciesCode === p,
+          assemblies.find((asm) => asm.speciesCode === a.species)
+            ?.speciesName === p ||
+          assemblies.find((asm) => asm.speciesName === a.species)
+            ?.speciesCode === p,
       );
       const indexB = preferredOrder.findIndex(
         (p) =>
           p === b.species ||
-          assemblies.find((asm) => asm.speciesCode === b.species)?.speciesName === p ||
-          assemblies.find((asm) => asm.speciesName === b.species)?.speciesCode === p,
+          assemblies.find((asm) => asm.speciesCode === b.species)
+            ?.speciesName === p ||
+          assemblies.find((asm) => asm.speciesName === b.species)
+            ?.speciesCode === p,
       );
-      if (indexA === -1 && indexB === -1) return a.species.localeCompare(b.species);
+      if (indexA === -1 && indexB === -1)
+        return a.species.localeCompare(b.species);
       if (indexA === -1) return 1;
       if (indexB === -1) return -1;
       return indexA - indexB;
@@ -136,6 +143,7 @@ const SearchResultByOrthology: React.FC<SearchResultByOrthologyProps> = ({
                             gene={gene}
                             species={species}
                             assemblyInfoUrl={getAssemblyInfoUrl(species)}
+                            version={version}
                           />
                           {synonyms.length > 0 && (
                             <span className="text-slate-500 text-sm">

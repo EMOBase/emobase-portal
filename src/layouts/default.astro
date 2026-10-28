@@ -1,12 +1,14 @@
 ---
 import "../styles/global.css";
 import Topbar from "../components/layouts/Topbar/index.tsx";
+import VersionOverrideNotice from "@/components/common/VersionOverrideNotice";
 
 interface Props {
   title: string;
+  showVersionSelector?: boolean;
 }
 
-const { title } = Astro.props;
+const { title, showVersionSelector = true } = Astro.props;
 const { user } = Astro.locals;
 ---
 
@@ -27,7 +29,8 @@ const { user } = Astro.locals;
     <title>{title}</title>
   </head>
   <body class="bg-slate-50 font-body text-slate-900 min-h-screen flex flex-col">
-    <Topbar user={user} client:load />
+    <Topbar user={user} showVersionSelector={showVersionSelector} client:load />
+    <VersionOverrideNotice client:load />
     <slot />
     <footer class="bg-slate-200 py-10 text-center mt-auto">
       <p class="text-slate-600 text-sm">
