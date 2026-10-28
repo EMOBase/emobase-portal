@@ -69,9 +69,13 @@ export default function VersionSelector() {
       <SelectTrigger size="sm" className="min-w-32 bg-slate-50 text-xs">
         <SelectValue placeholder="Select version" />
       </SelectTrigger>
-      <SelectContent align="start">
+      <SelectContent align="start" alignItemWithTrigger={false} sideOffset={4}>
         {versions.map((version) => (
-          <SelectItem key={version.id} value={version.name} className="text-xs">
+          <SelectItem
+            key={version.id}
+            value={version.name}
+            className="rounded-sm py-1 pl-2 pr-6 text-xs"
+          >
             {version.name}
             {version.isDefault ? " (default)" : ""}
           </SelectItem>
