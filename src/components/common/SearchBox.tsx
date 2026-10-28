@@ -145,7 +145,7 @@ export default function SearchBox({
       ref={containerRef}
       className={cn(
         "relative",
-        isTopbar ? "flex-1 max-w-2xl px-8" : "max-w-3xl mx-auto",
+        isTopbar ? "flex-1 max-w-xl" : "max-w-3xl mx-auto",
         className,
       )}
     >

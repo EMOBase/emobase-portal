@@ -69,7 +69,7 @@ export default function VersionSelector() {
       <SelectTrigger size="sm" className="min-w-32 bg-slate-50 text-xs">
         <SelectValue placeholder="Select version" />
       </SelectTrigger>
-      <SelectContent align="end">
+      <SelectContent align="start">
         {versions.map((version) => (
           <SelectItem key={version.id} value={version.name} className="text-xs">
             {version.name}
