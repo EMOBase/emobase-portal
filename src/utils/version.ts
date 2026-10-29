@@ -40,7 +40,11 @@ export const getVersionContext = (): VersionContext | undefined =>
  */
 export const getVersionOverride = (): string | undefined => {
   if (typeof window === "undefined") return undefined;
-  return new URL(window.location.href).searchParams.get("version") || undefined;
+  const value = new URL(window.location.href).searchParams.get("version");
+  if (value == null) return undefined;
+  const trimmed = value.trim();
+  if (trimmed === "") return undefined;
+  return trimmed;
 };
 
 export const runWithVersionContext = async <T>(
